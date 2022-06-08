@@ -1,0 +1,528 @@
+/*------------------------------------------------------- 
+round angle
+--------------------------------------------------------*/
+
+.br15 {
+    border-radius: 15px;
+}
+
+.ltb8rtb15 {
+    border-radius: 8px 15px 15px 8px;
+}
+
+.ltb15 {
+    border-radius: 15px 0px 0px 15px;
+}
+
+.lb15 {
+    border-radius: 0px 0px 0px 15px;
+}
+
+.rt15 {
+    border-radius: 0px 15px 0px 0px;
+}
+
+.rb15 {
+    border-radius: 0px 0px 15px 0px;
+}
+
+/*------------------------------------------------------- 
+margin
+--------------------------------------------------------*/
+
+.mr5 {
+    margin-right: 5px;
+}
+
+.mb5 {
+    margin-bottom: 5px;
+}
+
+.m10 {
+    margin: 10px;
+}
+.mr10 {
+    margin-right: 10px;
+}
+
+.mb10 {
+    margin-bottom: 10px;
+}
+
+.ml10 {
+    margin-left: 10px;
+}
+
+.mb16 {
+    margin-bottom: 16px;
+}
+
+.mr16 {
+    margin-right: 16px;
+}
+
+.mt10 {
+    margin-top: 10px;
+}
+.m20 {
+    margin: 20px;
+}
+.mt20 {
+    margin-top: 20px;
+}
+
+.ml20 {
+    margin-left: 20px;
+}
+
+.mr20 {
+    margin-right: 20px;
+}
+
+.mb20 {
+    margin-bottom: 20px;
+}
+
+.ml30 {
+    margin-left: 30px;
+}
+
+.mr30 {
+    margin-right: 30px;
+}
+
+.mb32 {
+    margin-bottom: 32px;
+}
+
+.mr40 {
+    margin-right: 40px;
+}
+
+.ml40 {
+    margin-left: 40px;
+}
+
+.mb40 {
+    margin-bottom: 40px;
+}
+
+.mb80 {
+    margin-bottom: 80px;
+}
+
+/*------------------------------------------------------- 
+padding
+--------------------------------------------------------*/
+
+.p3 {
+    padding: 3px;
+}
+
+.p5 {
+    padding: 5px;
+}
+
+.pt5 {
+    padding-top: 5px;
+}
+
+.pl5 {
+    padding-left: 5px;
+}
+
+.pr5 {
+    padding-right: 5px;
+}
+
+.plr8 {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.plr10 {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.pt10 {
+    padding-top: 10px;
+}
+
+.p10 {
+    padding: 10px;
+}
+
+.pb10 {
+    padding-bottom: 10px;
+}
+
+.ptb10 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.plr16 {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.p20 {
+    padding: 20px;
+}
+
+.pt20 {
+    padding-top: 20px;
+}
+
+.pl20 {
+    padding-left: 20px;
+}
+
+.pr20 {
+    padding-right: 20px;
+}
+
+.pb20 {
+    padding-bottom: 20px;
+}
+
+.p40 {
+    padding: 40px;
+}
+
+.pt40 {
+    padding-top: 40px;
+}
+
+.ptb40 {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.pl40 {
+    padding-left: 40px;
+}
+
+.plr20 {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.plr40 {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+/* position */
+
+.left10 {
+    left: 10px;
+}
+
+.left5 {
+    left: 5px;
+}
+
+.left15 {
+    left: 15px;
+}
+
+.left20 {
+    left: 20px;
+}
+
+.right5 {
+    right: 5px;
+}
+
+.right10 {
+    right: 510px;
+}
+
+.right15 {
+    right: 15px;
+}
+
+.right20 {
+    right: 20px;
+}
+
+/*-------------------------------------------------------
+@font 16px based
+--------------------------------------------------------*/
+
+.font12 {
+    font-size: .75em;
+}
+
+.font14 {
+    font-size: 0.875em;
+}
+
+.font16 {
+    font-size: 1em;
+}
+
+.font20 {
+    font-size: 20px;
+}
+
+.font24 {
+    font-size: 24px;
+}
+
+.font28 {
+    font-size: 28px;
+}
+
+.font30 {
+    font-size: 30px;
+}
+
+.font32 {
+    font-size: 32px;
+}
+
+.font36 {
+    font-size: 32px;
+}
+
+.font48 {
+    font-size: 48px;
+}
+
+/*------------------------------------------------------- 
+border-color
+--------------------------------------------------------*/
+
+.border-white {
+    border-color: #fff;
+}
+
+/*------------------------------------------------------- 
+background-color
+--------------------------------------------------------*/
+
+.bg-white {
+    background-color: #fff;
+}
+
+.bg-red {
+    background-color: red;
+}
+
+.bg-blue {
+    background-color: blue;
+}
+
+.bg-primary {
+    background-color: var(--primary-color);
+}
+
+/*------------------------------------------------------- 
+text color
+--------------------------------------------------------*/
+
+.txt-primary {
+    color: var(--primary-color);
+}
+
+.txt-secondary {
+    color: #F94E4E;
+}
+
+.txt-blue {
+    color: #003f6c;
+}
+
+.txt-lightblue {
+    color: #00cfff;
+}
+
+.txt-gray {
+    color: #eeeeee;
+}
+
+.txt-lightgray {
+    color: #7D7D7D;
+}
+
+.txt-green {
+    color: #2a8b17;
+}
+
+.txt-yellow {
+    color: #fbb03b;
+}
+
+.txt-pink {
+    color: #FF739E;
+}
+
+.txt-dblue {
+    color: #1d2088;
+}
+
+.txt-orange {
+    color: #FBB03B;
+}
+
+.txt-black {
+    color: #000;
+}
+
+.txt-white {
+    color: #FFF;
+}
+
+.txt-red {
+    color: #ff0000;
+}
+
+/* line height */
+
+.lh_1-41 {
+    line-height: 1.4;
+}
+
+.lh_1-6 {
+    line-height: 1.6;
+}
+
+/*-------------------------------------------------------
+ view control 
+--------------------------------------------------------*/
+
+.hide {
+    opacity: 0;
+}
+
+.none {
+    display: none;
+}
+
+.hiddenimg {
+    visibility: visible;
+    height: 0%;
+    width: 0%;
+}
+
+.textoverflow-1 {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.align-center {
+    align-items: center;
+}
+
+/*-------------------------------------------------------
+border 
+--------------------------------------------------------*/
+
+.border-top {
+    border-top: 1px solid #e5e5e5;
+}
+
+.border-right {
+    border-right: 1px solid #e5e5e5;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.border-left {
+    border-left: 1px solid #e5e5e5;
+}
+
+/*-------------------------------------------------------
+display position
+--------------------------------------------------------*/
+
+.w100 {
+    width: 100%;
+}
+
+.h100 {
+    height: 100%;
+}
+
+.underline {
+    text-decoration: underline;
+    /* border-color: inherit;
+   border-bottom: 1px solid;
+   width: fit-content;
+   line-height: 1;
+   white-space: nowrap; */
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.tc {
+    text-align: center;
+}
+
+.tr {
+    text-align: right;
+}
+
+.tl {
+    text-align: left;
+}
+
+.flex {
+    display: flex;
+}
+
+.inline-flex {
+    display: inline-flex;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-sb {
+    display: flex;
+    justify-content: space-between;
+}
+
+.grid-center {
+    display: grid;
+    place-items: center;
+}
+
+.t180 {
+    transform: rotate(180deg);
+}
+
+.h100_w100 {
+    height: 100%;
+    width: 100%;
+}
+
+.relative {
+    position: relative;
+    ;
+}
+
+.ac {
+    align-items: center;
+}
+
+.jcc {
+    justify-content: center;
+}
+
+.center_absolute {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
