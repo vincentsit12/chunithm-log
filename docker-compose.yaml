@@ -1,23 +1,25 @@
 version: '3'
 
 services:
-  db :
-    image: postgres
-    # environment:
-    #   POSTGRES_PASSWORD: ayaneru0129
-    #   POSTGRES_USER : yaugor
-    ports:
-      - '5432:5432'
-    volumes:
-      - data:/var/lib/postgresql/data
-    env_file : 
-      - ./env/db.env
+  # db :
+  #   image: postgres
+  #   # environment:
+  #   #   POSTGRES_PASSWORD: ayaneru0129
+  #   #   POSTGRES_USER : yaugor
+  #   ports:
+  #     - '5432:5432'
+  #   volumes:
+  #     - data:/var/lib/postgresql/data
+  #   env_file : 
+  #     - ./env/db.env
   web:
+    image: chunithm-log-web
     build: 
       context: ./nextjs
     ports:
       - '3000:3000'
   datascraper :
+    image: chunithm-log-datascraper
     build: 
       context: ./scrapper
 
