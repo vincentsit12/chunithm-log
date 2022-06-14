@@ -16,6 +16,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
+      - printenv > ././nextjs/.env.production
       - docker build -t $REPOSITORY_URI ./nextjs
       # - docker tag chunithm-log-web:latest $REPOSITORY_URI
   post_build:
