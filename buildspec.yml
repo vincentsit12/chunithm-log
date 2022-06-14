@@ -16,8 +16,8 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker-compose up -d
-      - docker tag chunithm-log-web:latest $REPOSITORY_URI
+      - docker build -t $REPOSITORY_URI ./nextjs
+      # - docker tag chunithm-log-web:latest $REPOSITORY_URI
   post_build:
     commands:
       - echo Build completed on `date`
