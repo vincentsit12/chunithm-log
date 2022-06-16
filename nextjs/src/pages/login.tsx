@@ -1,3 +1,4 @@
+import e from 'cors';
 import { signIn, SignInResponse, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -38,7 +39,6 @@ export default function Login() {
 
             const query: Query = router.query
 
-            console.log("🚀 ~ file: index.tsx ~ line 40 ~ signIn ~ query.callbackUrl", query.callbackUrl)
             router.replace(query.callbackUrl || "/home")
 
 
@@ -55,19 +55,25 @@ export default function Login() {
     return (
 
         <div id="container">
-            <form className="inner-540 inner inner-p40 tc bg-white box-shadow" onSubmit={handleSubmitForm}>
-                <h1 className='tc mb20'>Chunithm Log</h1>
+            <form onSubmit={handleSubmitForm} >
+                <div className="inner-540 inner inner-p40 tc bg-white box-shadow" >
+                    <h1 className='tc mb20'>Chunithm Log</h1>
 
-                <h4 className="bold">Login</h4>
-                <div className="inner inner-p20 ">
-                    {error && <div className="bold txt-secondary tl  font14">Please check your username/password is input correctly.</div>}
-                    <input  {...register('username', { required: true })} className="form-control" type="text" placeholder={"Username"}></input>
-                    <input  {...register('password', { required: true })} className="form-control" type="password" placeholder={"Password"}></input>
-                    <button className="btn btn-secondary m20" onClick={(e) => { e.preventDefault(); router.push('/signup') }}>Sign Up</button>
-                    <button className="btn btn-secondary m20 " onClick={() => { }}>Submit</button>
+                    <h4 className="bold">Login</h4>
+                    <div className="inner inner-p20 ">
+                        {error && <div className="bold txt-secondary tl  font14">Please check your username/password is input correctly.</div>}
+                        <input  {...register('username', { required: true })} autoComplete="username" className="form-control" type="text" placeholder={"Username"}></input>
+                        <input  {...register('password', { required: true })} autoComplete="password" className="form-control" type="password" placeholder={"Password"}></input>
+                        <button type='button' className="btn btn-secondary m20" onClick={(e) => {
+                            // e.preventDefault();
+                            router.push('/signup')
+                        }}>Sign Up</button>
+                        <button type="submit" className=" btn btn-secondary m20 " onClick={(e) => { }}>Submit</button>
+                    </div>
+
+
                 </div>
-
-
             </form>
-        </div>)
+        </div >
+    )
 }

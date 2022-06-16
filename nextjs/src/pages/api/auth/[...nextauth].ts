@@ -42,7 +42,7 @@ export default NextAuth({
                     // If no error and we have user data, return it
                     if (data) {
                         // console.log("🚀 ~ file: [...nextAuth].ts ~ line 43 ~ authorize ~ data", data)
-                        // console.log('authorized')
+                        console.log('authorized')
                         return data
                     }
                     // Return null if user data could not be retrieved

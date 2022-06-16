@@ -58,13 +58,13 @@ export default function SignUp() {
     const error: boolean = errors?.password?.type === 'required' || errors?.username?.type === 'required'
     return (
         <div id="container">
-            <form className="inner-540 inner inner-p40 tc bg-white box-shadow" onSubmit={handleSubmitForm}>
+            <form autoComplete="off" className="inner-540 inner inner-p40 tc bg-white box-shadow" onSubmit={handleSubmitForm}>
 
                 <h4 className="bold">Sign Up</h4>
                 <div className="inner inner-p20 ">
                     {error && <div className="bold txt-secondary tl mb10 font14">Please check your username/password is input correctly.</div>}
-                    <input  {...register('username', { required: true })} className="form-control" type="text" placeholder={"Username"}></input>
-                    <input  {...register('password', { required: true })} className="form-control" type="password" placeholder={"Password"}></input>
+                    <input  {...register('username', { required: true })} className="form-control" type="text"  placeholder={"Username"}></input>
+                    <input  {...register('password', { required: true })} className="form-control" type="password" autoComplete='new-password' placeholder={"Password"}></input>
                     <button className="btn btn-secondary mt10" onClick={() => { }}>Submit</button>
                 </div>
 

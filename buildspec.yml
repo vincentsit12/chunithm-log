@@ -1,9 +1,9 @@
 version: 0.2
 
 phases:
-  install:
-    runtime-version:
-      docker: 18
+  # install:
+  #   runtime-versions:
+  #     docker: 18
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
@@ -16,7 +16,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - printenv > ././nextjs/.env.production
+      - printenv > ./nextjs/.env.production
       - docker build -t $REPOSITORY_URI ./nextjs
       # - docker tag chunithm-log-web:latest $REPOSITORY_URI
   post_build:

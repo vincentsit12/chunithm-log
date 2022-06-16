@@ -18,7 +18,7 @@ export default function Blank() {
     //     })
     // }
     useEffect(() => {
-        if (!session) {
+        if (session) {
             router.replace('/home')
         }
         else router.replace('/login')
