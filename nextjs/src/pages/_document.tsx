@@ -6,8 +6,9 @@ class MyDocument extends Document {
     render() {
         return (
             <Html>
+                <title>Chunithm Log</title>
+
                 <Head>
-                    <title>Chunithm Log</title>
                     <link rel="icon" href="logo.png" />
                     <link rel="preconnect" href="https://fonts.googleapis.com" />
                     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin='' />
