@@ -10,10 +10,15 @@ import _ from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
 import Songs from 'db/model/songs'
-import { calculateSingleSongRating } from 'utils/calculateRating'
+import { MdOutlineContentCopy } from 'react-icons/md'
+import { calculateSingleSongRating, generateScript } from 'utils/calculateRating'
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import LayoutWrapper from 'components/LayoutWrapper'
+
 type Props = {
   ratingList: Rating[];
 };
+
 
 const Home: NextPage<Props> = ({ ratingList }) => {
   const renderTableRow = () => {
@@ -26,34 +31,49 @@ const Home: NextPage<Props> = ({ ratingList }) => {
         <td>{k.rating}</td>
       </tr>
     })
-
   }
+
   const { data: session, status } = useSession()
   return (
-    <div id='container'>
-      <div className='inner inner-540 tc'>
-        <div id='rating-table' className='mb20'>
-          <div className="margin-bottom:10px">
-            {/* <div className="closeBtn" onClick={() => { }}>
-              <span className="width: 100%;height: 3px; transform: translateY(8px) rotate(45deg);;background-color: black;"></span>
-              <span className="width:  100%;height: 3px;transform: translateY(5px) rotate(135deg);background-color: black;"></span>
-            </div> */}
-            {/* ${"Average Rating: " + (Math.trunc(totalRate / 30 * 100) / 100).toFixed(2)} */}
-            {/* <div >
-            <input id='top30' type='checkbox' /> <label htmlFor="top30">Top30</label>
-          </div> */}
-
+    <LayoutWrapper>
+      <div className='inner inner-720 ' >
+        <div className='flex box box-shadow' style={{ height: '48px' }}>
+          <div id='script' >
+            <p> {generateScript(session?.user.id!)}</p>
           </div>
-          <table >
-            <tbody>
-              {renderTableRow()}
-            </tbody>
-          </table>
+          <CopyToClipboard text={generateScript(session?.user.id!)}>
+            <button className='btn btn-secondary icon grid-center'><MdOutlineContentCopy></MdOutlineContentCopy></button>
+          </CopyToClipboard>
+        </div>
+      </div>
+      <div className='inner inner-540 tc '>
 
+        <div id='rating-table' className='box box-shadow mb20'>
+          {ratingList.length > 0 ?
+            <table >
+              <tbody>
+                {renderTableRow()}
+              </tbody>
+            </table>
+            : <div className='inner-p20 w-full h-full text-left'>
+              <p className='mb10'>
+                {`
+                1. Save the following script into a browser bookmark:
+              `}
+              </p>
+              <p className='mb10'>
+                {`2. Open this page (required login) https://chunithm-net-eng.com/mobile/home/ or https://chunithm-net-eng.com/mobile/record/musicGenre/master`}
+              </p>
+              <p className='mb10'>
+                {`
+                3. click the bookmark`
+                }
+              </p>
+            </div>}
         </div>
         <button className="btn btn-secondary" onClick={() => { signOut() }}>Logout</button>
       </div>
-    </div >
+    </LayoutWrapper >
   )
 }
 
@@ -62,12 +82,12 @@ export default Home
 export async function getServerSideProps(context: NextPageContext) {
   try {
     let session = await getSession(context)
-    let data: any = (await Users.findOne({ where: { id: session?.user.id}, include: { model: Records, include: [{ model: Songs }] } }))
+    let data: any = (await Users.findOne({ where: { id: session?.user.id }, include: { model: Records, include: [{ model: Songs }] } }))
 
     const ratingList = _.map(data.records, function (o) {
-        let rate = (Math.trunc(calculateSingleSongRating(o.song[o.difficulty], o.score) * 100) / 100).toFixed(2)
-        let result: Rating = { song: o.song.name, rating: rate, score: o.score, difficulty: o.difficulty, }
-        return result
+      let rate = (Math.trunc(calculateSingleSongRating(o.song[o.difficulty], o.score) * 100) / 100).toFixed(2)
+      let result: Rating = { song: o.song.name, rating: rate, score: o.score, difficulty: o.difficulty, }
+      return result
     });
 
     return {
