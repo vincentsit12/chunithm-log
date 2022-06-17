@@ -9,7 +9,7 @@ export default function LoadingView({ }: Props) {
         <div className='absolute_center  w-32	'>
             <div className='animate-spin'>
 
-                <Image className="w-full" src={loadingPic} />
+                <Image className="w-full" src={'/pen_sleep_apng.png'} height={100} width={60} />
             </div>
 
         </div>
