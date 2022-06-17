@@ -1,0 +1,17 @@
+import Image from 'next/image'
+import React from 'react'
+import loadingPic from 'assets/pen_sleep_apng.png'
+
+type Props = {}
+
+export default function LoadingView({ }: Props) {
+    return (
+        <div className='absolute_center  w-32	'>
+            <div className='animate-spin'>
+
+                <Image className="w-full" src={loadingPic} />
+            </div>
+
+        </div>
+    )
+}

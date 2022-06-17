@@ -15,7 +15,6 @@ async function signup(
   const saltRounds = 10;
 
   if (req.method === 'POST') {
-    console.log('signup', req.body.password)
 
     // Store hash in your password DB.
     const hashedPassword = await hash(req.body.password, saltRounds)

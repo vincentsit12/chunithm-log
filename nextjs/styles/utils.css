@@ -520,7 +520,7 @@ display position
     justify-content: center;
 }
 
-.center_absolute {
+.absolute_center {
     position: absolute;
     top: 50%;
     left: 50%;

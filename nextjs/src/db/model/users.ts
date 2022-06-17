@@ -3,7 +3,7 @@ import { sequelize } from "..";
 import Records from "./records";
 
 type UserAttributes = {
-    id: Number;
+    id: number;
     username: string
     password: string,
     isAdmin?: boolean,
@@ -13,7 +13,7 @@ type UserCreationAttributes = Optional<UserAttributes, 'id'>;
 
 
 export default class Users extends Model<UserAttributes, UserCreationAttributes>{
-    declare id: Number;
+    declare id: number;
     declare username: string;
     declare password: string;
     declare isAdmin: boolean;
