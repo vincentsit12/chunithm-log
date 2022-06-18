@@ -30,7 +30,7 @@ async function handler(
     )
     if (!session ) throw new UnauthenticatedError('please login first')
     
-    let data: any = (await Users.findOne({ where: { id: 1 }, include: { model: Records, include: [{ model: Songs }] } }))
+    let data: any = (await Users.findOne({ where: { id: req.body.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
 
     const ratingList = _.map(data.records, function (o) {
         let rate = (Math.trunc(calculateSingleSongRating(o.song[o.difficulty], o.score) * 100) / 100).toFixed(2)
