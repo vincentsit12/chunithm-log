@@ -7,7 +7,7 @@
 body,
 html {
   /* min-width: 320px; */
-  min-height: 100%;
+  min-height: 100vh;
 }
 
 html {
@@ -854,7 +854,10 @@ button {
   outline: none;
   background-color: rgba(0, 0, 0, .1) !important;
 } */
-
+ .btn:active {
+  outline: none;
+  opacity: 0.8;
+}
 @media (hover: hover) {
 
   button:hover,
@@ -1159,7 +1162,7 @@ custom
   /* font-size: 0.8rem; */
   z-index: 2;
   /* animation: zoomIn .2s ease-out; */
-  overflow: scroll;
+  overflow-y: scroll;
   padding: 0px 10px 0px 10px;
   text-align: center;
 }

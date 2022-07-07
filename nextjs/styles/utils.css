@@ -320,6 +320,17 @@ background-color
     background-color: var(--primary-color);
 }
 
+.bg-master { 
+    background-color: #8200DC90;
+}
+
+.bg-expert {
+    background-color: #A00A5090;
+}
+
+.bg-ultima {
+    background-color: #8a8a8a90;
+}
 /*------------------------------------------------------- 
 text color
 --------------------------------------------------------*/

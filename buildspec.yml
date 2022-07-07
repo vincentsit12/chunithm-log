@@ -8,7 +8,7 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-      - REPOSITORY_URI=872924916506.dkr.ecr.us-east-1.amazonaws.com/chunithm-log:latest
+      - REPOSITORY_URI=872924916506.dkr.ecr.us-east-1.amazonaws.com/chunithm-log
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
       - echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
@@ -18,15 +18,15 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - printenv > ./nextjs/.env.production
-      - docker build -t $REPOSITORY_URI ./nextjs
+      - docker build -t $REPOSITORY_URI:latest ./nextjs
       # - docker tag chunithm-log-web:latest $REPOSITORY_URI
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 872924916506.dkr.ecr.us-east-1.amazonaws.com
-      - docker push $REPOSITORY_URI
-      # - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
       - printf '[{"name":"nodeapp","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > artifact.json
       - cat artifact.json 

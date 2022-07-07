@@ -1,3 +1,4 @@
+import e from 'cors';
 import { signIn, SignInResponse, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -10,6 +11,7 @@ export default function Blank() {
     // const { login } = useUserContext()
     const router = useRouter()
     const { data: session, status } = useSession()
+    console.log("🚀 ~ file: index.tsx ~ line 13 ~ Blank ~ session", status)
 
 
     // const checkValid = () => {
@@ -18,11 +20,15 @@ export default function Blank() {
     //     })
     // }
     useEffect(() => {
-        if (session) {
+
+        if (status === "authenticated") {
             router.replace('/home')
         }
-        else router.replace('/login')
-    },[])
+        else if (status === "unauthenticated")
+            router.replace('/login')
+
+        // else router.replace('/login')
+    }, [status])
 
 
 

@@ -14,6 +14,7 @@ import { MdOutlineContentCopy } from 'react-icons/md'
 import { calculateSingleSongRating, generateScript } from 'utils/calculateRating'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
+import classNames from 'classnames'
 
 type Props = {
   ratingList: Rating[];
@@ -21,14 +22,24 @@ type Props = {
 
 
 const Home: NextPage<Props> = ({ ratingList }) => {
+  const renderRatingColor = (d: string) => {
+    switch (d) {
+      case 'master':
+        return 'bg-master'
+        break;
+
+      default:
+        break;
+    }
+  }
   const renderTableRow = () => {
 
     return _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => {
-      return <tr key={i}>
+      return <tr key={i} >
         <td>{i + 1}</td>
         <td>{k.song}</td>
         <td>{k.score}</td>
-        <td>{k.rating}</td>
+        <td className='txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.rating}</span></td>
       </tr>
     })
   }
