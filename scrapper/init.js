@@ -36,9 +36,6 @@ async function initDB() {
                 updateOnDuplicate: ['master', 'expert', 'ultima'],
             });
 
-        let pwd = bcrypt.hashSync('tt97101505', 10)
-
-        await Users.create({ username: 'admin0129', password: pwd, isAdmin: true })
 
         // await Records.create({ user_id: 1, song_id: 2, diffculty: 'master', score: 1007500 })
 
