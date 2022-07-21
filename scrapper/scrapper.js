@@ -84,19 +84,29 @@ const getRating = async () => {
                         }
 
                         else {
-                            let textEle = $(row[index]).find('td > a')[0]
-                            let songName = textEle ? textEle.innerText : ''
+                            let textEle = $(row[index]).find('td > a')
+                            let songName = textEle[0] ? textEle[0].innerText : ''
+                            let comboEle = $(row[index]).find('td')[1]
+                            let combo = comboEle ? comboEle.innerText : '0'
                             let key
                             if (songName) {
                                 key = toASCII(songName).replace(/[\n\s'’]/g, '')
 
                                 if (!list[key]) {
                                     list[key] = {
-                                        [diffculty]: rate
+                                        displayName: songName.replace(/[\n'’]/g, ''),
+                                        [diffculty]: {
+                                            rate: rate,
+                                            combo: parseInt(combo),
+                                        }
                                     }
                                 }
-                                else list[key][diffculty] = rate
-
+                                else {
+                                    list[key][diffculty] = {
+                                        rate: rate,
+                                        combo: parseInt(combo),
+                                    }
+                                }
                             }
                         }
                         index++
@@ -104,6 +114,8 @@ const getRating = async () => {
                 }
             }
             // alert('finish');
+
+            console.log(list)
             return list
 
         })
@@ -163,9 +175,12 @@ const getRating = async () => {
 };
 
 // /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --no-first-run --no-default-browser-check --user-data-dir=$(mktemp -d -t 'chrome-remote_data_dir')
-
-
-module.exports = { getRating }
+const init = async () => {
+    let r = await getRating()
+    console.log(r);
+}
+init()
+// module.exports = { getRating }
 
 
 

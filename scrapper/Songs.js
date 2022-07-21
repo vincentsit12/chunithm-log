@@ -9,14 +9,15 @@ Songs.init({
         type: DataTypes.TEXT,
         allowNull: false
     },
+    display_name: { type: DataTypes.TEXT, },
     master: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.JSONB,
     },
     ultima: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.JSONB,
     },
     expert: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.JSONB,
     },
 
 

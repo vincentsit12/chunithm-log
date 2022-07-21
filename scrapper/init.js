@@ -17,6 +17,7 @@ async function initDB() {
         // console.log(123)
         return {
             name: k[0],
+            display_name : k[1].display_name,
             master: k[1].master || null,
             ultima: k[1].ultima || null,
             expert: k[1].expert || null,
