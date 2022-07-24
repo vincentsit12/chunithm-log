@@ -4,24 +4,25 @@ import { Session } from 'next-auth'
 import { getSession, signOut, useSession } from 'next-auth/react'
 import Head from 'next/head'
 import Image from 'next/image'
-import { Rating } from 'types'
+import { Rating, Song } from 'types'
 import { getRatingList } from 'utils/api'
 import _ from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
 import Songs from 'db/model/songs'
 import { MdOutlineContentCopy } from 'react-icons/md'
-import { calculateSingleSongRating, generateScript } from 'utils/calculateRating'
+import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/calculateRating'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
 
 type Props = {
   ratingList: Rating[];
+  average: number
 };
 
 
-const Home: NextPage<Props> = ({ ratingList }) => {
+const Home: NextPage<Props> = ({ ratingList, average }) => {
   const renderRatingColor = (d: string) => {
     switch (d) {
       case 'master':
@@ -39,7 +40,7 @@ const Home: NextPage<Props> = ({ ratingList }) => {
         <td>{i + 1}</td>
         <td>{k.song}</td>
         <td>{k.score}</td>
-        <td className='txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.rating}</span></td>
+        <td className='txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
       </tr>
     })
   }
@@ -58,7 +59,7 @@ const Home: NextPage<Props> = ({ ratingList }) => {
         </div>
       </div>
       <div className='inner inner-540 tc '>
-
+        <div className='font-20 mb20'>{`Top 30 Average : ${toFixedTrunc(average, 2)}`}</div>
         <div id='rating-table' className='box box-shadow mb20'>
           {ratingList.length > 0 ?
             <table >
@@ -96,14 +97,16 @@ export async function getServerSideProps(context: NextPageContext) {
     let data: any = (await Users.findOne({ where: { id: session?.user.id }, include: { model: Records, include: [{ model: Songs }] } }))
 
     const ratingList = _.map(data.records, function (o) {
-      let rate = (Math.trunc(calculateSingleSongRating(o.song[o.difficulty], o.score) * 100) / 100).toFixed(2)
-      let result: Rating = { song: o.song.name, rating: rate, score: o.score, difficulty: o.difficulty, }
+      let song: Song = JSON.parse(o.song[o.difficulty])
+      let rating = calculateSingleSongRating(song?.rate, o.score)
+      let result: Rating = { song: o.song.display_name, combo: song?.combo, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
       return result
     });
-
+    let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {
       props: {
-        ratingList
+        ratingList,
+        average
       },
     }
   }

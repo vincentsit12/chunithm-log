@@ -3,21 +3,23 @@ import { sequelize } from "..";
 
 
 type SongAttributes = {
-    id : number,
+    id: number,
     name: string
-    master?: Number,
-    expert?: Number,
-    ultima?: Number,
+    display_name: string
+    master?: string,
+    expert?: string,
+    ultima?: string,
     // other attributes...
 };
 type SongCreationAttributes = Optional<SongAttributes, 'id'>;
 
 export default class Songs extends Model<SongAttributes, SongCreationAttributes> {
-    declare id : number;
+    declare id: number;
     declare name: string;
-    declare master: Number;
-    declare expert: Number;
-    declare ultima: boolean;
+    declare master: string;
+    declare display_name: string;
+    declare expert: string;
+    declare ultima: string;
 }
 
 Songs.init({
@@ -31,15 +33,17 @@ Songs.init({
         type: DataTypes.TEXT,
         allowNull: false
     },
+    display_name: { type: DataTypes.TEXT, },
     master: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.JSONB,
     },
     ultima: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.JSONB,
     },
     expert: {
-        type: DataTypes.DOUBLE,
+        type: DataTypes.JSONB,
     },
+
 
 
 }, {
