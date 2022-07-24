@@ -4,7 +4,7 @@ import { Session } from 'next-auth'
 import { getSession, signOut, useSession } from 'next-auth/react'
 import Head from 'next/head'
 import Image from 'next/image'
-import { Rating } from 'types'
+import { Rating, Song } from 'types'
 import { getRatingList } from 'utils/api'
 import _ from 'lodash'
 import Users from 'db/model/users'
@@ -18,11 +18,11 @@ import classNames from 'classnames'
 
 type Props = {
   ratingList: Rating[];
-  average : number
+  average: number
 };
 
 
-const Home: NextPage<Props> = ({ ratingList ,average}) => {
+const Home: NextPage<Props> = ({ ratingList, average }) => {
   const renderRatingColor = (d: string) => {
     switch (d) {
       case 'master':
@@ -97,8 +97,9 @@ export async function getServerSideProps(context: NextPageContext) {
     let data: any = (await Users.findOne({ where: { id: session?.user.id }, include: { model: Records, include: [{ model: Songs }] } }))
 
     const ratingList = _.map(data.records, function (o) {
-      let rate = calculateSingleSongRating(o.song[o.difficulty], o.score)
-      let result: Rating = { song: o.song.name, rating: rate, truncatedRating: toFixedTrunc(rate, 2), score: o.score, difficulty: o.difficulty, }
+      let song: Song = JSON.parse(o.song[o.difficulty])
+      let rating = calculateSingleSongRating(song?.rate, o.score)
+      let result: Rating = { song: o.song.display_name, combo: song?.combo, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
       return result
     });
     let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30

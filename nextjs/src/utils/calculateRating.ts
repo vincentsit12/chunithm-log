@@ -27,7 +27,7 @@ function toFixed(x: any) {
     return x;
 }
 
-export function toFixedTrunc(x : number | string, n : number) {
+export function toFixedTrunc(x: number | string, n: number) {
     x = toFixed(x)
 
     // From here on the code is the same than the original answer
@@ -53,5 +53,5 @@ export function reEscape(chars: string) {
 }
 
 export const generateScript = (id: number) => {
-    return `javascript:!function(){const t=["ultima","master","expert"];let e=[];const n="https://chuni-log.com";async function o(t,n){const o="https://chunithm-net-eng.com/mobile/record/musicGenre/"+t;return fetch(o,{credentials:"include"}).then((function(t){return t.text()})).then((function(n){var i=(new DOMParser).parseFromString(n,"text/html");const a=$(i).find(".musiclist_box");if(a.length<=0)throw"fail, please try again on this link "+o;for(let n=0;n<a.length;n++){let o=a[n].getElementsByClassName("play_musicdata_highscore")[0];if(o){let i=a[n].getElementsByClassName("music_title")[0].innerText,l=$(o).find("span")[0].innerText.split(",").join("");parseInt(l)>=0&&e.push({name:i,difficulty:t,score:parseInt(l)})}}})).catch((t=>{console.log("calculateRating",t),alert("fail")}))}Number.prototype.round=function(t){return+(Math.round(this+"e+"+t)+"e-"+t)},async function(){for(let e=0;e<t.length;e++)await o(t[e]);if(e.length<=0)throw"no songs record, please retry";console.table(e),fetch(n+"/api/record/" + ${id},{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:e})}).then((t=>t.text())).then((t=>{console.log("🚀 ~ file: calculateRating.js ~ line 120 ~ .then ~ r",t),window.open(n)})).catch((t=>alert(t)))}()}();`
+    return `javascript: (function () {window.userID = ${id};  var a = document.createElement('script'); a.src = "https://chuni-log.com/calculateRating.min.js"; document.body.appendChild(a);})();`
 }
