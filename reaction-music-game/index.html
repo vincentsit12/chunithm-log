@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Reaction Game</title>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="./js/stats.min.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="./css/style2.css">
+</head>
+
+
+<body oncontextmenu="return false;">
+    <div class="wrapper">
+
+        <video class="input_video" style="display:none" muted playsinline></video>
+        <div id='game' class='container' style="position: relative;">
+            <div class="status-box" id="score">
+                <div class='outer'>
+                    <div>
+                        0
+                    </div>
+
+                </div>
+            </div>
+            <canvas class="output_canvas"></canvas>
+            <canvas class="game_canvas"></canvas>
+            <!-- <img id='pose-logo' src="./img/T-pose.png"></img> -->
+            <div id='counter' class="center"></div>
+            <div id='info' class="center">5</div>
+            <!-- <div id='timer' class='status-box'>
+                <div class='outer'>
+                    <div>
+                        60
+                    </div>
+
+                </div>
+            </div> -->
+            <!-- 
+            <a href='javascript:init()' class='status-box btn btn-close' id='startButton'>
+                <div class='outer'>
+                    <div>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                </div>
+
+            </a> -->
+            <a href='javascript:init()' class="btn-primary center" id='startButton'></a>
+        </div>
+        <!-- <div id='idle'></div> -->
+
+    </div>
+</body>
+<script src="./js/game.js"></script>
+<script src="./js/progressbar.min.js"></script>
+
+<!-- <script src="/socket.io/socket.io.js"></script> -->
+
+<script>
+    // var socket = io.connect()
+    // socket.on('game', function (msg) {
+    //     if (msg.toString() === 'stop') {
+    //         window.location.href = `./idle`
+    //     }
+    // })
+
+    const poseName = "reaction_music_game"
+    const MODE = 'TOUCH'
+    const player = parseQueryString(window.location.search).player
+
+    var stats = new Stats();
+    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild(stats.dom);
+
+    var game = new Game(poseName, player);
+    var bar = new ProgressBar.Circle(counter, {
+        color: 'rgb(22, 4, 124)',
+        trailColor: 'transparent',
+        trailWidth: 1,
+        // easing: 'bounce',
+        strokeWidth: 6,
+        from: { color: 'rgb(22, 4, 124)', a: 0 },
+        to: { color: 'rgb(22, 4, 124)', a: 1 },
+        // Set default step function for all animate calls
+        step: function (state, circle) {
+            circle.path.setAttribute('stroke', state.color);
+        },
+
+    });
+
+
+
+</script>
+
+</html>

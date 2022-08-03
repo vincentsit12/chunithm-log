@@ -1,0 +1,382 @@
+:root {
+  /* variables */
+  --default-width: 1920;
+  --default-height: 1080;
+  --ratio: calc(100vmax / 1920);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* cursor: none!important; */
+}
+
+html {
+  /* 10px in 1920 x 1080 */
+  font-size: calc(var(--ratio) * 10);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  color: rgb(255, 106, 19);
+}
+
+body {
+  max-height: 100vh;
+  max-width: 100vw;
+  overflow: hidden;
+  font-size: 5rem;
+  word-break: break-all;
+}
+
+.wrapper {
+  width: 100%;
+  height: 100%;
+  background: url('../img/led.jpg') no-repeat;
+  background-size: cover;
+}
+
+.container {
+  /* background-color: black; */
+  width: 100%;
+  height: 100%;
+  /* text-align: center; */
+  position: relative;
+}
+
+video, canvas {
+  display: block;
+  /* background-color: skyblue; */
+}
+
+ul, li {
+  list-style: none;
+}
+
+
+#pose-logo {
+  position: absolute;
+  height: 95%;
+  width: 100%;
+  z-index: 20;
+  object-fit: contain;
+  opacity: .2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  font-weight: 400;
+}
+
+a.btn {
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  vertical-align: middle;
+  text-align: center;
+  box-shadow: 0px 0px 1.5rem .3rem rgba(255, 150, 0, 0.33);
+}
+
+a.btn-primary {
+  font-weight: bold;
+  width: 42.5rem;
+  border-radius: 10rem;
+  height: 12.5rem;
+  letter-spacing: 1.6rem;
+  background: url('../img/button-backgroud.png') no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  padding-left: 1.6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  /* background-color: rgb(0, 45, 114); */
+}
+
+a.btn:active {
+  opacity: .8;
+}
+
+/* ------------  idle page  -----------------*/
+
+img {
+  display: block;
+}
+
+.header {
+  padding: 7rem 0;
+}
+
+.header img {
+  width: 46rem;
+  height: 23rem;
+  object-fit: contain;
+  margin: 0 auto;
+  margin-bottom: 3rem;
+}
+
+.header h3 {
+  color: gray;
+}
+
+#hkstp-logo {
+  height: 13.5rem;
+  width: 60rem;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+#hkstp-logo2 {
+  height: 8.5rem;
+  width: 36rem;
+  object-fit: contain;
+  margin: 0 auto;
+  position: absolute;
+  top: 7rem;
+  left: 8rem;
+}
+
+.mb150 {
+  margin-bottom: 15rem;
+}
+
+.mb16 {
+  margin-bottom: 1.6rem;
+}
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input::placeholder {
+  color: rgb(233, 90, 23);
+  font-weight: bold;
+}
+
+input {
+  color: rgb(233, 90, 23);
+  letter-spacing: 1.6rem;
+  appearance: none;
+  padding: .75rem;
+  font-size: inherit;
+  cursor: pointer;
+  margin: 0 auto;
+  outline: 0;
+  background-color: transparent;
+  border: none;
+  border-bottom: .6rem solid black;
+  text-align: center;
+  box-shadow: none;
+  display: block;
+  width: 80rem;
+  -webkit-box-shadow: none;
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.font20 {
+  color: black;
+  font-size: 2rem;
+}
+
+/* ------------  game page  -----------------*/
+
+.status-box {
+  border-radius: 12rem;
+  z-index: 999;
+  padding: 1rem;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* background-color: rgb(22, 4, 124); */
+}
+
+.status-box .outer {
+  padding: .3rem;
+  width: 100%;
+  height: 100%;
+  border-radius: 12rem;
+  border: .2rem solid rgb(233, 90, 23);
+  background-color: white
+}
+
+.status-box .outer>div {
+  padding: .3rem;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12rem;
+  display: flex;
+  letter-spacing: normal;
+  justify-content: center;
+  align-items: center;
+  border: .2rem solid rgb(233, 90, 23);
+  background-color: rgb(22, 4, 124);
+}
+
+#counter {
+  display: none;
+  width: 60rem;
+  height: 60rem;
+  z-index: 9999;
+}
+
+#info {
+  display: none;
+  font-size: 30rem;
+}
+
+#keyboard {
+  display: none;
+  width: 80%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  color: black;
+  position: absolute;
+  bottom: -100%;
+  transition: bottom .3s ease-in-out;
+}
+
+#keyboard.active {
+  bottom: 0 !important;
+}
+
+.status-box#score {
+  position: absolute;
+  top: 6.4rem;
+  left: 6.4rem;
+}
+
+.status-box#timer {
+  position: absolute;
+  top: 6.4rem;
+  right: 26rem;
+}
+
+/* ------------ result page -----------------*/
+
+table {
+  width: 100%;
+  margin: 0 auto;
+  font-size: 3rem;
+  border-collapse: collapse;
+  text-align: left;
+  letter-spacing: normal;
+}
+
+#ranking td {
+  vertical-align: baseline;
+  padding: 4rem 0 1.6rem 0;
+  border-bottom: .1rem solid white;
+}
+
+#ranking td:nth-child(1) {}
+
+#ranking :nth-child(1) span {
+  line-height: 1;
+  font-size: 4.8rem;
+  vertical-align: bottom;
+  font-weight: 900;
+}
+
+#ranking :nth-child(2) {
+  max-width: 60%;
+}
+
+.inner {
+  font-weight: bold;
+  display: inline-block;
+  width: 125rem;
+  height: 60rem;
+  border-radius: 2rem;
+  background-color: rgb(0, 45, 114);
+  margin: 0 auto;
+  column-count: 2;
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  padding: 1rem 4.8rem 4.8rem;
+  -webkit-column-fill: balance;
+  -moz-column-fill: balance;
+  column-fill: balance;
+}
+
+a.btn-close {
+  z-index: 999;
+  padding: .8rem;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 9rem;
+  background-color: rgb(0, 45, 114);
+  position: absolute;
+  top: 7rem;
+  right: 8rem;
+}
+
+a.btn-close .outer {
+  padding: .2rem;
+}
+
+a.btn-close .outer>div {
+  padding: 1rem;
+}
+
+a.btn-close .outer span {
+  width: 75%;
+  height: .75rem;
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  background-color: rgb(233, 90, 23);
+}
+
+a.btn-close span:first-child {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+a.btn-close span:last-child {
+  transform: translate(-50%, -50%) rotate(135deg);
+}
+
+/* ------------------------------------------*/
+
+.flexbox {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.flexbox .btn {
+  min-width: 30vw;
+  margin: 3vw;
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.tc {
+  text-align: center;
+}
+
+* {
+  font-family: sans-serif;
+  box-sizing: border-box;
+}
