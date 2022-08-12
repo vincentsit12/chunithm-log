@@ -15,14 +15,25 @@ import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/c
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
+import { useMemo } from 'react'
+import { useRouter } from 'next/router'
 
 type Props = {
   ratingList: Rating[];
-  average: number
+  // average: number
 };
 
 
-const Home: NextPage<Props> = ({ ratingList, average }) => {
+const Home: NextPage<Props> = ({ ratingList }) => {
+  const router = useRouter()
+  const sortedRatingList = useMemo(() => {
+    return _.orderBy(ratingList, ['rating'], ['desc'])
+
+  }, [ratingList])
+  const average = useMemo(() => {
+    return _.take(sortedRatingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
+
+  }, [sortedRatingList])
   const renderRatingColor = (d: string) => {
     switch (d) {
       case 'master':
@@ -33,12 +44,15 @@ const Home: NextPage<Props> = ({ ratingList, average }) => {
         break;
     }
   }
-  const renderTableRow = () => {
+  const _renderTableRow = () => {
 
-    return _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => {
-      return <tr key={i} >
+    return _.map(sortedRatingList, (k, i) => {
+      return <tr key={i} className='cursor-pointer hover:opacity-75 active:opacity-75' onClick={() => {
+        router.push(k.song)
+      }}>
         <td>{i + 1}</td>
         <td>{k.song}</td>
+        <td>{k.internalRate}</td>
         <td>{k.score}</td>
         <td className='txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
       </tr>
@@ -48,37 +62,37 @@ const Home: NextPage<Props> = ({ ratingList, average }) => {
   const { data: session, status } = useSession()
   return (
     <LayoutWrapper>
-      <div className='inner inner-720 ' >
-        <div className='flex box box-shadow' style={{ height: '48px' }}>
+      <div className='inner inner-720 tc' >
+        <div className='flex box box-shadow mb10' >
           <div id='script' >
             <p> {generateScript(session?.user.id!)}</p>
           </div>
           <CopyToClipboard text={generateScript(session?.user.id!)}>
-            <button className='btn btn-secondary icon grid-center'><MdOutlineContentCopy></MdOutlineContentCopy></button>
+            <button className='btn btn-secondary icon grid-center'>
+              <MdOutlineContentCopy></MdOutlineContentCopy></button>
           </CopyToClipboard>
         </div>
-      </div>
-      <div className='inner inner-540 tc '>
+
         <div className='font-20 mb20'>{`Top 30 Average : ${toFixedTrunc(average, 2)}`}</div>
         <div id='rating-table' className='box box-shadow mb20'>
           {ratingList.length > 0 ?
             <table >
               <tbody>
-                {renderTableRow()}
+                {_renderTableRow()}
               </tbody>
             </table>
             : <div className='inner-p20 w-full h-full text-left'>
               <p className='mb10'>
                 {`
-                1. Save the following script into a browser bookmark:
-              `}
+                  1. Save the following script into a browser bookmark:
+                `}
               </p>
               <p className='mb10'>
                 {`2. Open this page (required login) https://chunithm-net-eng.com/mobile/home/ or https://chunithm-net-eng.com/mobile/record/musicGenre/master`}
               </p>
               <p className='mb10'>
                 {`
-                3. click the bookmark`
+                  3. click the bookmark`
                 }
               </p>
             </div>}
@@ -92,6 +106,10 @@ const Home: NextPage<Props> = ({ ratingList, average }) => {
 export default Home
 
 export async function getServerSideProps(context: NextPageContext) {
+  context.res?.setHeader(
+    'Cache-Control',
+    'public, s-maxage=1, stale-while-revalidate=59'
+  )
   try {
     let session = await getSession(context)
     let data: any = (await Users.findOne({ where: { id: session?.user.id }, include: { model: Records, include: [{ model: Songs }] } }))
@@ -99,14 +117,14 @@ export async function getServerSideProps(context: NextPageContext) {
     const ratingList = _.map(data.records, function (o) {
       let song: Song = JSON.parse(o.song[o.difficulty])
       let rating = calculateSingleSongRating(song?.rate, o.score)
-      let result: Rating = { song: o.song.display_name, combo: song?.combo, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+      let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
       return result
     });
-    let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
+    // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {
       props: {
         ratingList,
-        average
+        // average
       },
     }
   }

@@ -65,7 +65,7 @@ GAME_MUSIC.load()
 startButton.style.display = 'none';
 GAME_MUSIC.oncanplaythrough = () => {
     // if (MODE === 'TOUCH')
-    startButton.style.display = 'block';
+    startButton.style.display = 'flex';
 
 }
 const RMG_CENTERLINE_RADIUS = vmin * .4;
