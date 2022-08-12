@@ -41,6 +41,7 @@ margin
 .m10 {
     margin: 10px;
 }
+
 .mr10 {
     margin-right: 10px;
 }
@@ -64,9 +65,11 @@ margin
 .mt10 {
     margin-top: 10px;
 }
+
 .m20 {
     margin: 20px;
 }
+
 .mt20 {
     margin-top: 20px;
 }
@@ -320,7 +323,15 @@ background-color
     background-color: var(--primary-color);
 }
 
-.bg-master { 
+.bg-master {
+    background-color: #8200DC90;
+}
+
+.bg-master-20 {
+    background-color: #8200DC20;
+}
+
+.bg-master-20:active {
     background-color: #8200DC90;
 }
 
@@ -328,9 +339,26 @@ background-color
     background-color: #A00A5090;
 }
 
+.bg-expert-20 {
+    background-color: #A00A5020;
+}
+
+.bg-expert-20:active {
+    background-color: #A00A5090;
+}
+
 .bg-ultima {
     background-color: #8a8a8a90;
 }
+
+.bg-ultima-20 {
+    background-color: #8a8a8a20;
+}
+
+.bg-ultima-20:active {
+    background-color: #8a8a8a90;
+}
+
 /*------------------------------------------------------- 
 text color
 --------------------------------------------------------*/

@@ -25,7 +25,7 @@ async function handler(
   // const token = await getToken({ req, secret: process.env.JWT_SECRET })
   // console.log("🚀 ~ file: hello.ts ~ line 26 ~ token", token)
 
-  let data = await Songs.findOne({ where: { name: 'J2191' } })
+  let data = await Songs.findOne({ where: { display_name: 'J219' } })
   // console.log("🚀 ~ file: hello.ts ~ line 25 ~ data", data)
   if (!data) {
     throw new BadRequestError('no this song')

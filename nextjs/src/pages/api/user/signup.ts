@@ -32,7 +32,7 @@ async function signup(
     //   throw new BadRequestError('user is created')
     // }
 
-  } else {
+} else {
     res.status(StatusCodes.NOT_ACCEPTABLE).json({ message: 'We only support POST' });
   }
 }
