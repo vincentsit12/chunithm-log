@@ -35,7 +35,7 @@ async function handler(
     const ratingList = _.map(data.records, function (o) {
         let song: Song = JSON.parse(o.song[o.difficulty])
         let rating = calculateSingleSongRating(song?.rate, o.score)
-        let result: Rating = { song: o.song.display_name, combo: song?.combo, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+        let result: Rating = { song: o.song.display_name, combo: song?.combo, internalRate : song?.rate, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
         return result
     });
     // console.log("🚀 ~ file: hello.ts ~ line 25 ~ data", data)
