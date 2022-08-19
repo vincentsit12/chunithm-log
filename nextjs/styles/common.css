@@ -3,7 +3,7 @@
 @import "clear.css";
 @import "utils.css";
 /* @import "../css/bootstrap-grid.min.css"; */
-
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&display=swap');
 body,
 html {
   /* min-width: 320px; */
@@ -16,7 +16,6 @@ html {
 }
 
 body {
-  /* font-family: 'DFT', sans-serif; */
   color: #000000;
   line-height: 1.6;
   background-image: linear-gradient(to bottom, #24E1F250, #d9ebee, #24E1F250);
