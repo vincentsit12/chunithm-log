@@ -41,7 +41,6 @@ export default NextAuth({
 
                     // If no error and we have user data, return it
                     if (data) {
-                        // console.log("🚀 ~ file: [...nextAuth].ts ~ line 43 ~ authorize ~ data", data)
                         console.log('authorized')
                         return data
                     }
@@ -50,7 +49,7 @@ export default NextAuth({
 
                 } catch (error) {
                     console.log("🚀 ~ file: [...nextauth].ts ~ line 53 ~ authorize ~ error", error)
-                    
+
                     const err = error as AxiosError
                     let errMsg = err.response?.data as string
                     // return null
@@ -130,7 +129,6 @@ export default NextAuth({
         //     return token
         // },
         async jwt({ token, user, account, profile }) {
-            // console.log("🚀 ~ file: [...nextAuth].ts ~ line 130 ~ jwt ~ token", token)
 
             user && (token.user = user)
             return token

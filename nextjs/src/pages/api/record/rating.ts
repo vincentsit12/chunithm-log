@@ -26,8 +26,7 @@ async function handler(
 
     if (req.method !== 'GET') throw new BadRequestError(`do not accept ${req.method} `)
     const session = await getSession({ req })
-    console.log("🚀 ~ file: rating.ts ~ line 29 ~ token", session
-    )
+   
     if (!session) throw new UnauthenticatedError('please login first')
 
     let data: any = (await Users.findOne({ where: { id: req.body.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
@@ -35,7 +34,10 @@ async function handler(
     const ratingList = _.map(data.records, function (o) {
         let song: Song = JSON.parse(o.song[o.difficulty])
         let rating = calculateSingleSongRating(song?.rate, o.score)
-        let result: Rating = { song: o.song.display_name, combo: song?.combo, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+        let result: Rating = {
+            song: o.song.display_name, combo: song?.combo, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty,
+            internalRate: 0
+        }
         return result
     });
     // console.log("🚀 ~ file: hello.ts ~ line 25 ~ data", data)

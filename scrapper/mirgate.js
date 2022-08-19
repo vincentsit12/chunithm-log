@@ -10,7 +10,7 @@ async function migrate() {
         Users.hasMany(Records, { foreignKey: 'user_id' })
         Records.belongsTo(Users, { foreignKey: 'user_id' })
         Records.belongsTo(Songs, { foreignKey: 'song_id' })
-        await sequelize.sync({})
+        await sequelize.sync({ alter: true })
 
         console.log('migrate finished')
         await sequelize.close()

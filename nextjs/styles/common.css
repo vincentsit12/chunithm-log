@@ -11,25 +11,27 @@ html {
 }
 
 html {
-  font-size: 62.5%;
+  font-size: 16px;
   overflow-x: hidden;
 }
 
 body {
   /* font-family: 'DFT', sans-serif; */
-  font-size: 1.6rem;
   color: #000000;
   line-height: 1.6;
   background-image: linear-gradient(to bottom, #24E1F250, #d9ebee, #24E1F250);
   padding-top: 20px;
   padding-bottom: 20px;
-  font-family: 'Noto Sans JP', 'Arial', sans-serif;
+  font-family: 'Noto Sans JP', 'メイリオ', sans-serif;
 }
 
 @media screen and (max-width: 576px) {
   body {
     word-break: break-all;
-    font-size: 1.2rem;
+  }
+
+  html {
+    font-size: 12px;
   }
 }
 
@@ -846,7 +848,8 @@ button {
   outline: none;
   background-color: rgba(0, 0, 0, .1) !important;
 } */
-.btn:active {
+.btn:active,
+.btn-secondary:active {
   outline: none;
   opacity: 0.8;
 }
@@ -854,7 +857,8 @@ button {
 @media (hover: hover) {
 
   button:hover,
-  .btn:hover {
+  .btn:hover,
+  .btn-secondary:hover {
     outline: none;
     opacity: .8;
   }
@@ -870,7 +874,7 @@ button {
   font-size: inherit;
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
-  padding: 10px;
+  padding: .5rem;
   cursor: pointer;
   border-radius: 10px;
   min-width: 100px
@@ -1162,7 +1166,7 @@ custom
   z-index: 2;
   /* animation: zoomIn .2s ease-out; */
   overflow-y: scroll;
-  padding: 0px 10px 0px 10px;
+  /* padding: 0px 10px 0px 10px; */
   text-align: center;
 }
 

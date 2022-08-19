@@ -1,4 +1,4 @@
-import { Association, DataTypes, Model, Optional } from "sequelize";
+import { Association, DataTypes, InferCreationAttributes, Model, NonAttribute, Optional } from "sequelize";
 import { sequelize } from "..";
 import Records from "./records";
 
@@ -17,9 +17,11 @@ export default class Users extends Model<UserAttributes, UserCreationAttributes>
     declare username: string;
     declare password: string;
     declare isAdmin: boolean;
-    // declare static associations: {
-    //     records: Association<Users, Records>;
-    // };
+    declare static associations: {
+        records: Association<Users, Records>;
+    };
+
+    declare records?: NonAttribute<Records[]>; 
 }
 
 Users.init({

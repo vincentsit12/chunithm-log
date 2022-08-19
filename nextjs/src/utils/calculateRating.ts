@@ -52,6 +52,6 @@ export function reEscape(chars: string) {
     return ascii.replace(/[\n\s'’]/g, '').replace(/[”“]/g, '\"')
 }
 
-export const generateScript = (id: number) => {
-    return `javascript: (function () {window.userID = ${id};  var a = document.createElement('script'); a.src = "https://chuni-log.com/calculateRating.min.js"; document.body.appendChild(a);})();`
+export const generateScript = (id: string) => {
+    return `javascript: (function () {window.userID = "${id}";  var a = document.createElement('script'); a.src = "https://chuni-log.com/calculateRating.min.js"; document.body.appendChild(a);})();`
 }

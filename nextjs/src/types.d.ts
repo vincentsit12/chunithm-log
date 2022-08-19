@@ -2,11 +2,14 @@ export interface Rating {
     song: string,
     rating: number,
     truncatedRating: string,
-    internalRate : number,
+    internalRate: number,
     score: number,
-    difficulty: 'ultima' | 'master' | 'expert',
-    combo : number
+    difficulty: Difficulty
+    combo: number
 }
+
+export type Difficulty = 'ultima' | 'master' | 'expert'
+   
 
 export interface Song {
 

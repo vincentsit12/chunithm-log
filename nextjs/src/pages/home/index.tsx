@@ -17,18 +17,19 @@ import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
 import { useMemo } from 'react'
 import { useRouter } from 'next/router'
+import { hash } from 'bcryptjs'
+var CryptoJS = require("crypto-js");
 
 type Props = {
   ratingList: Rating[];
-  // average: number
+  userId: string
 };
 
 
-const Home: NextPage<Props> = ({ ratingList }) => {
+const Home: NextPage<Props> = ({ ratingList, userId }) => {
   const router = useRouter()
   const sortedRatingList = useMemo(() => {
     return _.orderBy(ratingList, ['rating'], ['desc'])
-
   }, [ratingList])
   const average = useMemo(() => {
     return _.take(sortedRatingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
@@ -47,7 +48,7 @@ const Home: NextPage<Props> = ({ ratingList }) => {
   const _renderTableRow = () => {
 
     return _.map(sortedRatingList, (k, i) => {
-      return <tr key={i} className='cursor-pointer hover:opacity-75 active:opacity-75' onClick={() => {
+      return <tr key={i} className='cursor-pointer hover:bg-gray-300/[.4] active:bg-gray-300/[.4]' onClick={() => {
         router.push(k.song)
       }}>
         <td>{i + 1}</td>
@@ -65,9 +66,9 @@ const Home: NextPage<Props> = ({ ratingList }) => {
       <div className='inner inner-720 tc' >
         <div className='flex box box-shadow mb10' >
           <div id='script' >
-            <p> {generateScript(session?.user.id!)}</p>
+            <p> {generateScript(userId)}</p>
           </div>
-          <CopyToClipboard text={generateScript(session?.user.id!)}>
+          <CopyToClipboard text={generateScript(userId)}>
             <button className='btn btn-secondary icon grid-center'>
               <MdOutlineContentCopy></MdOutlineContentCopy></button>
           </CopyToClipboard>
@@ -112,9 +113,13 @@ export async function getServerSideProps(context: NextPageContext) {
   )
   try {
     let session = await getSession(context)
-    let data: any = (await Users.findOne({ where: { id: session?.user.id }, include: { model: Records, include: [{ model: Songs }] } }))
+    if (!session) throw 'please login'
+    const userId = session.user.id.toString()
 
-    const ratingList = _.map(data.records, function (o) {
+    const encryptUserId = CryptoJS.AES.encrypt(userId, 'chunithm').toString()
+    let data = (await Users.findOne({ where: { id: userId }, include: { model: Records, include: [{ model: Songs }] } }))
+
+    const ratingList = _.map(data?.records, function (o) {
       let song: Song = JSON.parse(o.song[o.difficulty])
       let rating = calculateSingleSongRating(song?.rate, o.score)
       let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
@@ -125,6 +130,7 @@ export async function getServerSideProps(context: NextPageContext) {
       props: {
         ratingList,
         // average
+        userId: encryptUserId
       },
     }
   }

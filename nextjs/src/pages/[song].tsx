@@ -4,7 +4,7 @@ import { Session } from 'next-auth'
 import { getSession, signOut, useSession } from 'next-auth/react'
 import Head from 'next/head'
 import Image from 'next/image'
-import { Rating, Song } from 'types'
+import { Difficulty, Rating, Song } from 'types'
 import { getRatingList } from 'utils/api'
 import _ from 'lodash'
 import Users from 'db/model/users'
@@ -15,47 +15,76 @@ import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/c
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { log } from 'console'
+import Slider from 'rc-slider';
+import { ScoreCalculator } from 'components/ScoreCalculator'
 
 type SongProps = {
     record: Records[] | null
     song: Songs
 };
+
 type DifficultyInfo = {
 
 }
 
 const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
-    const [difficulty, setDifficulty] = useState("master")
-    const _renderTableRow = () => {
+    const [difficulty, setDifficulty] = useState<Difficulty>("master")
 
-    }
+    const songData = useMemo(() => {
+        return (JSON.parse(song[difficulty]) as Song)
+    }, [difficulty])
+
+    const recordData = useMemo(() => {
+        return _.find(record, (k) => k.difficulty === difficulty)
+    }, [difficulty])
+
+    const calculateSSSRankMissCount = useCallback(
+        () => {
+            let toSSS = 1007500 - recordData?.score!
+            let missCount = toSSS / (1007500 / songData.combo)
+            return `${toSSS} (${Math.ceil(missCount)} miss)`
+        },
+        [difficulty]
+    )
+
+    const [calculator, setCalculator] = useState([0, 0, 0, 0])
+
     const { data: session, status } = useSession()
     return (
         <LayoutWrapper>
             <div className='inner inner-540 '>
                 <div className='box box-shadow inner-p20'>
-                    <div className='tc bold mb20'>{song.display_name}</div>
+                    <h4 className='tc bold mb20'>{song.display_name}</h4>
                     <div className='flex justify-center w-full mb20' >
                         <div className="flex justify-between ">
                             {song.master && <button onClick={() => {
                                 setDifficulty("master")
-                            }} className={`btn bg-master${difficulty != "master" ? "-20" : ""} p-4 mx-10 `}>Master</button>}
+                            }} className={`btn bg-master${difficulty != "master" ? "-20" : ""} p-3 mx-10 `}>Master</button>}
                             {song.expert && <button onClick={() => {
                                 setDifficulty("expert")
-                            }} className={`btn bg-expert${difficulty != "expert" ? "-20" : ""} p-4 mx-10 `}>Expert</button>}
+                            }} className={`btn bg-expert${difficulty != "expert" ? "-20" : ""} p-3 mx-10 `}>Expert</button>}
                             {song.ultima && <button onClick={() => {
                                 setDifficulty("ultima")
-                            }} className={`btn bg-ultima${difficulty != "ultima" ? "-20" : ""} p-4 mx-10 `}>Ultima</button>}
+                            }} className={`btn bg-ultima${difficulty != "ultima" ? "-20" : ""} p-3 mx-10 `}>Ultima</button>}
                         </div>
-
                     </div>
                     <div className='tc'>
-                        {/* <div className='font-14'>{`Rate : ${JSON.parse(song[difficulty]).rate}`}</div>
-                        <div className='font-14'>{`Combo :  ${JSON.parse(song[difficulty]).combo}`}</div> */}
-                        {/* {session && <div className='font-14'>{}</div>} */}
+                        <div >{`Rate : ${songData.rate}`}</div>
+                        <div className='mb20'>{`Combo :  ${songData.combo}`}</div>
+                        {session && recordData &&
+                            <div className=''>
+                                <div>
+                                    {`Your score : ${recordData?.score}`}
+                                </div>
+
+                            </div>
+
+                        }
+                        <div className='divide-solid w-full  my-8 bg-slate-300 h-0.5'></div>
+                        <ScoreCalculator score={recordData?.score ?? 1010000} combo={songData.combo} />
                     </div>
                 </div>
             </div>

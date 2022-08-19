@@ -11,7 +11,6 @@ export default function Blank() {
     // const { login } = useUserContext()
     const router = useRouter()
     const { data: session, status } = useSession()
-    console.log("🚀 ~ file: index.tsx ~ line 13 ~ Blank ~ session", status)
 
 
     // const checkValid = () => {
