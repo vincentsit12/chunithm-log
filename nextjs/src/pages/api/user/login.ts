@@ -19,16 +19,16 @@ async function login(
       // let jwtSecret: string | undefined = process.env.JWT_SECRET;
       const result = await compare(req.body.password, user.password)
 
-    
-        if (result) {
-          // const jwt = sign(claims, process.env.JWT_SECRET as string, { expiresIn: '7d' });
-          // const user = await Users.create({ username: req.body.username, password: hash })
-          res.status(200).send(user);
-        }
-        else {
 
-          throw new BadRequestError(`wrong password`)
-        }
+      if (result) {
+        // const jwt = sign(claims, process.env.JWT_SECRET as string, { expiresIn: '7d' });
+        // const user = await Users.create({ username: req.body.username, password: hash })
+        res.status(200).send(user);
+      }
+      else {
+
+        throw new BadRequestError(`wrong password`)
+      }
     }
     else {
       throw new BadRequestError(`no user found`)

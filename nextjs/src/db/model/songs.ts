@@ -1,4 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
+import { Song } from "types";
 import { sequelize } from "..";
 
 
@@ -6,9 +7,9 @@ type SongAttributes = {
     id: number,
     name: string
     display_name: string
-    master?: string,
-    expert?: string,
-    ultima?: string,
+    master?: Song,
+    expert?: Song,
+    ultima?: Song,
     // other attributes...
 };
 type SongCreationAttributes = Optional<SongAttributes, 'id'>;
@@ -16,10 +17,10 @@ type SongCreationAttributes = Optional<SongAttributes, 'id'>;
 export default class Songs extends Model<SongAttributes, SongCreationAttributes> {
     declare id: number;
     declare name: string;
-    declare master: string;
     declare display_name: string;
-    declare expert: string;
-    declare ultima: string;
+    declare master: Song;
+    declare expert: Song;
+    declare ultima: Song;
 }
 
 Songs.init({

@@ -26,8 +26,7 @@ async function handler(
 
     if (req.method !== 'GET') throw new BadRequestError(`do not accept ${req.method} `)
     const session = await getSession({ req })
-    console.log("🚀 ~ file: rating.ts ~ line 29 ~ token", session
-    )
+   
     if (!session) throw new UnauthenticatedError('please login first')
 
     let data: any = (await Users.findOne({ where: { id: req.body.user_id }, include: { model: Records, include: [{ model: Songs }] } }))

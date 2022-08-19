@@ -1,25 +1,29 @@
-import { Association, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { Association, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model, NonAttribute } from "sequelize";
+import { Difficulty } from "types";
 import { sequelize } from "..";
 import Songs from "./songs";
 import Users from "./users";
 
 
 type RecordAttributes = {
-    user_id: Number
-    song_id: Number,
+    user_id: number
+    song_id: number,
     difficulty: string,
-    score: Number,
+    score: number,
     // other attributes...
 };
 
 export default class Records extends Model<InferAttributes<Records>, InferCreationAttributes<Records>> {
     declare user_id: ForeignKey<number>;
     declare song_id: ForeignKey<number>;
-    declare difficulty: string;
-    declare score: Number;
-    // declare static associations: {
-    //     songs: Association<Records, Songs>;
-    // };
+    declare difficulty: Difficulty;
+    declare score: number;
+    declare static associations: {
+        songs: Association<Records, Songs>;
+    };
+
+    declare song: NonAttribute<Songs>;
+
 }
 
 Records.init({

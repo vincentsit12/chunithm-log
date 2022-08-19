@@ -359,6 +359,21 @@ background-color
     background-color: #8a8a8a90;
 }
 
+.bg-critical {
+    color: #f2d218;
+}
+
+.bg-justice {
+    color: #ee9105;
+}
+
+.bg-attack {
+    color: #26ff0f;
+}
+
+.bg-miss {
+    color: #cecece;
+}
 /*------------------------------------------------------- 
 text color
 --------------------------------------------------------*/
@@ -417,6 +432,22 @@ text color
 
 .txt-red {
     color: #ff0000;
+}
+
+.txt-critical {
+    color: #f2d218;
+}
+
+.txt-justice {
+    color: #ee9105;
+}
+
+.txt-attack {
+    color: #26ff0f;
+}
+
+.txt-miss {
+    color: #cecece;
 }
 
 /* line height */

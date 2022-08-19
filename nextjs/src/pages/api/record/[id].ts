@@ -11,7 +11,7 @@ import _ from 'lodash'
 import Records from 'db/model/records'
 import e from 'cors'
 import { reEscape } from 'utils/calculateRating'
-
+import CryptoJS from 'crypto-js'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -31,8 +31,10 @@ async function handler(
 ) {
     await runMiddleware(req, res, cors)
     if (req.method === 'PUT') {
-        const userID = req.query.id as string
-        if (!userID)
+        const encryptUserId = req.query.id as string
+        var bytes = CryptoJS.AES.decrypt(encryptUserId, 'chunithm');
+        var userId = parseInt(bytes.toString(CryptoJS.enc.Utf8))
+        if (!userId)
             throw new BadRequestError('no user provided')
         if (!req.body.data || req.body.data.length <= 0) throw new BadRequestError('no data provided')
         let songs = await Songs.findAll({})
@@ -41,9 +43,10 @@ async function handler(
         });
         const validSongsData = _.filter<RequestBody>(req.body.data, k => songsObj[reEscape(k.name)] !== undefined)
         let response = _.map<RequestBody, any>(validSongsData, ((k) => {
+
             return {
                 // name: k.name,
-                user_id: parseInt(userID),
+                user_id: userId,
                 song_id: songsObj[reEscape(k.name)].id,
                 // rate: songsObj[reEscape(k.name)][k.difficulty],
                 difficulty: k.difficulty,
@@ -51,10 +54,8 @@ async function handler(
             }
         }))
 
-        // console.log("🚀 ~ file: [id].ts ~ line 53 ~ response ~ response", response)
 
-        // res.status(200).send(response)
-        await Records.destroy({ where: { user_id: userID }, force: true })
+        await Records.destroy({ where: { user_id: userId }, force: true })
         await Records.bulkCreate(response)
 
 
