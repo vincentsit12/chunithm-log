@@ -34,7 +34,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
     const [difficulty, setDifficulty] = useState<Difficulty>("master")
 
     const songData = useMemo(() => {
-        return (JSON.parse(song[difficulty]) as Song)
+        return song[difficulty]
     }, [difficulty])
 
     const recordData = useMemo(() => {
@@ -50,7 +50,6 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
         [difficulty]
     )
 
-    const [calculator, setCalculator] = useState([0, 0, 0, 0])
 
     const { data: session, status } = useSession()
     return (
@@ -84,7 +83,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
                         }
                         <div className='divide-solid w-full  my-8 bg-slate-300 h-0.5'></div>
-                        <ScoreCalculator score={recordData?.score ?? 1010000} combo={songData.combo} />
+                        <ScoreCalculator score={recordData?.score ?? 1010000} combo={songData.combo} haveScore={recordData?.score !== undefined} />
                     </div>
                 </div>
             </div>

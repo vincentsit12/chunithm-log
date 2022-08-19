@@ -9,7 +9,8 @@ import { isNumber } from 'lodash';
 
 type Props = {
     score: number,
-    combo: number
+    combo: number,
+    haveScore: boolean
 }
 
 const renderColor = (key: string) => {
@@ -65,10 +66,13 @@ const SdSlider = ({ value, max, onChange, label }: { value: number, max: number,
     </div>
 }
 
-export const ScoreCalculator: React.FC<Props> = ({ score, combo }) => {
+export const ScoreCalculator: React.FC<Props> = ({ score, combo, haveScore }) => {
     const { data: session, status } = useSession()
     const [baseScore, setBaseScore] = useState(1010000)
     const [scoreDetails, setScoreDetails] = useState<number[]>([combo, 0, 0, 0])
+    useEffect(() => {
+        setScoreDetails([combo, 0, 0, 0])
+    }, [combo])
     const adjustScoreDetails = (scoreDetails: number[], value: number, index: number) => {
         let temp = [...scoreDetails]
 
@@ -153,7 +157,7 @@ export const ScoreCalculator: React.FC<Props> = ({ score, combo }) => {
         <div className=''>
             <h5 className='mb-5'>Score calculator</h5>
             <div className='flex items-center justify-center mb-5'>
-                {session && <span onClick={() => {
+                {session && haveScore && <span onClick={() => {
                     // setBaseScore(baseScore)
                     generateScoreDetailByScore(score)
                 }} className='m-2 btn-secondary cursor-pointer rounded-xl p-2'>Your Score</span>}

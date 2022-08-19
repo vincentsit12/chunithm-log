@@ -6,7 +6,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { Rating, Song } from 'types'
 import { getRatingList } from 'utils/api'
-import _ from 'lodash'
+import _, { isString } from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
 import Songs from 'db/model/songs'
@@ -120,7 +120,8 @@ export async function getServerSideProps(context: NextPageContext) {
     let data = (await Users.findOne({ where: { id: userId }, include: { model: Records, include: [{ model: Songs }] } }))
 
     const ratingList = _.map(data?.records, function (o) {
-      let song: Song = JSON.parse(o.song[o.difficulty])
+      
+      let song: Song = o.song[o.difficulty]
       let rating = calculateSingleSongRating(song?.rate, o.score)
       let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
       return result
@@ -138,7 +139,8 @@ export async function getServerSideProps(context: NextPageContext) {
     console.log(e)
     return {
       props: {
-        ratingList: [] as Rating[]
+        ratingList: [] as Rating[],
+        
       },
     }
   }
