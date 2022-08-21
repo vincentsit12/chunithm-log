@@ -1,8 +1,8 @@
 (function () {
     const difficultyList = ['ultima', 'master', 'expert']
     let scoreList = []
-    const hostUrl = 'https://chuni-log.com'
-
+    // const hostUrl = 'https://chuni-log.com'
+    const hostUrl = 'http://localhost:3000'
     async function getScoreList(difficulty, songs) {
         const url = 'https://chunithm-net-eng.com/mobile/record/musicGenre/' + difficulty
         return fetch(url, { credentials: 'include' })
@@ -47,7 +47,7 @@
 
             }).catch(e => {
                 console.log('calculateRating', e)
-                alert('fail')
+                alert('fail, please try again on the musicGenre/' + difficulty + ' page')
             });
     }
 

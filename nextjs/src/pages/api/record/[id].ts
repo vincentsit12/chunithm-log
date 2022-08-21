@@ -31,7 +31,7 @@ async function handler(
 ) {
     await runMiddleware(req, res, cors)
     if (req.method === 'PUT') {
-        const encryptUserId = req.query.id as string
+        const encryptUserId = (req.query.id as string).replace(/p1L2u3S/g, '+').replace(/s1L2a3S4h/g, '/').replace(/e1Q2u3A4l/g, '=');
         var bytes = CryptoJS.AES.decrypt(encryptUserId, 'chunithm');
         var userId = parseInt(bytes.toString(CryptoJS.enc.Utf8))
         if (!userId)

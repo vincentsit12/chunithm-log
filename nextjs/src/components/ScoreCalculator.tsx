@@ -40,11 +40,15 @@ const SdSlider = ({ value, max, onChange, label }: { value: number, max: number,
                     onChange={(v) => onChange(v)} />
             </div>
 
-            <input onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()} onChange={(v) => {
-                if (v.target.value === '') {
+            <input onKeyPress={(e) => !/[0-9%]/.test(e.key) && e.preventDefault()} onChange={(v) => {
+                console.log("🚀 ~ file: ScoreCalculator.tsx ~ line 45 ~ <inputonKeyPress={ ~ v", v.target.value)
+                if (v.target.value.endsWith("%")) {
+                    onChange(Math.trunc(parseInt(v.target.value) * max * 0.01))
+                }
+                else if (v.target.value === '') {
                     onChange('')
                 }
-                if (!isNaN(parseInt(v.target.value))) {
+                else if (!isNaN(parseInt(v.target.value))) {
                     onChange(v.target.value)
                 }
             }} className='w-1/6 tc mx-4' value={value}></input>
@@ -123,8 +127,7 @@ export const ScoreCalculator: React.FC<Props> = ({ score, combo, haveScore }) =>
         return (temp)
     }
     const calculateTotalScore = () => {
-        const unit = 1010000 / combo
-        return Math.trunc(scoreDetails[0] * unit + scoreDetails[1] * unit * .99 + scoreDetails[2] * unit * .5)
+        return Math.trunc((scoreDetails[0] * 1.01 + scoreDetails[1] + scoreDetails[2] * .5) / combo * 1000000)
     }
 
     const generateScoreDetailByScore = (score: number) => {
@@ -156,6 +159,9 @@ export const ScoreCalculator: React.FC<Props> = ({ score, combo, haveScore }) =>
     return (
         <div className=''>
             <h5 className='mb-5'>Score calculator</h5>
+            <div></div>
+            <div></div>
+            <div></div>
             <div className='flex items-center justify-center mb-5'>
                 {session && haveScore && <span onClick={() => {
                     // setBaseScore(baseScore)

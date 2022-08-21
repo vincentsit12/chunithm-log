@@ -116,11 +116,12 @@ export async function getServerSideProps(context: NextPageContext) {
     if (!session) throw 'please login'
     const userId = session.user.id.toString()
 
-    const encryptUserId = CryptoJS.AES.encrypt(userId, 'chunithm').toString()
+    const encryptUserId = CryptoJS.AES.encrypt(userId, 'chunithm').toString().replace(/\+/g,'p1L2u3S').replace(/\//g,'s1L2a3S4h').replace(/=/g,'e1Q2u3A4l');
+
     let data = (await Users.findOne({ where: { id: userId }, include: { model: Records, include: [{ model: Songs }] } }))
 
     const ratingList = _.map(data?.records, function (o) {
-      
+
       let song: Song = o.song[o.difficulty]
       let rating = calculateSingleSongRating(song?.rate, o.score)
       let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
@@ -140,7 +141,7 @@ export async function getServerSideProps(context: NextPageContext) {
     return {
       props: {
         ratingList: [] as Rating[],
-        
+
       },
     }
   }
