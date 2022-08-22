@@ -4,7 +4,7 @@ import { Session } from 'next-auth'
 import { getSession, signOut, useSession } from 'next-auth/react'
 import Head from 'next/head'
 import Image from 'next/image'
-import { Rating, Song } from 'types'
+import { Rating } from 'types'
 import { getRatingList } from 'utils/api'
 import _, { isString } from 'lodash'
 import Users from 'db/model/users'
@@ -18,28 +18,24 @@ import classNames from 'classnames'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { hash } from 'bcryptjs'
-import Link from 'next/link'
 var CryptoJS = require("crypto-js");
 
 type Props = {
-  ratingList: Rating[];
-  userId: string
+  songList: Songs[];
 };
 
 
-const Home: NextPage<Props> = ({ ratingList, userId }) => {
+const SongPage: NextPage<Props> = ({ songList }) => {
   const [searchText, setSearchText] = useState('')
   const router = useRouter()
 
   const sortedRatingList = useMemo(() => {
     if (searchText)
-      return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
-    else return (_.orderBy(ratingList, ['rating'], ['desc']))
-  }, [searchText, ratingList])
+      return _.filter(_.orderBy(songList, ['id'], ['asc']), k => k.display_name.toUpperCase().includes(searchText.toUpperCase()))
+    else return (_.orderBy(songList, ['id'], ['asc']))
+  }, [searchText])
 
-  const average = useMemo(() => {
-    return _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
-  }, [ratingList])
+
 
   const renderRatingColor = (d: string) => {
     switch (d) {
@@ -55,52 +51,49 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
 
     return _.map(sortedRatingList, (k, i) => {
       return <tr key={i} className='cursor-pointer hover:bg-gray-300/[.4] active:bg-gray-300/[.4]' onClick={() => {
-        router.push(k.song)
+        router.push(k.display_name)
       }}>
-        <td>{i + 1}</td>
-        <td>{k.song}</td>
-        <td>{k.internalRate}</td>
-        <td>{k.score}</td>
-        <td className='txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
+        <td className='w-10'>{k.id}</td>
+        <td>{k.display_name}</td>
+        <td className='w-20'>{k.ultima?.rate ?? '-'}</td>
+        <td className='w-20'>{k.master?.rate ?? '-'}</td>
+        <td className='w-20'>{k.expert?.rate ?? '-'}</td>
       </tr>
     })
   }
 
+  const { data: session, status } = useSession()
   return (
     <LayoutWrapper>
-
       <div className='inner inner-720 tc' >
-        <div className='flex box box-shadow mb20' >
-          <div id='script' >
-            <p> {generateScript(userId)}</p>
-          </div>
-          <CopyToClipboard text={generateScript(userId)}>
-            <button className='btn btn-secondary icon grid-center'>
-              <MdOutlineContentCopy></MdOutlineContentCopy></button>
-          </CopyToClipboard>
-        </div>
 
-        <div className='mb20 flex items-center'>
-          <div className='font-20 flex-1'>{`Top 30 Average : ${toFixedTrunc(average, 2)}`}
-          </div>
-          {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
-        </div>
+
         <div className='inner inner-720'  >
           <input value={searchText} onChange={(e) => {
             setSearchText(e.target.value)
           }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title'></input>
         </div>
         <div id='rating-table' className='box box-shadow mb20'>
-          {ratingList.length > 0 ?
+          {songList.length > 0 ?
             <table >
+              <thead>
+                <tr >
+                  <th >id</th>
+                  <th >Name</th>
+                  <th >Ultima</th>
+                  <th >Master</th>
+                  <th >Expert</th>
+                </tr>
+              </thead>
               <tbody>
+
                 {_renderTableRow()}
               </tbody>
             </table>
             : <div className='inner-p20 w-full h-full text-left'>
               <p className='mb10'>
                 {`
-                  1. Save the following script into a browser bookmark:
+                  1. Save the above script into a browser bookmark:
                 `}
               </p>
               <p className='mb10'>
@@ -108,7 +101,7 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
               </p>
               <p className='mb10'>
                 {`
-                  3. click the bookmark`
+                  3. click the bookmark and wait for redirecting to this page again`
                 }
               </p>
             </div>}
@@ -119,7 +112,7 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
   )
 }
 
-export default Home
+export default SongPage
 
 export async function getServerSideProps(context: NextPageContext) {
   // context.res?.setHeader(
@@ -127,26 +120,15 @@ export async function getServerSideProps(context: NextPageContext) {
   //   'public, s-maxage=1, stale-while-revalidate=59'
   // )
   try {
-    let session = await getSession(context)
-    if (!session) throw 'please login'
-    const userId = session.user.id
 
-    const encryptUserId = CryptoJS.AES.encrypt(userId.toString(), 'chunithm').toString().replace(/\+/g, 'p1L2u3S').replace(/\//g, 's1L2a3S4h').replace(/=/g, 'e1Q2u3A4l');
+    let data = await Songs.findAll()
 
-    let data = (await Users.findOne({ where: { id: userId }, include: { model: Records, include: [{ model: Songs }] } }))
-
-    const ratingList = _.map(data?.records, function (o) {
-      let song: Song = o.song[o.difficulty]
-      let rating = calculateSingleSongRating(song?.rate, o.score)
-      let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
-      return result
-    });
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {
       props: {
-        ratingList,
+        songList: JSON.parse(JSON.stringify(data)),
         // average
-        userId: encryptUserId
+        // userId: encryptUserId
       },
     }
   }
@@ -154,7 +136,7 @@ export async function getServerSideProps(context: NextPageContext) {
     console.log(e)
     return {
       props: {
-        ratingList: [] as Rating[],
+        songList: [],
 
       },
     }

@@ -11,10 +11,10 @@ const LayoutWrapper: React.FC<Props> = ({ children }) => {
     return (
         <div id='container'>
             <div className='mb20 tc'>
-                <div className='cursor-pointer'>
-                    <Link href={'/'}>
+                <div className=''>
+                    <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/record/musicGenre/master' : '/'}>
                         <a>
-                            <Image src={'/logo2.png'} height={200} width={400} ></Image>
+                            <Image alt='chunithm' src={'/logo2.png'} height={200} width={400} ></Image>
                         </a>
                     </Link>
                 </div>

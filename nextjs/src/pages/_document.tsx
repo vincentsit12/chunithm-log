@@ -6,9 +6,10 @@ class MyDocument extends Document {
     render() {
         return (
             <Html>
-                <title>Chunithm Log</title>
+                <title>Chuni-Log</title>
 
                 <Head>
+                    <meta name='description' content="chunithm international ver score viewer"></meta>
                     <link rel="icon" href="logo.png" />
                     <link rel="preconnect" href="https://fonts.googleapis.com" />
                     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin='' />

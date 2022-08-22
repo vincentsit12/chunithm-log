@@ -1,3 +1,4 @@
+import LoadingView from 'components/LoadingView';
 import e from 'cors';
 import { signIn, SignInResponse, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -27,13 +28,13 @@ export default function Blank() {
             router.replace('/login')
 
         // else router.replace('/login')
-    }, [status])
+    }, [status, router])
 
 
 
     return (
 
         <div id="container">
-
+            {/* <LoadingView /> */}
         </div>)
 }
