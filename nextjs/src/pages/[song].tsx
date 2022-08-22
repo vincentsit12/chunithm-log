@@ -35,11 +35,11 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
     const songData = useMemo(() => {
         return song[difficulty]
-    }, [difficulty])
+    }, [difficulty, song])
 
     const recordData = useMemo(() => {
         return _.find(record, (k) => k.difficulty === difficulty)
-    }, [difficulty])
+    }, [difficulty, song])
 
     const calculateSSSRankMissCount = useCallback(
         () => {
@@ -47,7 +47,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
             let missCount = toSSS / (1007500 / songData.combo)
             return `${toSSS} (${Math.ceil(missCount)} miss)`
         },
-        [difficulty]
+        [difficulty, song]
     )
 
 
@@ -105,9 +105,12 @@ export async function getServerSideProps(context: NextPageContext) {
 
     let session = await getSession(context)
     let song = await Songs.findOne({ where: { display_name: songName } })
+    if (!song) return {
+        notFound: true,
+    }
     let record: Records[] | null = null
 
-    if (song && session) {
+    if (session) {
         record = await Records.findAll({ where: { song_id: song.id, user_id: session.user.id } })
     }
 

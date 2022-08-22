@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react"
 
 import type { AppProps } from 'next/app'
 import Head from "next/head"
+import Header from "components/Header"
 
 export default function App({
   Component,
@@ -12,8 +13,9 @@ export default function App({
 }: AppProps) {
   return (
     <SessionProvider session={session}>
-      <Head><title>Chunithm Log</title></Head>
-        <Component {...pageProps} />
+      <Head><title>Chuni-Log</title></Head>
+      <Header />
+      <Component {...pageProps} />
     </SessionProvider>
 
   )
