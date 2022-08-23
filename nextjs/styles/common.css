@@ -1,9 +1,6 @@
-/* minisite */
-
 @import "clear.css";
 @import "utils.css";
 /* @import "../css/bootstrap-grid.min.css"; */
-
 body,
 html {
   /* min-width: 320px; */
@@ -23,7 +20,7 @@ body {
   padding-top: 60px;
   padding-bottom: 20px;
   min-width: 320px;
-  font-family: 'Noto Sans JP', 'メイリオ', sans-serif;
+  font-family: 'M PLUS 1', sans-serif;
 }
 
 @media screen and (max-width: 576px) {
@@ -74,13 +71,6 @@ placeholder
   }
 }
 
-/*------------------------------------------------------- 
-analysis page
---------------------------------------------------------*/
-
-.chart-label {
-  white-space: pre-line;
-}
 
 /*------------------------------------------------------- 
 event log  page
@@ -121,219 +111,13 @@ event log  page
   background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.2) 100%);
 }
 
-/*------------------------------------------------------- 
-event log  page
---------------------------------------------------------*/
-
-#logtable tr {
-  border: 1px solid #BCBCBC;
-}
-
-/*------------------------------------------------------- 
-task page
---------------------------------------------------------*/
-
-.task-status {
-  text-align: center;
-  background-color: white;
-  display: table;
-  width: 100%;
-}
-
-.task-status-ttl img {
-  width: 100px;
-}
-
-.task-status-ttl::after {
-  content: "";
-  position: absolute;
-  border-right: 1px solid #ccc;
-  height: 100%;
-  right: 0px;
-  top: 0px
-}
-
-.task-status-desciption {}
-
-.task-status-ttl,
-.task-status-desciption {
-  text-align: center;
-  display: table-cell;
-  vertical-align: middle;
-  position: relative;
-  width: 50%;
-}
-
-@media screen and (max-width: 576px) {
-
-  .task-status-ttl,
-  .task-status-desciption {
-    display: block;
-    width: auto;
-  }
-
-  .task-status-ttl::after {
-    display: none;
-  }
-}
-
-.task-history .col img {
-  width: 50px;
-}
-
-@media screen and (max-width: 576px) {
-  .task-history .col:nth-child(1) {
-    margin-bottom: 10px;
-  }
-}
-
-#record-table {
-  font-size: 12px;
-  text-align: left;
-  width: 100%;
-}
-
-@media screen and (min-width: 768px) {
-  .table-container {
-    width: 720px;
-  }
-}
-
-#record-table th {
-  padding: 3px;
-  font-weight: bold;
-}
-
-#record-table tbody tr {
-  border-top: 1px solid #BCBCBC;
-}
-
-#record-table td {
-  padding: 5px
-}
-
-/*------------------------------------------------------- 
-api page
---------------------------------------------------------*/
-
-.api-box {
-  word-break: initial;
-  /* height: 0; */
-  /* transform : scaleY(0);
-  transform-origin: top; */
-  /* padding : 20px; */
-  border: 1px solid #003f6c;
-  transition: all .3s;
-  font-size: 12px;
-}
-
-.api-box.get {
-  background-color: #AED6F1;
-}
-
-.api-box.post {
-  background-color: #F9E79F;
-}
-
-.api-header {
-  /* transform : scaleY(1); */
-  display: flex;
-  border-bottom: 1px solid #003f6c;
-}
-
-.api-tag {
-  color: #fff;
-  width: 50px;
-  padding: 5px;
-  text-align: center;
-}
-
-.api-box.get .api-tag {
-  background-color: #21618C;
-}
-
-.api-box.post .api-tag {
-  background-color: #D68910;
-}
-
-.api-box.get h5 {
-  font-size: 14px;
-  color: #21618C;
-  font-weight: bold;
-}
-
-.api-box.post h5 {
-  font-size: 14px;
-  color: #D68910;
-  font-weight: bold;
-}
-
-.api-box-st1 {
-  color: #7D7D7D;
-  border-right: 1px solid #ccc;
-  padding: 5px 5px 5px 0px;
-}
-
-.api-box-st2 {
-  padding: 5px;
-}
-
-.api-responsetype-select {}
-
-.api-response-example {
-  width: 100%;
-  height: 200px;
-  background-color: beige;
-  resize: vertical;
-  overflow: auto;
-}
-
-.api-table-container {
-  width: 100%;
-  overflow-x: scroll;
-  padding-bottom: 20px;
-}
-
-#api-table {
-  border: none;
-  min-width: 500px;
-}
-
-#api-table td {
-  padding: 3px 3px 10px 3px;
-}
-
-#api-table th {
-  color: #7D7D7D;
-  padding: 3px;
-  font-weight: 400;
-  border-bottom: 1px solid #BCBCBC;
-}
-
-.api-parameter-name {
-  width: 90px;
-}
-
-.api-parameter-value {
-  width: 200px;
-}
-
-.api-parameter-value>input {
-  width: 90%;
-  vertical-align: text-top;
-  font-size: inherit;
-}
-
-.api-parameter-description {
-  max-width: 100px;
-}
 
 /*------------------------------------------------------- 
 header
 --------------------------------------------------------*/
 
 #header {
-  background-color: #f2d218;
+  background-color: #f5e06d;
   min-height: 3.125rem;
   position: fixed;
   width: 100%;
@@ -502,7 +286,7 @@ header
   padding: .5rem;
   width: 100%;
   color: #fff;
-  background-color: #ee9105;
+  background-color: #eab058;
   border-bottom: 1px solid #b9e9ff;
 }
 

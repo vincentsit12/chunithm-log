@@ -26,6 +26,7 @@ type Props = {
 
 
 const SongPage: NextPage<Props> = ({ songList }) => {
+  console.log("🚀 ~ file: song.tsx ~ line 29 ~ songList", songList)
   const [searchText, setSearchText] = useState('')
   const router = useRouter()
 
@@ -33,7 +34,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
     if (searchText)
       return _.filter(_.orderBy(songList, ['id'], ['asc']), k => k.display_name.toUpperCase().includes(searchText.toUpperCase()))
     else return (_.orderBy(songList, ['id'], ['asc']))
-  }, [searchText])
+  }, [searchText, songList])
 
 
 
@@ -121,7 +122,7 @@ export async function getServerSideProps(context: NextPageContext) {
   // )
   try {
 
-    let data = await Songs.findAll()
+    let data = await Songs.findAll({attributes : {exclude : ['user_id']}})
 
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {

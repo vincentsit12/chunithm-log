@@ -5,6 +5,7 @@ import Users from 'db/model/users';
 import { sign } from 'jsonwebtoken';
 import { BadRequestError } from 'errors/BadRequestError';
 import withErrorHandler from 'utils/errorHandler';
+import { encrypt } from 'utils/encrypt';
 
 
 async function login(
@@ -23,7 +24,10 @@ async function login(
       if (result) {
         // const jwt = sign(claims, process.env.JWT_SECRET as string, { expiresIn: '7d' });
         // const user = await Users.create({ username: req.body.username, password: hash })
-        res.status(200).send(user);
+        res.status(200).send({
+          id: encrypt(user.id.toString()),
+          username: user.username
+        });
       }
       else {
 

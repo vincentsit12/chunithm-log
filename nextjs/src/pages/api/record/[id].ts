@@ -12,6 +12,7 @@ import Records from 'db/model/records'
 import e from 'cors'
 import { reEscape } from 'utils/calculateRating'
 import CryptoJS from 'crypto-js'
+import { decrypt } from 'utils/encrypt'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -31,9 +32,8 @@ async function handler(
 ) {
     await runMiddleware(req, res, cors)
     if (req.method === 'PUT') {
-        const encryptUserId = (req.query.id as string).replace(/p1L2u3S/g, '+').replace(/s1L2a3S4h/g, '/').replace(/e1Q2u3A4l/g, '=');
-        var bytes = CryptoJS.AES.decrypt(encryptUserId, 'chunithm');
-        var userId = parseInt(bytes.toString(CryptoJS.enc.Utf8))
+        const userId = parseInt(decrypt(req.query.id as string))
+  
         if (!userId)
             throw new BadRequestError('no user provided')
         if (!req.body.data || req.body.data.length <= 0) throw new BadRequestError('no data provided')

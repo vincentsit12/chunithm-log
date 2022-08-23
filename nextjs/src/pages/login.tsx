@@ -32,13 +32,14 @@ export default function Login() {
         const { password, username } = values
         setLoading(true)
         signIn('credentials', { redirect: false, username, password }).then((result: any) => {
+            console.log("🚀 ~ file: login.tsx ~ line 55 ~ signIn ~ result", result)
             if (result?.error) {
                 throw result.error
             }
 
             const query: Query = router.query
 
-            router.replace(query.callbackUrl || "/home")
+            router.replace("/home")
 
 
         }).catch(e => {

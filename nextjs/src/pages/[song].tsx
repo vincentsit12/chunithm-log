@@ -19,6 +19,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { log } from 'console'
 import Slider from 'rc-slider';
 import { ScoreCalculator } from 'components/ScoreCalculator'
+import { decrypt } from 'utils/encrypt'
 
 type SongProps = {
     record: Records[] | null
@@ -30,25 +31,24 @@ type DifficultyInfo = {
 }
 
 const SongPage: NextPage<SongProps> = ({ record, song }) => {
+    console.log("🚀 ~ file: [song].tsx ~ line 34 ~ record", record)
 
     const [difficulty, setDifficulty] = useState<Difficulty>("master")
 
-    const songData = useMemo(() => {
-        return song[difficulty]
-    }, [difficulty, song])
+    const songData = song[difficulty]
 
     const recordData = useMemo(() => {
         return _.find(record, (k) => k.difficulty === difficulty)
-    }, [difficulty, song])
+    }, [difficulty, record])
 
-    const calculateSSSRankMissCount = useCallback(
-        () => {
-            let toSSS = 1007500 - recordData?.score!
-            let missCount = toSSS / (1007500 / songData.combo)
-            return `${toSSS} (${Math.ceil(missCount)} miss)`
-        },
-        [difficulty, song]
-    )
+    // const calculateSSSRankMissCount = useCallback(
+    //     () => {
+    //         let toSSS = 1007500 - recordData?.score!
+    //         let missCount = toSSS / (1007500 / songData.combo)
+    //         return `${toSSS} (${Math.ceil(missCount)} miss)`
+    //     },
+    //     [difficulty, song]
+    // )
 
 
     const { data: session, status } = useSession()
@@ -111,7 +111,11 @@ export async function getServerSideProps(context: NextPageContext) {
     let record: Records[] | null = null
 
     if (session) {
-        record = await Records.findAll({ where: { song_id: song.id, user_id: session.user.id } })
+        record = await Records.findAll({
+            where: { song_id: song.id, user_id: parseInt(decrypt(session.user.id.toString())) }, attributes: {
+                exclude: ['user_id']
+            }
+        })
     }
 
     // let data: any = (await Users.findOne({where: {id: session?.user.id }, include: {model: Records, include: [{model: Songs }] } }))
