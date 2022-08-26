@@ -4,7 +4,8 @@
 body,
 html {
   /* min-width: 320px; */
-  min-height: 100vh;
+  /* min-height: 100vh; */
+  min-height: 100%;
 }
 
 html {
@@ -17,8 +18,6 @@ body {
   color: #000000;
   line-height: 1.6;
   background-image: linear-gradient(to bottom, #24E1F295, #d9ebee, #24E1F250);
-  padding-top: 60px;
-  padding-bottom: 20px;
   min-width: 320px;
   font-family: 'M PLUS 1', sans-serif;
 }
@@ -318,7 +317,7 @@ container
 
 #container {
   position: relative;
-  margin: 0px auto;
+  margin: 3.125rem auto;
 }
 
 @media screen and (max-width: 576px) {

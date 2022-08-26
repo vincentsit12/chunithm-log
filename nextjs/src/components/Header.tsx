@@ -22,14 +22,14 @@ const Header = (props: Props) => {
             </div>
             <nav className={classNames('nav-dropmenu', { animation: active })}>
                 <ul>
-                    {session && <li><Link href={'/home'}><a onClick={(e) => {
+                    <li><Link href={session ? '/home' : '/login'}><a onClick={(e) => {
                         setActive(false)
-                    }}>Home</a></Link></li>}
+                    }}>{session ? 'Home' : 'Login'}</a></Link></li>
                     <li><Link href={'/song'}><a onClick={(e) => {
                         setActive(false)
                     }}>Song List</a></Link></li>
-                    <li><Link href={'/home'}><a onClick={(e) => {
-                        e.preventDefault()
+                    <li><Link href={'/playground/maimai-simple'}><a onClick={(e) => {
+                        // e.preventDefault()
                         setActive(false)
                     }}>Playground</a></Link></li>
                     {session && <li><Link href={'/'}><a onClick={(e) => {

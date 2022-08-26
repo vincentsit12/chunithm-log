@@ -16,7 +16,7 @@ async function login(
   if (req.method === 'POST') {
     let user: Users | null = await Users.findOne({ where: { username: req.body.username } })
     if (user) {
-      const claims = { sub: user.username, isAdmin: user.isAdmin };
+      // const claims = { sub: user.username, isAdmin: user.isAdmin };
       // let jwtSecret: string | undefined = process.env.JWT_SECRET;
       const result = await compare(req.body.password, user.password)
 

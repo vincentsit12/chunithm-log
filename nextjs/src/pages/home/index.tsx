@@ -15,7 +15,7 @@ import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/c
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { hash } from 'bcryptjs'
 import Link from 'next/link'
