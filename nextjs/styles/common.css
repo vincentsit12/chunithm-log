@@ -1,5 +1,6 @@
 @import "clear.css";
 @import "utils.css";
+
 /* @import "../css/bootstrap-grid.min.css"; */
 body,
 html {
@@ -11,6 +12,8 @@ html {
 html {
   font-size: 16px;
   overflow-x: hidden;
+  /* -webkit-tap-highlight-color: rgba(0, 0, 0, 0); */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -676,7 +679,7 @@ button {
   font-size: inherit;
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
-  padding: .5rem;
+  padding: .75rem;
   cursor: pointer;
   border-radius: 10px;
   min-width: 100px
