@@ -15,11 +15,11 @@ import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/c
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { hash } from 'bcryptjs'
 import Link from 'next/link'
-var CryptoJS = require("crypto-js");
+import { decrypt } from 'utils/encrypt'
 
 type Props = {
   ratingList: Rating[];
@@ -129,11 +129,11 @@ export async function getServerSideProps(context: NextPageContext) {
   try {
     let session = await getSession(context)
     if (!session) throw 'please login'
-    const userId = session.user.id
+    const encryptUserId = session.user.id.toString()
 
-    const encryptUserId = CryptoJS.AES.encrypt(userId.toString(), 'chunithm').toString().replace(/\+/g, 'p1L2u3S').replace(/\//g, 's1L2a3S4h').replace(/=/g, 'e1Q2u3A4l');
+    const userID = decrypt(encryptUserId)
 
-    let data = (await Users.findOne({ where: { id: userId }, include: { model: Records, include: [{ model: Songs }] } }))
+    let data = (await Users.findOne({ where: { id: parseInt(userID) }, include: { model: Records, include: [{ model: Songs }] } }))
 
     const ratingList = _.map(data?.records, function (o) {
       let song: Song = o.song[o.difficulty]
@@ -155,7 +155,6 @@ export async function getServerSideProps(context: NextPageContext) {
     return {
       props: {
         ratingList: [] as Rating[],
-
       },
     }
   }

@@ -5,6 +5,7 @@ import Users from 'db/model/users';
 import { sign } from 'jsonwebtoken';
 import { BadRequestError } from 'errors/BadRequestError';
 import withErrorHandler from 'utils/errorHandler';
+import { encrypt } from 'utils/encrypt';
 
 
 async function login(
@@ -15,7 +16,7 @@ async function login(
   if (req.method === 'POST') {
     let user: Users | null = await Users.findOne({ where: { username: req.body.username } })
     if (user) {
-      const claims = { sub: user.username, isAdmin: user.isAdmin };
+      // const claims = { sub: user.username, isAdmin: user.isAdmin };
       // let jwtSecret: string | undefined = process.env.JWT_SECRET;
       const result = await compare(req.body.password, user.password)
 
@@ -23,7 +24,10 @@ async function login(
       if (result) {
         // const jwt = sign(claims, process.env.JWT_SECRET as string, { expiresIn: '7d' });
         // const user = await Users.create({ username: req.body.username, password: hash })
-        res.status(200).send(user);
+        res.status(200).send({
+          id: encrypt(user.id.toString()),
+          username: user.username
+        });
       }
       else {
 

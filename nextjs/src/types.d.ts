@@ -9,7 +9,7 @@ export interface Rating {
 }
 
 export type Difficulty = 'ultima' | 'master' | 'expert'
-   
+
 
 export interface Song {
 
@@ -17,3 +17,5 @@ export interface Song {
     combo: number,
 
 }
+
+
