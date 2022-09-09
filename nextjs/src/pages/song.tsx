@@ -6,7 +6,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { Rating } from 'types'
 import { getRatingList } from 'utils/api'
-import _, { isString } from 'lodash'
+import _, { isInteger, isString } from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
 import Songs from 'db/model/songs'
@@ -17,8 +17,6 @@ import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
-import { hash } from 'bcryptjs'
-var CryptoJS = require("crypto-js");
 
 type Props = {
   songList: Songs[];
@@ -26,13 +24,18 @@ type Props = {
 
 
 const SongPage: NextPage<Props> = ({ songList }) => {
-  console.log("🚀 ~ file: song.tsx ~ line 29 ~ songList", songList)
   const [searchText, setSearchText] = useState('')
   const router = useRouter()
 
   const sortedRatingList = useMemo(() => {
     if (searchText)
-      return _.filter(_.orderBy(songList, ['id'], ['asc']), k => k.display_name.toUpperCase().includes(searchText.toUpperCase()))
+      return _.filter(_.orderBy(songList, ['id'], ['asc']), k => {
+        if (parseFloat(searchText) > 0.0) {
+          let searchRate = parseFloat(searchText)
+          return k.display_name.toUpperCase().includes(searchText.toUpperCase()) || (k.master?.rate === searchRate) || (k.expert?.rate === searchRate) || (k.ultima?.rate === searchRate)
+        }
+        else return k.display_name.toUpperCase().includes(searchText.toUpperCase())
+      })
     else return (_.orderBy(songList, ['id'], ['asc']))
   }, [searchText, songList])
 
@@ -72,7 +75,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
         <div className='inner inner-720'  >
           <input value={searchText} onChange={(e) => {
             setSearchText(e.target.value)
-          }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title'></input>
+          }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
         </div>
         <div id='rating-table' className='box box-shadow mb20'>
           {songList.length > 0 ?
@@ -122,7 +125,7 @@ export async function getServerSideProps(context: NextPageContext) {
   // )
   try {
 
-    let data = await Songs.findAll({attributes : {exclude : ['user_id']}})
+    let data = await Songs.findAll({ attributes: { exclude: ['user_id'] } })
 
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {

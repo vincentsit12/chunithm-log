@@ -31,7 +31,6 @@ type DifficultyInfo = {
 }
 
 const SongPage: NextPage<SongProps> = ({ record, song }) => {
-    console.log("🚀 ~ file: [song].tsx ~ line 34 ~ record", record)
 
     const [difficulty, setDifficulty] = useState<Difficulty>("master")
 

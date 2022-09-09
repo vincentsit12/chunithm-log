@@ -1,3 +1,4 @@
+import { log } from "console"
 import { ActionPoint } from "./ActionPoint"
 import { MusicNote } from "./MusicNote"
 
@@ -246,7 +247,7 @@ export class Game {
                 if (k.type === 'hold') {
                     this.timerId.push(setTimeout(() => {
                         //reverse
-                        console.log('reverse: ');
+                        // console.log('reverse: ');
                         k.reached = false
                         k.reversed = true
                         // k.width = k.targetWidth
@@ -295,7 +296,7 @@ export class Game {
                             note.draw(currentX, currentY, note.targetWidth);
                         }
                         else {
-                            console.log('reached');
+                            // console.log('reached');
                             note.reached = true
                             note.width = note.targetWidth
                             note.draw(note.x, note.y, note.targetWidth);
@@ -663,38 +664,8 @@ export class Game {
         this.score = 0;
 
         this.drawId = requestAnimationFrame(this.draw)
-        //keyborad
-        // window.addEventListener('keydown', (e) => {
 
-        //     switch (e.key) {
-        //         case 'e':
-        //             this.checkReactionTime(7)
-        //             break;
-        //         case 'r':
-        //             this.checkReactionTime(8)
-        //             break;
-        //         case 'u':
-        //             this.checkReactionTime(1)
-        //             break;
-        //         case 'i':
-        //             this.checkReactionTime(2)
-        //             break;
-        //         case 'd':
-        //             this.checkReactionTime(6)
-        //             break;
-        //         case 'f':
-        //             this.checkReactionTime(5)
-        //             break;
-        //         case 'j':
-        //             this.checkReactionTime(4)
-        //             break;
-        //         case 'k':
-        //             this.checkReactionTime(3)
-        //             break;
-        //         default:
-        //             break;
-        //     }
-        // }, false);  
+
 
 
         // GAME_MUSIC.onended = () => {
@@ -711,6 +682,53 @@ export class Game {
             alert(e)
         }));
 
+    }
+
+    onKeyboard = (e: KeyboardEvent) => {
+        // keyborad
+        // window.addEventListener('keydown', (e) => {
+        if (!this.isStarted) return
+        let s;
+        switch (e.key) {
+           
+            
+            case 'q':
+                s = this.checkReactionTime(7)
+                this.reactionPoints[6].onTouch(s)
+                break;
+            case 'w':
+                s = this.checkReactionTime(8)
+                this.reactionPoints[7].onTouch(s)
+                break;
+            case 'o':
+                s = this.checkReactionTime(1)
+                this.reactionPoints[0].onTouch(s)
+                break;
+            case 'p':
+                s = this.checkReactionTime(2)
+                this.reactionPoints[1].onTouch(s)
+                break;
+            case 'a':
+                s = this.checkReactionTime(6)
+                this.reactionPoints[5].onTouch(s)
+                break;
+            case 'c':
+                s = this.checkReactionTime(5)
+                this.reactionPoints[4].onTouch(s)
+                break;
+            case 'n':
+                s = this.checkReactionTime(4)
+                this.reactionPoints[3].onTouch(s)
+                break;
+            case 'l':
+                s = this.checkReactionTime(3)
+                this.reactionPoints[2].onTouch(s)
+                break;
+            default:
+                break;
+        }
+        
+        // }, false);
     }
 
     reset = () => {

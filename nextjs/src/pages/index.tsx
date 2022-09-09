@@ -21,7 +21,6 @@ export default function Blank() {
     // }
     useEffect(() => {
 
-        console.log(status)
         if (status === "authenticated") {
             router.replace('/home')
         }

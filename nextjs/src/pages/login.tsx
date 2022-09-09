@@ -32,7 +32,6 @@ export default function Login() {
         const { password, username } = values
         setLoading(true)
         signIn('credentials', { redirect: false, username, password }).then((result: any) => {
-            console.log(result)
             if (result?.error) {
                 throw result.error
             }

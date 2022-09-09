@@ -4,8 +4,8 @@ services:
   db :
     image: postgres
     # environment:
-    #   POSTGRES_PASSWORD: ayaneru0129
-    #   POSTGRES_USER : yaugor
+    #   POSTGRES_PASSWORD: test123
+    #   POSTGRES_USER : test
     ports:
       - '5432:5432'
     volumes:
