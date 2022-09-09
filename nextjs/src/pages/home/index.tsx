@@ -15,11 +15,14 @@ import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/c
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import { hash } from 'bcryptjs'
 import Link from 'next/link'
 import { decrypt } from 'utils/encrypt'
+import Tooltip from 'rc-tooltip'
+import 'rc-tooltip/assets/bootstrap_white.css';
+import { log } from 'console'
 
 type Props = {
   ratingList: Rating[];
@@ -28,9 +31,11 @@ type Props = {
 
 
 const Home: NextPage<Props> = ({ ratingList, userId }) => {
+  const [copied, setCopied] = useState(false)
+  const timer = useRef<NodeJS.Timeout>()
   const [searchText, setSearchText] = useState('')
   const router = useRouter()
-
+  const ref = useRef(null)
   const sortedRatingList = useMemo(() => {
     if (searchText)
       return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
@@ -75,9 +80,29 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
             <p> {generateScript(userId)}</p>
           </div>
           <CopyToClipboard text={generateScript(userId)}>
-            <button className='btn btn-secondary icon grid-center'>
-              <MdOutlineContentCopy></MdOutlineContentCopy></button>
+            <Tooltip onVisibleChange={(visible) => {
+              if (visible) {
+                timer.current = setTimeout(() => {
+                  setCopied(false)
+                }, 3000)
+              }
+            }} visible={copied} overlayClassName={'fadeIn'} showArrow={false} overlayStyle={{ width: '6rem', textAlign: "center", }} placement='top' trigger={['click']} overlay={<span>Copied</span>}>
+              <button onClick={() => {
+                if (copied && timer.current) {
+                  clearTimeout(timer.current)
+                  timer.current = setTimeout(() => {
+                    setCopied(false)
+                  }, 3000)
+                }
+                else setCopied(true)
+              }}
+                className='btn btn-secondary icon grid-center'>
+                <MdOutlineContentCopy></MdOutlineContentCopy></button>
+            </Tooltip>
+
           </CopyToClipboard>
+
+
         </div>
 
         <div className='mb20 flex items-center'>

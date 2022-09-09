@@ -41,7 +41,6 @@ const SdSlider = ({ value, max, onChange, label }: { value: number, max: number,
             </div>
 
             <input onKeyPress={(e) => !/[0-9%]/.test(e.key) && e.preventDefault()} onChange={(v) => {
-                console.log("🚀 ~ file: ScoreCalculator.tsx ~ line 45 ~ <inputonKeyPress={ ~ v", v.target.value)
                 if (v.target.value.endsWith("%")) {
                     onChange(Math.trunc(parseInt(v.target.value) * max * 0.01))
                 }
