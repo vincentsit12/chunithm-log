@@ -1,7 +1,3 @@
-@import "clear.css";
-@import "utils.css";
-
-/* @import "../css/bootstrap-grid.min.css"; */
 body,
 html {
   /* min-width: 320px; */
@@ -1044,4 +1040,8 @@ custom
   #rating-table td {
     padding: 4px
   }
+}
+
+canvas { 
+  user-select: none;
 }

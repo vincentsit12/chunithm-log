@@ -1,4 +1,6 @@
 import "../../styles/globals.css"
+import "../../styles/clear.css"
+import "../../styles/utils.css"
 import "../../styles/common.css"
 
 

@@ -37,7 +37,7 @@ async function createSchedule() {
             // await Songs.destroy({ where: {}, force: true })
             await Songs.bulkCreate(values,
                 {
-                    updateOnDuplicate: ['master', 'expert', 'ultima', 'updatedAt'],
+                    updateOnDuplicate: ['display_name', 'master', 'expert', 'ultima', 'updatedAt'],
                 });
         }
         await updateDB()

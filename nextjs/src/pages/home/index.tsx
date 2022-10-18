@@ -138,7 +138,7 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
               </p>
             </div>}
         </div>
-        <button className="btn btn-secondary" onClick={() => { signOut() }}>Logout</button>
+        {/* <button className="btn btn-secondary" onClick={() => { signOut() }}>Logout</button> */}
       </div>
     </LayoutWrapper >
   )

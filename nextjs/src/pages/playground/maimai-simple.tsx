@@ -57,7 +57,7 @@ const SimpleMaimai = (props: Props) => {
     }
     return (
         <LayoutWrapper>
-            <div className='flex w-full justify-center mb20'>
+            <div className='flex w-full justify-center mb20' >
                 <button onClick={() => {
                     setModalIsOpen(true)
                     // if (game.current?.isStarted) {
@@ -85,11 +85,10 @@ const SimpleMaimai = (props: Props) => {
 
                 }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
                 <Modal
-
                     isOpen={modalIsOpen}
                     // onAfterOpen={afterOpenModal}
                     // onRequestClose={closeModal}
-
+                    ariaHideApp={false}
                     style={{
                         overlay: {
                             backgroundColor: 'rgba(0, 0, 0, 0.75)',
@@ -109,9 +108,9 @@ const SimpleMaimai = (props: Props) => {
                             transform: 'translate(-50%, -50%)',
                         },
                     }}
-                    contentLabel="Example Modal"
+                // contentLabel="Example Modal"
                 >
-                    <div style={{ height: '30rem' }} className='bg-black m-auto mb10' >
+                    <div style={{ height: '30rem' , width : '80vw'}} className='bg-black m-auto mb10' >
                         <canvas
                             onTouchStart={e => game.current?.ontouchstart(e)}
                             onTouchMove={e => game.current?.ontouchmove(e)}

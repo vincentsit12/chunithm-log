@@ -82,7 +82,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
                         }
                         <div className='divide-solid w-full  my-8 bg-slate-300 h-0.5'></div>
-                        <ScoreCalculator score={recordData?.score ?? 1010000} combo={songData.combo} haveScore={recordData?.score !== undefined} />
+                        <ScoreCalculator rate={song[difficulty].rate} score={recordData?.score ?? 1010000} combo={songData.combo} haveScore={recordData?.score !== undefined} />
                     </div>
                 </div>
             </div>

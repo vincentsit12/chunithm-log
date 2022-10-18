@@ -90,7 +90,7 @@ const getRating = async () => {
 
                                     if (!list[key]) {
                                         list[key] = {
-                                            displayName: songName.replace(/[\n'’]/g, ''),
+                                            displayName: songName.replace(/[\n]/g, ''),
                                             [diffculty]: {
                                                 rate: rate,
                                                 combo: parseInt(combo),

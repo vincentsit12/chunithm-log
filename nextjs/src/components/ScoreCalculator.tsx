@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useScoreCalculator } from 'utils/hooks/useScoreCalculator';
@@ -6,8 +6,10 @@ import { usePrevious } from 'utils/hooks/usePrevious';
 import { useSession } from 'next-auth/react';
 import { AiFillPlusCircle, AiFillMinusCircle } from 'react-icons/ai'
 import { isNumber } from 'lodash';
+import { calculateSingleSongRating, toFixedTrunc } from 'utils/calculateRating';
 
 type Props = {
+    rate: number,
     score: number,
     combo: number,
     haveScore: boolean
@@ -69,7 +71,7 @@ const SdSlider = ({ value, max, onChange, label }: { value: number, max: number,
     </div>
 }
 
-export const ScoreCalculator: React.FC<Props> = ({ score, combo, haveScore }) => {
+export const ScoreCalculator: React.FC<Props> = ({ rate, score, combo, haveScore }) => {
     const { data: session, status } = useSession()
     const [baseScore, setBaseScore] = useState(1010000)
     const [scoreDetails, setScoreDetails] = useState<number[]>([combo, 0, 0, 0])
@@ -125,25 +127,38 @@ export const ScoreCalculator: React.FC<Props> = ({ score, combo, haveScore }) =>
         }
         return (temp)
     }
-    const calculateTotalScore = () => {
+
+    const calculateTotalScore = (scoreDetails: number[]) => {
         return Math.trunc((scoreDetails[0] * 1.01 + scoreDetails[1] + scoreDetails[2] * .5) / combo * 1000000)
     }
 
     const generateScoreDetailByScore = (score: number) => {
+        const target = score
         let scoreDetails = [combo, 0, 0, 0]
-        const unit = 1010000 / combo
-        const scoreUnit = [unit * .01, unit * .5, unit]
+        // const scoreUnit = [unit * .01, unit * .5, unit]
 
-        let diff = 1010000 - score
-        for (let i = 2; i >= 0; i--) {
 
-            if (diff >= scoreUnit[i]) {
-                let count = Math.trunc(diff / scoreUnit[i])
-                diff -= count * scoreUnit[i]
-                scoreDetails[i + 1] = count
-                scoreDetails[0] -= count
+        let i = 3;
+        while (i > 0 || score <= target) {
+            scoreDetails[0] = scoreDetails[0] - 1
+            scoreDetails[i] = scoreDetails[i] + 1
+            let predictedScroe = calculateTotalScore(scoreDetails)
+            console.log(predictedScroe);
+
+            if (predictedScroe > target) {
+                score = predictedScroe
+            }
+            else if (predictedScroe === target) {
+                i--
+            }
+            else {
+                scoreDetails[0] = scoreDetails[0] + 1
+                scoreDetails[i] = scoreDetails[i] - 1
+                i--
             }
         }
+
+
         setScoreDetails(scoreDetails)
     }
 
@@ -181,7 +196,11 @@ export const ScoreCalculator: React.FC<Props> = ({ score, combo, haveScore }) =>
 
 
             </div>
-            <div>{`Score : ${calculateTotalScore()}`}</div>
+            <div className='flex justify-center space-x-5'>
+                <div>{`Score : ${calculateTotalScore(scoreDetails)}`}</div>
+                <div>{`Rate : ${toFixedTrunc(calculateSingleSongRating(rate, calculateTotalScore(scoreDetails)),2)}`}</div>
+            </div>
+
             <div className='w-full '>
                 <SdSlider value={scoreDetails[0]} max={combo} onChange={(v) => { onChange(v as number, 0) }} label='CRITICAL JUSTICE' />
                 <SdSlider value={scoreDetails[1]} max={combo} onChange={(v) => { onChange(v as number, 1) }} label='JUSTICE' />
