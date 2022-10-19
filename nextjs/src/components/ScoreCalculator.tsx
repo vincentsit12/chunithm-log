@@ -143,7 +143,6 @@ export const ScoreCalculator: React.FC<Props> = ({ rate, score, combo, haveScore
             scoreDetails[0] = scoreDetails[0] - 1
             scoreDetails[i] = scoreDetails[i] + 1
             let predictedScroe = calculateTotalScore(scoreDetails)
-            console.log(predictedScroe);
 
             if (predictedScroe > target) {
                 score = predictedScroe

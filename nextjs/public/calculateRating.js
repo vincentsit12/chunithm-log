@@ -1,8 +1,28 @@
-(function () {
+(async function () {
     const difficultyList = ['ultima', 'master', 'expert']
     let scoreList = []
-    // const hostUrl = 'https://chuni-log.com'
-    const hostUrl = 'http://localhost:3000'
+    let isLoading = false
+    const hostUrl = 'https://chuni-log.com'
+    // const hostUrl = 'http://localhost:3000'
+    function showLoadingView() {
+        isLoading = true
+        let x = $(".sleep_penguin img").clone().appendTo("body")
+        x.css({ "position": "absolute", "top": "200px", "z-index": "200" })
+        randomMove(x)
+    }
+    function randomMove(x) {
+        x.animate({
+            left: Math.random() * window.innerWidth + "px",
+            top: Math.random() * window.innerHeight + "px",
+        }, 1000, function () {
+            // Animation complete.
+            if (isLoading)
+                randomMove(x)
+            else {
+                x.remove()
+            }
+        });
+    }
     async function getScoreList(difficulty, songs) {
         const url = 'https://chunithm-net-eng.com/mobile/record/musicGenre/' + difficulty
         return fetch(url, { credentials: 'include' })
@@ -46,6 +66,7 @@
 
 
             }).catch(e => {
+                isLoading = false
                 console.log('calculateRating', e)
                 alert('fail, please try again on the musicGenre/' + difficulty + ' page')
             });
@@ -53,12 +74,6 @@
 
 
     async function init() {
-
-        // fetch("https://chuni-log.com/api/songs", {
-        //     method: "GET",
-        //     headers: { "Content-Type": "application/json" },
-        // }).then(r => r.json()).then(async r => {
-        //     const songs = r
         for (let i = 0; i < difficultyList.length; i++) {
             await getScoreList(difficultyList[i])
         }
@@ -71,15 +86,14 @@
         })
             .then((r) => r.text()).then(r => {
                 window.open(hostUrl)
-            }).catch(e => alert(e))
-
-        // }).catch(e => {
-        //     alert(e)
-        // })
-
+            }).catch(e => {
+                isLoading = false
+                alert(e)
+            })
     }
     if (userID) {
-        init()
+        showLoadingView()
+        await init()
     }
     else {
         alert("Invalid!")

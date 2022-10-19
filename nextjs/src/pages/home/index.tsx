@@ -42,8 +42,10 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
     else return (_.orderBy(ratingList, ['rating'], ['desc']))
   }, [searchText, ratingList])
 
-  const average = useMemo(() => {
-    return _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
+  const [average, max] = useMemo(() => {
+    const top30 = _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30)
+    const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
+    return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40]
   }, [ratingList])
 
   const renderRatingColor = (d: string) => {
@@ -105,8 +107,14 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
 
         </div>
 
-        <div className='mb20 flex items-center'>
-          <div className='font-20 flex-1'>{`Top 30 Average : ${toFixedTrunc(average, 2)}`}
+        <div className='mb20  items-center'>
+          <div className="space-x-5">
+            <span >
+              {`Top 30 Average : ${toFixedTrunc(average, 2)}`}
+            </span>
+            <span>
+              {`Max : ${toFixedTrunc(max, 2)}`}
+            </span>
           </div>
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>

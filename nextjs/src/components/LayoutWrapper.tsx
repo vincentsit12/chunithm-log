@@ -12,7 +12,7 @@ const LayoutWrapper: React.FC<Props> = ({ children }) => {
         <div id='container'>
             <div className='mb20 tc'>
                 <div className=''>
-                    <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/record/musicGenre/master' : '/'}>
+                    <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/record/musicGenre/master' : '/home'}>
                         <a>
                             <Image alt='chunithm' src={'/logo2.png'} height={200} width={400} ></Image>
                         </a>

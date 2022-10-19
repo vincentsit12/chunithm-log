@@ -110,7 +110,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
               </p>
             </div>}
         </div>
-        <button className="btn btn-secondary" onClick={() => { signOut() }}>Logout</button>
+
       </div>
     </LayoutWrapper >
   )

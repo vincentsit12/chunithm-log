@@ -14,7 +14,6 @@ async function createSchedule() {
 
             let values = _.toPairs(ratingList).map((k) => {
                 // if (k[0].includes('\)'))
-                // console.log(123)
                 return {
                     name: k[0],
                     display_name: k[1].displayName,

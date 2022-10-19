@@ -123,7 +123,7 @@ header
   -webkit-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
   -moz-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
   box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
-  z-index: 9999;
+  z-index: 100;
 }
 
 .header-logo {
@@ -873,6 +873,56 @@ img {
 /*------------------------------------------------------- 
 animation
 --------------------------------------------------------*/
+.bouncing {
+  animation: bouncing ease-in-out 1s infinite;
+}
+
+.delay-1 {
+  animation-delay: .1s;
+}
+
+.delay-2 {
+  animation-delay: .2s;
+}
+
+.delay-3 {
+  animation-delay: .3s;
+}
+
+.delay-4 {
+  animation-delay: .4s;
+}
+
+.delay-5 {
+  animation-delay: .5s;
+}
+
+.delay-6 {
+  animation-delay: .6s;
+}
+
+.delay-7 {
+  animation-delay: .7s;
+}
+
+.delay-8 {
+  animation-delay: .8s;
+}
+
+.delay-9 {
+  animation-delay: .85s;
+}
+
+@keyframes bouncing {
+  50% {
+    transform: translateY(-60%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
 
 .gachaing {
   animation: gacha linear 1s infinite
@@ -960,14 +1010,9 @@ custom
 }
 
 #rating-table {
-
-  /* max-width: 500px; */
   height: 800px;
-  /* font-size: 0.8rem; */
   z-index: 2;
-  /* animation: zoomIn .2s ease-out; */
   overflow-y: scroll;
-  /* padding: 0px 10px 0px 10px; */
   text-align: center;
   position: relative;
 
@@ -988,7 +1033,7 @@ custom
   }
 
   #rating-table td:nth-child(2) {
-    width: 180px;
+    width: 160px;
   }
 }
 
@@ -1009,29 +1054,19 @@ custom
 
 }
 
-#rating-table::-webkit-scrollbar {
-  /* background-color: transparent; */
-  width: 0px;
+@media screen and (min-width: 576px) {
+  #rating-table::-webkit-scrollbar {
+    background-color: transparent;
+    width: .4rem;
+  }
 
-}
-
-/*
-#rating-table::-webkit-scrollbar-thumb
-{
+  #rating-table::-webkit-scrollbar-thumb {
     background-color: #A8B3AE;
+    /* border-radius: 6px; */
     border-radius: 6px;
+  }
 }
-#rating-table::-webkit-scrollbar-track
-{
-    background-color: transparent;
-    border-radius: 6px;
 
-}
-#rating-table::-webkit-scrollbar-corner
-{
-    background-color: transparent;
-
-} */
 #rating-table td {
   padding: 8px;
 }
@@ -1042,6 +1077,7 @@ custom
   }
 }
 
-canvas { 
+
+canvas {
   user-select: none;
 }
