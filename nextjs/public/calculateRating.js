@@ -87,8 +87,9 @@
             .then((r) => r.text()).then(r => {
                 window.open(hostUrl)
             }).catch(e => {
-                isLoading = false
                 alert(e)
+            }).finally(()=> {
+                isLoading = false
             })
     }
     if (userID) {

@@ -20,7 +20,6 @@ export default function Blank() {
         else if (status === "unauthenticated")
             router.replace('/login')
 
-        else router.replace('/login')
     }, [status, router])
 
 
