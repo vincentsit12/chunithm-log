@@ -37,7 +37,7 @@ export default function Login() {
             }
             // const query: Query = router.query
             // console.log("🚀 ~ file: login.tsx ~ line 42 ~ signIn ~ query.callbackUrl", query.callbackUrl)
-            router.replace("/home")
+            window.location.replace("/home")
 
         }).catch(e => {
 

@@ -26,7 +26,7 @@ export default function App({
     Router.events.on("routeChangeComplete", (url) => {
       NProgress.done(false)
     });
-  }, [Router])
+  }, [])
   return (
     <SessionProvider session={session}>
       <Head><title>Chuni-Log</title></Head>
