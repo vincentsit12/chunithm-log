@@ -23,6 +23,25 @@
             }
         });
     }
+    // function loadHTML() {
+    //     var xmlhttp = new XMLHttpRequest();
+
+    //     xmlhttp.withCredentials = true;
+    //     xmlhttp.open("GET", 'https://chunithm-net-eng.com/mobile/record/musicGenre/master', true);
+    //     xmlhttp.onreadystatechange = function () {
+    //         if (xmlhttp.readyState == 4 /* complete */) {
+    //                     handler(xmlhttp.responseText);
+    //               }
+    //     };
+    //     xmlhttp.send();
+    //     }
+
+
+    //     function handler(responseText) {
+    //     var doc = new DOMParser().parseFromString(responseText, 'text/html');
+    //     console.log(doc)
+    //     }
+    //     loadHTML()
     async function getScoreList(difficulty, songs) {
         const url = 'https://chunithm-net-eng.com/mobile/record/musicGenre/' + difficulty
         return fetch(url, { credentials: 'include' })
@@ -88,7 +107,7 @@
                 window.open(hostUrl)
             }).catch(e => {
                 alert(e)
-            }).finally(()=> {
+            }).finally(() => {
                 isLoading = false
             })
     }
