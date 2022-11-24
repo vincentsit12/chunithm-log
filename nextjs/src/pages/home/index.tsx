@@ -45,6 +45,7 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
   const [average, max] = useMemo(() => {
     const top30 = _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
+    if (top30.length < 1) return [0 ,0]
     return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40]
   }, [ratingList])
 

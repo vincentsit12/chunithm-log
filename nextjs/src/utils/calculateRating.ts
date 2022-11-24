@@ -1,7 +1,7 @@
 export function calculateSingleSongRating(rate: number, score: number): number {
     const n = 0.00000001
     if (!rate || !score) return 0
-    if (score >= 1009000) return rate + 2.15
+    if (score >= 1009000) return rate + 2.15 + n
     if (score >= 1007500) return rate + 2 + (score - 1007500) / 10000 + n
     if (score >= 1005000) return (score - 1005000) / 2500 * 0.5 + 1.5 + rate + n
     if (score >= 1000000) return (score - 1000000) / 5000 * 0.5 + 1 + rate + n
@@ -53,5 +53,5 @@ export function reEscape(chars: string) {
 }
 
 export const generateScript = (id: string) => {
-    return `javascript: (function () {window.userID = "${id}";  var a = document.createElement('script'); a.src = "https://chuni-log.com/calculateRating.min.js"; document.body.appendChild(a);})();`
+    return `javascript: (function () {var a = document.createElement('script'); a.src = "https://chuni-log.com/calculateRating.min.js"; window.userID = "${id}"; document.body.appendChild(a);})();`
 }
