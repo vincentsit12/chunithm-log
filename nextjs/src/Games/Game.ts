@@ -344,7 +344,7 @@ export class Game {
                     if (deltaTime >= 1) { // note means we ended our animation
                         if (note.reached) {
                             if (!note.hit)
-                                this.reactionPoints[i].showJudgement('MISS', `rgba(115, 115, 115  ,%`)
+                                this.reactionPoints[i].showJudgement('MISS', `rgba(115, 115, 115, %`)
 
                             // note.draw(note.x, note.y, false)
 
@@ -624,9 +624,9 @@ export class Game {
     ontouchmove = (e: React.TouchEvent<HTMLCanvasElement>) => {
         if (!this.isStarted) return
         const clientRect = this.canvasElement.getBoundingClientRect()
-        for (let j = 0; j < e.targetTouches.length; j++) {
+        for (let j = 0; j < e.changedTouches.length; j++) {
             this.reactionPoints.forEach((k, i) => {
-                if ((k.isCollide({ x: (e.targetTouches[j].clientX - clientRect.left) / this.canvas.width, y: (e.targetTouches[j].clientY - clientRect.top) / this.canvas.height }))) {
+                if ((k.isCollide({ x: (e.changedTouches[j].clientX - clientRect.left) / this.canvas.width, y: (e.changedTouches[j].clientY - clientRect.top) / this.canvas.height }))) {
                     let c = this.checkReactionTime(i + 1)
                     k.onTouch(c)
                 }
@@ -648,7 +648,6 @@ export class Game {
                 }
             });
         }
-
     }
     kill = () => {
         this.reactionPoints = this.reactionPoints.filter((k, i) => k.alpha > 0)
@@ -690,8 +689,8 @@ export class Game {
         if (!this.isStarted) return
         let s;
         switch (e.key) {
-           
-            
+
+
             case 'q':
                 s = this.checkReactionTime(7)
                 this.reactionPoints[6].onTouch(s)
@@ -727,7 +726,7 @@ export class Game {
             default:
                 break;
         }
-        
+
         // }, false);
     }
 

@@ -29,24 +29,20 @@ const SongPage: NextPage<Props> = ({ songList }) => {
 
   const sortedRatingList = useMemo(() => {
     if (searchText)
-      return _.filter(_.orderBy(songList, ['id'], ['asc']), k => {
+      return _.filter(_.orderBy(songList, ['master.rate'], ['desc']), k => {
         if (parseFloat(searchText) > 0.0) {
           let searchRate = parseFloat(searchText)
           return k.display_name.toUpperCase().includes(searchText.toUpperCase()) || (k.master?.rate === searchRate) || (k.expert?.rate === searchRate) || (k.ultima?.rate === searchRate)
         }
         else return k.display_name.toUpperCase().includes(searchText.toUpperCase())
       })
-    else return (_.orderBy(songList, ['id'], ['asc']))
+    else return (_.orderBy(songList, ['master.rate'], ['desc']))
   }, [searchText, songList])
-
-
 
   const renderRatingColor = (d: string) => {
     switch (d) {
       case 'master':
         return 'bg-master'
-        break;
-
       default:
         break;
     }
@@ -54,10 +50,12 @@ const SongPage: NextPage<Props> = ({ songList }) => {
   const _renderTableRow = () => {
 
     return _.map(sortedRatingList, (k, i) => {
+      if (isString(k.master) || isString(k.expert) || isString(k.ultima))
+        console.log("🚀 ~ file: song.tsx ~ line 55 ~ return_.map ~ k", k)
       return <tr key={i} className='cursor-pointer hover:bg-gray-300/[.4] active:bg-gray-300/[.4]' onClick={() => {
         router.push(k.display_name)
       }}>
-        <td className='w-10'>{k.id}</td>
+        {/* <td className='w-10'>{k.id}</td> */}
         <td>{k.display_name}</td>
         <td className='w-20'>{k.ultima?.rate ?? '-'}</td>
         <td className='w-20'>{k.master?.rate ?? '-'}</td>
@@ -78,12 +76,12 @@ const SongPage: NextPage<Props> = ({ songList }) => {
           }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
         </div>
         <div id='rating-table' className='box box-shadow mb20'>
-          {songList.length > 0 ?
+          {songList.length > 0 &&
             <table >
               <thead>
                 <tr >
-                  <th >id</th>
-                  <th >Name</th>
+                  {/* <th >id</th> */}
+                  <th className='song'>Name</th>
                   <th >Ultima</th>
                   <th >Master</th>
                   <th >Expert</th>
@@ -94,21 +92,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
                 {_renderTableRow()}
               </tbody>
             </table>
-            : <div className='inner-p20 w-full h-full text-left'>
-              <p className='mb10'>
-                {`
-                  1. Save the above script into a browser bookmark:
-                `}
-              </p>
-              <p className='mb10'>
-                {`2. Open this page (required login) https://chunithm-net-eng.com/mobile/home/ or https://chunithm-net-eng.com/mobile/record/musicGenre/master`}
-              </p>
-              <p className='mb10'>
-                {`
-                  3. click the bookmark and wait for redirecting to this page again`
-                }
-              </p>
-            </div>}
+          }
         </div>
 
       </div>
@@ -126,6 +110,8 @@ export async function getServerSideProps(context: NextPageContext) {
   try {
 
     let data = await Songs.findAll({ attributes: { exclude: ['user_id'] } })
+    // let x = await sequelize.query(`delete from songs WHERE not master::jsonb ? 'rate'`)
+    // console.log("🚀 ~ file: song.tsx ~ line 116 ~ getServerSideProps ~ data", x)
 
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {

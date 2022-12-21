@@ -36,16 +36,27 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
   const [searchText, setSearchText] = useState('')
   const router = useRouter()
   const ref = useRef(null)
+  // const sortedRatingList = useMemo(() => {
+  //   if (searchText)
+  //     return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
+  //   else return (_.orderBy(ratingList, ['rating'], ['desc']))
+  // }, [searchText, ratingList])
   const sortedRatingList = useMemo(() => {
     if (searchText)
-      return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
+      return _.filter(_.orderBy(ratingList, ['master.rate'], ['desc']), k => {
+        if (parseFloat(searchText) > 0.0) {
+          let searchRate = parseFloat(searchText)
+          return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
+        }
+        else return k.song.toUpperCase().includes(searchText.toUpperCase())
+      })
     else return (_.orderBy(ratingList, ['rating'], ['desc']))
   }, [searchText, ratingList])
 
   const [average, max] = useMemo(() => {
     const top30 = _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
-    if (top30.length < 1) return [0 ,0]
+    if (top30.length < 1) return [0, 0]
     return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40]
   }, [ratingList])
 
@@ -62,15 +73,15 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
   const _renderTableRow = () => {
 
     return _.map(sortedRatingList, (k, i) => {
-      return <tr key={i} className='cursor-pointer hover:bg-gray-300/[.4] active:bg-gray-300/[.4]' onClick={() => {
+      return <tr key={i} className={classNames('cursor-pointer', 'hover:bg-gray-300/[.4]', 'active:bg-gray-300/[.4]', { 'border-b': i === 29 && !searchText, 'border-b-red-700': i === 29 && !searchText })} onClick={() => {
         router.push(k.song)
       }}>
-        <td>{i + 1}</td>
-        <td>{k.song}</td>
+        <td>{k.order ?? '-'}</td>
+        <td className='song'>{k.song}</td>
         <td>{k.internalRate}</td>
         <td>{k.score}</td>
         <td className='txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
-      </tr>
+      </tr >
     })
   }
 
@@ -122,7 +133,7 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
         <div className='inner inner-720'  >
           <input value={searchText} onChange={(e) => {
             setSearchText(e.target.value)
-          }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title'></input>
+          }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
         </div>
         <div id='rating-table' className='box box-shadow mb20'>
           {ratingList.length > 0 ?
@@ -162,7 +173,12 @@ export async function getServerSideProps(context: NextPageContext) {
   // )
   try {
     let session = await getSession(context)
-    if (!session) throw 'please login'
+    if (!session) return {
+      redirect: {
+        permanent: false,
+        destination: '/login',
+      }
+    }
     const encryptUserId = session.user.id.toString()
 
     const userID = decrypt(encryptUserId)
@@ -178,7 +194,7 @@ export async function getServerSideProps(context: NextPageContext) {
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {
       props: {
-        ratingList,
+        ratingList: _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
         // average
         userId: encryptUserId
       },

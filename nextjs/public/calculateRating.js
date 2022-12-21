@@ -12,8 +12,8 @@
     }
     function randomMove(x) {
         x.animate({
-            left: Math.random() * window.innerWidth + "px",
-            top: Math.random() * window.innerHeight + "px",
+            left: (Math.random() * (window.innerWidth - 60)) + "px",
+            top: Math.random() * (window.innerHeight - 88) + "px",
         }, 1000, function () {
             // Animation complete.
             if (isLoading)

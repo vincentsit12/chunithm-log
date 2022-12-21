@@ -12,13 +12,16 @@ import Header from "components/Header"
 import { Router } from "next/router"
 import NProgress from 'nprogress'
 import { useEffect } from "react"
-NProgress.configure({showSpinner: false});
+import { Session } from "next-auth"
+NProgress.configure({ showSpinner: false });
 
 
 export default function App({
   Component,
   pageProps: { session, ...pageProps },
-}: AppProps) {
+}: AppProps<{
+  session: Session;
+}>) {
   useEffect(() => {
     Router.events.on("routeChangeStart", (url) => {
       NProgress.start()

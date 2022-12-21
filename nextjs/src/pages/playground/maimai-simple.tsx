@@ -1,14 +1,27 @@
 import LayoutWrapper from 'components/LayoutWrapper'
 import { Game } from 'Games/Game'
 import { isArray } from 'lodash'
+import Head from 'next/head';
 import React, { useEffect, useRef, useState } from 'react'
 import Modal from 'react-modal';
 
 type Props = {}
 const defaultTimeLine = '["3", "2", "1", "0", "3", "4", "0", "6"], ["5", "0", "7", "8", "0", "2", "3", "4"], ["6", "7", "8", "0", "6", "5", "0", "3"], ["4", "7", "82", "1", "7", "82", "3", "4"], ["3", "2", "1", "0", "3", "4", "0", "6"], ["5", "0", "7", "8", "0", "2", "3", "4"], ["6", "7", "8", "0", "61", "5", "0", "38"], ["4", "7", "82", "18", "7", "82", "37", "48"], ["18", "0", "7", "0", "2", "0", "8", "1", "0", "1", "8", "0", "2", "0", "8", "0"], ["3", "0", "7", "0", "4", "0", "6", "3", "0", "3", "6", "0", "4", "0", "6", "0"], ["3", "0", "4", "0", "3", "0", "6", "3", "0", "3", "7", "0", "2", "0", "8", "0"], ["1", "0", "6", "0", "3", "0", "6", "2", "0", "2", "6", "0", "4", "0", "6", "0"], ["3", "0", "6", "0", "2", "0", "8", "1", "8", "1", "8", "0", "3", "0", "1", "0"], ["4", "0", "6", "0", "3", "0", "5", "2", "0", "2", "6", "0", "1", "0", "7", "0"], ["2", "0", "6", "0", "8", "0", "6", "1", "6", "1", "6", "0", "5", "0", "3", "0"], ["4", "0", "3", "0", "6", "0", "2", "5", "0", "5", "1", "0", "7", "8", "1", "2"], ["8", "0", "7", "0", "2", "0", "6", "1", "0", "1", "5", "0", "8", "0", "4", "0"], ["1", "0", "6", "0", "2", "0", "5", "1", "6", "1", "5", "0", "1", "5", "1", "7"], ["18", "0", "6", "0", "3", "0", "6", "2", "0", "2", "7", "0", "8", "0", "6", "0"], ["1", "0", "5", "0", "2", "0", "5", "3", "4", "3", "5", "0", "4", "5", "6", "7"], ["68", "0", "2", "0", "8", "0", "2", "7", "0", "7", "3", "0", "6", "0", "4", "0"], ["6", "0", "2", "0", "7", "0", "1", "8", "2", "7", "3", "0", "5", "4", "6", "4"], ["53", "0", "7", "0", "2", "0", "6", "8", "0", "8", "5", "0", "2", "0", "8", "0"], ["3", "0", "6", "0", "4", "0", "5", "4", "6", "3", "7", "0", "2", "3", "4", "5"], ["67", "0", "5", "0", "7", "0", "6", "5", "6", "5", "6", "0", "5", "0", "3", "0"], ["1", "0", "3", "0", "5", "0", "4", "6", "4", "6", "4", "0", "3", "5", "3", "5"], ["36", "0", "7", "0", "1", "0", "6", "5", "6", "5", "6", "0", "5", "0", "7", "0"], ["4", "0", "1", "0", "3", "0", "4", "5", "4", "5", "4", "0", "7", "8", "1", "2"], ["13", "0", "5", "0", "7", "0", "6", "5", "6", "5", "4", "0", "5", "0", "3", "0"], ["1", "0", "3", "0", "5", "0", "6", "5", "6", "5", "4", "0", "3", "5", "3", "5"], ["36", "0", "7", "0", "1", "0", "6", "5", "6", "5", "4", "0", "5", "0", "7", "0"], ["4", "0", "1", "0", "3", "0", "4", "5", "4", "5", "6", "0", "6", "7", "8", "1"], ["2", "1", "2", "1", "2", "0", "7", "8", "7", "8", "7", "0", "1", "8", "1", "0"], ["6", "5", "6", "5", "6", "0", "3", "4", "3", "4", "3", "0", "5", "4", "5", "0"], ["4", "5", "4", "5", "4", "0", "5", "4", "5", "4", "5", "0", "3", "6", "3", "0"], ["7", "2", "7", "2", "7", "0", "2", "7", "2", "7", "2", "0", "8", "1", "8", "0"], ["2", "1", "2", "1", "2", "0", "7", "8", "7", "8", "7", "0", "1", "8", "1", "8"], ["3", "4", "3", "4", "3", "0", "6", "5", "6", "5", "6", "0", "4", "5", "4", "5"], ["3", "6", "3", "6", "3", "0", "7", "2", "7", "2", "7", "0", "1", "8", "1", "8"], ["3", "4", "3", "2", "3", "0", "5", "4", "5", "6", "5", "0", "6", "7", "8", "1"], ["28", "7", "3", "0", "6", "0", "4", "5", "3", "0", "8", "0", "2", "7", "3", "8"], ["2", "7", "2", "0", "8", "0", "1", "7", "8", "0", "3", "0", "7", "2", "6", "3"], ["54", "6", "4", "0", "7", "0", "4", "5", "3", "0", "7", "0", "5", "6", "4", "7"], ["3", "5", "4", "0", "7", "0", "5", "6", "3", "0", "7", "0", "6", "7", "8", "1"], ["27", "8", "1", "0", "8", "0", "2", "7", "3", "0", "6", "0", "5", "4", "6", "5"], ["7", "5", "6", "0", "1", "0", "8", "1", "7", "0", "2", "0", "6", "3", "5", "4"], ["53", "6", "4", "0", "7", "0", "1", "8", "2", "0", "6", "0", "1", "8", "1", "6"], ["1", "4", "2", "0", "6", "0", "3", "0", "5", "4", "5", "0", "4", "5", "6", "7"], ["8", "1", "8", "1", "8", "0", "72", "27", "18", "0", "0", "0", "8", "0", "0", "0"], ["2", "7", "1", "0", "8", "2", "8", "2", "7", "3", "7", "0", "4", "5", "3", "6"], ["7", "4", "8", "0", "2", "1", "2", "1", "3", "4", "3", "0", "6", "5", "7", "4"], ["6", "5", "6", "0", "4", "5", "4", "5", "3", "6", "3", "0", "6", "3", "7", "2"], ["8", "1", "8", "1", "7", "2", "7", "2", "6", "3", "6", "3", "5", "4", "5", "4"], ["6", "3", "7", "2", "8", "1", "7", "2", "8", "1", "7", "2", "8", "1", "7", "2"], ["6", "3", "5", "4", "5", "3", "6", "2", "5", "1", "6", "2", "7", "3", "8", "4"], ["7", "3", "6", "2", "5", "1", "4", "8", "37", "48", "51", "62", "37", "84", "15", "26"]'
+declare global {
+    interface Document {
+        webkitFullscreenEnabled?: boolean;
+        webkitExitFullscreen?: any;
+        webkitFullscreenElement?: Element;
+    }
 
+    interface HTMLElement {
+        webkitRequestFullscreen?: any;
+        ALLOW_KEYBOARD_INPUT: any
+    }
+}
 const SimpleMaimai = (props: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const modalRef = useRef<any>(null)
     const game = useRef<Game>()
     const [isGameStarted, setIsGameStarted] = useState(false)
     const [timelineString, setTimelineString] = useState<string>(defaultTimeLine)
@@ -20,6 +33,43 @@ const SimpleMaimai = (props: Props) => {
 
         return listener
     }, [])
+    useEffect(() => {
+        let listener = document.addEventListener('touchmove', function (event) {
+            { if (event.targetTouches.length > 1) event.preventDefault(); }
+        }, { passive: false });
+        return listener
+    }, [])
+    
+    useEffect(() => {
+        let listener;
+        if (document.webkitFullscreenEnabled) {
+            listener = document.addEventListener('webkitfullscreenchange', (e) => {
+
+                if (!document.webkitFullscreenElement) {
+                    screen?.orientation?.unlock()
+                    game.current?.reset()
+                    setModalIsOpen(false)
+                }
+            })
+
+        }
+        else if (document.fullscreenEnabled) {
+            listener = document.addEventListener('fullscreenchange', (e) => {
+
+                if (!document.fullscreenElement) {
+                    screen?.orientation?.unlock()
+                    game.current?.reset()
+                    setModalIsOpen(false)
+                }
+            })
+        }
+
+        return listener
+    }, [])
+
+    useEffect(() => {
+        document.documentElement.style.overflow = modalIsOpen ? 'hidden' : 'auto'
+    }, [modalIsOpen])
     const customStyles = {}
     const initGame = () => {
         try {
@@ -36,7 +86,7 @@ const SimpleMaimai = (props: Props) => {
                     RMG_OBJECT_RADIUS: vmin * .4 * .1,
                     BPM: parseInt(BPM),
                     SPEED: parseInt(speed),
-                    DURATION: 4000 / parseInt(speed),
+                    DURATION: 3000 / parseInt(speed),
                 }
                 game.current = new Game(canvasRef.current, 'maimai', music, timeline, config)
                 // // // // console.log("🚀 ~ file: maimai-simple.tsx ~ line 24 ~ useEffect ~ game", game)
@@ -57,9 +107,43 @@ const SimpleMaimai = (props: Props) => {
     }
     return (
         <LayoutWrapper>
+            <Head>
+                <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+            </Head>
             <div className='flex w-full justify-center mb20' >
                 <button onClick={() => {
-                    setModalIsOpen(true)
+                    if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        screen?.orientation?.lock("landscape-primary").catch((err) =>
+                            console.log("err", err))
+
+                        setModalIsOpen(true)
+
+                    }
+                    else if (document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                screen.orientation.lock("landscape-primary")
+                                    .then(function () {
+                                    })
+                                    .catch((err) => {
+                                        console.log("err", err)
+                                    }).finally(() => setModalIsOpen(true))
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+
+
+
                     // if (game.current?.isStarted) {
                     //     game.current?.reset()
                     // }
@@ -89,6 +173,7 @@ const SimpleMaimai = (props: Props) => {
                     // onAfterOpen={afterOpenModal}
                     // onRequestClose={closeModal}
                     ariaHideApp={false}
+                    ref={modalRef}
                     style={{
                         overlay: {
                             backgroundColor: 'rgba(0, 0, 0, 0.75)',
@@ -97,6 +182,7 @@ const SimpleMaimai = (props: Props) => {
                             left: 0,
                             right: 0,
                             bottom: 0,
+                            zIndex: 1000,
                         },
                         content: {
                             top: '50%',
@@ -104,35 +190,48 @@ const SimpleMaimai = (props: Props) => {
                             right: 'auto',
                             bottom: 'auto',
                             marginRight: '-50%',
-                            padding: '.5rem',
+                            padding: '0rem',
                             transform: 'translate(-50%, -50%)',
+                            height: '100%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'black'
                         },
                     }}
                 // contentLabel="Example Modal"
                 >
-                    <div style={{ height: '30rem' , width : '80vw'}} className='bg-black m-auto mb10' >
+                    <div className="h-full w-full">
                         <canvas
                             onTouchStart={e => game.current?.ontouchstart(e)}
                             onTouchMove={e => game.current?.ontouchmove(e)}
                             onTouchEnd={e => game.current?.ontouchend(e)}
                             className='w-full h-full' ref={canvasRef}></canvas>
                     </div>
-                    <div className='flex w-full justify-center'>
-                        <button onClick={() => {
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
 
-                            if (game.current?.isStarted) {
-                                game.current?.reset()
-                            }
-                            initGame()
-                            game.current?.startGame()
-
-                        }} className='btn btn-secondary mx-5'>Start Game</button>
-                        <button onClick={() => {
+                        if (game.current?.isStarted) {
                             game.current?.reset()
+                        }
+                        initGame()
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute bottom-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen) document.exitFullscreen().catch(e => { })
+                        else {
                             setModalIsOpen(false)
-                            // game.current = null
-                        }} className='btn btn-secondary mx-5'>Close Game</button>
-                    </div>
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute bottom-3 right-3'>Close Game</button>
+                    {/* </div> */}
                 </Modal>
 
             </div>

@@ -5,7 +5,8 @@ export interface Rating {
     internalRate: number,
     score: number,
     difficulty: Difficulty
-    combo: number
+    combo: number,
+    order? : number
 }
 
 export type Difficulty = 'ultima' | 'master' | 'expert'

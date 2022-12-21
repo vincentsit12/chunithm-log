@@ -1,4 +1,4 @@
-import { signIn, SignInResponse, useSession } from 'next-auth/react';
+import { getSession, signIn, SignInResponse, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import React, { useEffect, useRef, useState } from 'react';
 // import { useUserContext } from '../../provider/UserProvider';
@@ -31,20 +31,22 @@ export default function Login() {
     const handleSubmitForm = handleSubmit(async (values) => {
         const { password, username } = values
         setLoading(true)
-        signIn('credentials', { redirect: false, username, password }).then((result: any) => {
+        try {
+            let result = await signIn('credentials', { redirect: false, username, password })
+
             if (result?.error) {
                 throw result.error
             }
             // const query: Query = router.query
             // console.log("🚀 ~ file: login.tsx ~ line 42 ~ signIn ~ query.callbackUrl", query.callbackUrl)
-            window.location.replace("/home")
 
-        }).catch(e => {
-
+            router.replace("/home")
+        } catch (e) {
             alert(e)
             setLoading(false)
             console.log('login', e)
-        })
+        }
+
 
     })
 

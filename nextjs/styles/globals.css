@@ -7,8 +7,8 @@
 
 
 .ReactModal__Body--open {
-    height: 100vh;
-    overflow: hidden;
+    /* height: 100vh; */
+    /* overflow: hidden; */
     /* pointer-events: none; */
 }
 

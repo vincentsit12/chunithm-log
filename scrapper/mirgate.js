@@ -22,6 +22,6 @@ async function migrate() {
 }
 
 
-migrate()
+// migrate()
 
 module.exports = { migrate }

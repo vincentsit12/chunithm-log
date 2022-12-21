@@ -2462,11 +2462,24 @@ const d = [
 ]
 
 
-fetch("http://localhost:3000/api/record/" + "U2FsdGVkX19E1jK1gYyXXvZjnIL9w4guVk74Er2CX+4=", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: d, }),
-})
-    .then((r) => r.text()).then(r => {
+// fetch("http://localhost:3000/api/record/" + "U2FsdGVkX19E1jK1gYyXXvZjnIL9w4guVk74Er2CX+4=", {
+//     method: "PUT",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({ data: d, }),
+// })
+//     .then((r) => r.text()).then(r => {
 
-    }).catch(e => alert(e))
+//     }).catch(e => alert(e))
+
+ function calculateSingleSongRating(rate, score) {
+    const n = 0.00000001
+    if (!rate || !score) return 0
+    if (score >= 1009000) return rate + 2.15 + n
+    if (score >= 1007500) return rate + 2 + (score - 1007500) / 10000 + n
+    if (score >= 1005000) return (score - 1005000) / 2500 * 0.5 + 1.5 + rate + n
+    if (score >= 1000000) return (score - 1000000) / 5000 * 0.5 + 1 + rate + n
+    if (score >= 975000) return (score - 975000) / 25000 + rate + n
+
+    return 0
+}
+

@@ -89,7 +89,7 @@ export class ActionPoint {
             this.text = text
             this.textAlpha = 1;
             this.timer = setInterval(() => {
-                this.textAlpha -= .25
+                this.textAlpha -= .34
                 if (this.textAlpha <= 0) {
                     clearInterval(this.timer)
                     this.timer = null
@@ -105,11 +105,11 @@ export class ActionPoint {
     }
     onTouch = (color: string) => {
         if (!this.onHitTimer) {
-            this.alpha = .5;
+            this.alpha = .3;
             this.onTouched = true
             this.onTouchColor = color;
             this.onHitTimer = setInterval(() => {
-                this.alpha -= .25
+                this.alpha -= .15
                 if (this.alpha <= 0) {
                     clearInterval(this.onHitTimer)
                     this.onHitTimer = null
@@ -130,10 +130,10 @@ export class ActionPoint {
         const canvasX = x * this.canvas.width
         const canvasY = y * this.canvas.height
         return !(
-            (canvasX < (this.xInCanvs - RMG_OBJECT_RADIUS * 3)) ||
-            (canvasX > (this.xInCanvs + RMG_OBJECT_RADIUS * 3)) ||
-            (canvasY < (this.yInCanvs - RMG_OBJECT_RADIUS * 3)) ||
-            (canvasY > (this.yInCanvs + RMG_OBJECT_RADIUS * 3))
+            (canvasX < (this.xInCanvs - RMG_OBJECT_RADIUS * 5)) ||
+            (canvasX > (this.xInCanvs + RMG_OBJECT_RADIUS * 5)) ||
+            (canvasY < (this.yInCanvs - RMG_OBJECT_RADIUS * 5)) ||
+            (canvasY > (this.yInCanvs + RMG_OBJECT_RADIUS * 5))
         );
 
 

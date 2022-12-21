@@ -10,16 +10,18 @@ const LayoutWrapper: React.FC<Props> = ({ children }) => {
     const router = useRouter()
     return (
         <div id='container'>
-            <div className='mb20 tc'>
-                <div className=''>
-                    <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/record/musicGenre/master' : '/home'}>
-                        <a>
-                            <Image alt='chunithm' src={'/logo2.png'} height={200} width={400} ></Image>
-                        </a>
-                    </Link>
+            <div style={{ 'margin': '3.125rem auto' }}>
+                <div className='mb20 tc'>
+                    <div className=''>
+                        <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/record/musicGenre/master' : '/home'}>
+                            <a>
+                                <Image alt='chunithm' src={'/logo2.png'} height={200} width={400} ></Image>
+                            </a>
+                        </Link>
+                    </div>
                 </div>
+                {children}
             </div>
-            {children}
         </div>
     )
 }
