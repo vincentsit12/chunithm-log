@@ -1,8 +1,7 @@
 interface NoteInfo {
+    gameType : GameType
     type: NoteType
     holdDuration?: number,
-    deltaX: number,
-    deltaY: number,
     isEach: boolean,
     time: number
 }
@@ -15,6 +14,8 @@ interface ReactionPoint {
 
 type NoteType = 'tap' | 'hold'
 
+type GameType = 'maimai' | 'djmania'
+
 type Canvas = {
     ctx: CanvasRenderingContext2D
     width: number
@@ -26,7 +27,7 @@ type Canvas = {
 type GameConfig = {
     RMG_CENTERLINE_RADIUS: number,
     RMG_OBJECT_RADIUS: number,
-    
+
     SPEED: number,
     DURATION: number,
     BPM: number

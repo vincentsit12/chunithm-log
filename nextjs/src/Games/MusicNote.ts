@@ -9,7 +9,6 @@ export class MusicNote {
     y: number
     id: number
 
-
     targetX: number
     targetY: number
     targetWidth: number
@@ -35,6 +34,8 @@ export class MusicNote {
 
     hit: boolean
     reached: boolean
+
+    gameType: GameType
     config: GameConfig
     constructor(canvas: Canvas, id: number, reactionPoint: ReactionPoint, noteInfo: NoteInfo, kill: (id: number) => void, config: GameConfig) {
         this.canvas = canvas
@@ -42,18 +43,48 @@ export class MusicNote {
 
 
         this.id = id
-        this.x = .5 * canvas.width + (reactionPoint.x - .5 * canvas.width) / 4;
-        this.y = .5 * canvas.height + (reactionPoint.y - .5 * canvas.height) / 4;
         this.type = noteInfo.type || 'tap'
+        this.gameType = noteInfo.gameType
 
 
-        this.targetX = reactionPoint.x + noteInfo.deltaX * 200
-        this.targetY = reactionPoint.y + noteInfo.deltaY * 200
+        const { RMG_OBJECT_RADIUS, DURATION } = config
 
-        const { RMG_OBJECT_RADIUS } = config
-        this.targetWidth = .4 * canvas.vmin - .4 * canvas.vmin / 4 + RMG_OBJECT_RADIUS * 2
         this.index = reactionPoint.index
         this.radius = RMG_OBJECT_RADIUS;
+
+        const killDelay = 200 //ms
+
+        switch (noteInfo.gameType) {
+            case 'maimai':
+                /**
+                 * start point (.5 , .5)
+                 * deltaX , deltaY = note moving speed
+                 * scaleConstant = note start line to action point ~= 4 notes
+                 */
+                var deltaX, deltaY;
+                const scaleConstant = 4
+                this.x = .5 * canvas.width + (reactionPoint.x - .5 * canvas.width) / scaleConstant;
+                this.y = .5 * canvas.height + (reactionPoint.y - .5 * canvas.height) / scaleConstant;
+                deltaX = (reactionPoint.x - (.5 * this.canvas.width + (reactionPoint.x - .5 * this.canvas.width) / scaleConstant)) / DURATION
+                deltaY = (reactionPoint.y - (.5 * this.canvas.height + (reactionPoint.y - .5 * this.canvas.height) / scaleConstant)) / DURATION
+                this.targetX = reactionPoint.x + deltaX * killDelay
+                this.targetY = reactionPoint.y + deltaY * killDelay
+                //for hold - .4 * canvas.vmin - .4 * canvas.vmin / 4 + this.radius * 2 = max width for start point to action point
+                this.targetWidth = .4 * canvas.vmin - .4 * canvas.vmin / 4 + this.radius * 2
+
+                break;
+            case 'djmania':
+                //.5 . 5 (start point)
+                var deltaY;
+                this.x = reactionPoint.x
+                this.y = 0;
+                deltaY = reactionPoint.y / DURATION
+                this.targetX = reactionPoint.x
+                this.targetY = reactionPoint.y + deltaY * killDelay
+                this.targetWidth = .4 * canvas.vmin - .4 * canvas.vmin / 4 + this.radius * 2
+
+                break;
+        }
 
         this.kill = kill;
         this.startTime = null;
@@ -63,7 +94,7 @@ export class MusicNote {
         this.isEach = noteInfo.isEach
 
         //hold
-        this.width = RMG_OBJECT_RADIUS * 2;
+        this.width = this.radius * 2;
         this.holdDuration = noteInfo.holdDuration
         this.holdingTime = 0
         this.holdingStartTime = 0;
@@ -82,52 +113,103 @@ export class MusicNote {
 
     draw = (x: number, y: number, width: number, visible = true) => {
         // this.canvas.ctx.globalCompositeOperation = 'destination-atop'
-        const { RMG_OBJECT_RADIUS } = this.config
-        this.canvas.ctx.lineWidth = this.radius * .4
+        const ctx = this.canvas.ctx
 
-        if (!visible) {
-            this.canvas.ctx.strokeStyle = 'transparent';
+
+        switch (this.gameType) {
+
+            case 'maimai':
+                if (!visible) {
+                    ctx.strokeStyle = 'transparent';
+                }
+                else {
+
+                    if (this.isEach) {
+                        ctx.fillStyle = 'rgba(255,255,0 ,.5)';
+                        ctx.strokeStyle = 'yellow';
+                    }
+                    else {
+                        ctx.fillStyle = 'rgba(255,0,255 ,.5)';
+                        ctx.strokeStyle = 'red';
+                    }
+                }
+                ctx.lineWidth = this.radius * .4
+                if (this.type === 'hold') {
+                    ctx.beginPath();
+                    ctx.setTransform(1, 0, 0, 1, this.canvas.width / 2, this.canvas.height / 2);
+                    if (!this.reversed) {
+
+                        ctx.rotate((-67.5 + 45 * (this.index - 1)) * Math.PI / 180);
+                        this.roundRect(ctx, (.4 * this.canvas.vmin * .25) - this.radius, - this.radius, width, this.radius * 2, this.radius, false, true);
+                    } else {
+                        ctx.rotate(((-67.5 + 45 * (this.index - 1) + 180)) * Math.PI / 180);
+                        this.roundRect(ctx, -1 * (.4 * this.canvas.vmin + this.radius), -this.radius, width, this.radius * 2, this.radius, false, true);
+                    }
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.closePath();
+
+
+                }
+                else {
+                    //center small judgement hint circle
+                    ctx.beginPath();
+                    ctx.arc(x, y, this.radius / 7, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.closePath();
+
+
+                    //outer
+                    ctx.beginPath();
+                    ctx.arc(x, y, this.radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+                break;
+            case 'djmania':
+                if (!visible) {
+                    ctx.strokeStyle = 'transparent';
+                }
+                else {
+
+                    if (this.isEach) {
+                        ctx.fillStyle = 'rgba(255,255,0 ,.8)';
+                        ctx.strokeStyle = 'rgba(200,200,200 , .8)';
+                    }
+                    else {
+                        ctx.fillStyle = 'rgba(255,0,0 , .8)';
+                        ctx.strokeStyle = 'rgba(200,200,200 , .8)';
+                    }
+                }
+                ctx.lineWidth = this.radius * .1
+                if (this.type === 'hold') {
+                    ctx.beginPath();
+                    // ctx.setTransform(1, 0, 0, 1, this.canvas.width / 2, this.canvas.height / 2);
+                    if (!this.reversed) {
+
+                        // ctx.rotate((-67.5 + 45 * (this.index - 1)) * Math.PI / 180);
+                        this.roundRect(ctx, .4 * this.canvas.vmin * .25 - this.radius, - this.radius, width, this.radius * 2, this.radius, false, true);
+                    } else {
+                        this.roundRect(ctx, -1 * (.4 * this.canvas.vmin + this.radius), -this.radius, width, this.radius * 2, this.radius, false, true);
+                    }
+                    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.closePath();
+
+
+                }
+                else {
+                    this.roundRect(ctx, x - .1 * this.canvas.width, y, .2 * this.canvas.width, this.radius * 2, this.radius, true, true);
+
+                    // ctx.beginPath();
+                    // ctx.arc(x, y, this.radius, 0, 2 * Math.PI);
+                    // ctx.fill();
+                    // ctx.closePath();
+                }
+                break;
+            default:
+                break;
         }
-        else {
-
-            if (this.isEach) {
-                this.canvas.ctx.fillStyle = 'rgba(255,255,0 ,.5)';
-                this.canvas.ctx.strokeStyle = 'yellow';
-            }
-            else {
-                this.canvas.ctx.fillStyle = 'rgba(255,0,255 ,.5)';
-                this.canvas.ctx.strokeStyle = 'red';
-            }
-        }
 
 
-        if (this.type === 'hold') {
-            this.canvas.ctx.beginPath();
-            this.canvas.ctx.setTransform(1, 0, 0, 1, this.canvas.width / 2, this.canvas.height / 2);
-            if (!this.reversed) {
-
-                this.canvas.ctx.rotate((-67.5 + 45 * (this.index - 1)) * Math.PI / 180);
-                this.roundRect(this.canvas.ctx, .4 * this.canvas.vmin * .25 - RMG_OBJECT_RADIUS, - RMG_OBJECT_RADIUS, width, RMG_OBJECT_RADIUS * 2, RMG_OBJECT_RADIUS, false, true);
-            } else {
-                this.canvas.ctx.rotate(((-67.5 + 45 * (this.index - 1) + 180)) * Math.PI / 180);
-                this.roundRect(this.canvas.ctx, -1 * (.4 * this.canvas.vmin + RMG_OBJECT_RADIUS), -RMG_OBJECT_RADIUS, width, RMG_OBJECT_RADIUS * 2, RMG_OBJECT_RADIUS, false, true);
-            }
-            this.canvas.ctx.setTransform(1, 0, 0, 1, 0, 0);
-            this.canvas.ctx.closePath();
-
-
-        }
-        else {
-            this.canvas.ctx.beginPath();
-            this.canvas.ctx.arc(x, y, RMG_OBJECT_RADIUS / 7, 0, 2 * Math.PI);
-            this.canvas.ctx.fill();
-            this.canvas.ctx.closePath();
-
-            this.canvas.ctx.beginPath();
-            this.canvas.ctx.arc(x, y, this.radius, 0, 2 * Math.PI);
-            this.canvas.ctx.stroke();
-            this.canvas.ctx.closePath();
-        }
         // this.canvas.ctx.globalAlpha = this.alpha
         // canvasCtx.fillStyle = `rgba(255,255,255,0)`;
         // canvasCtx.fill();

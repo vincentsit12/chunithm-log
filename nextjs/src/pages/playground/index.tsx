@@ -23,6 +23,9 @@ const SimpleMaimai = (props: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const modalRef = useRef<any>(null)
     const game = useRef<Game>()
+    const [enalbleFullScreen, setEnalbleFullScreen] = useState(true)
+    const [gameType, setGameType] = useState<GameType>('djmania')
+
     const [isGameStarted, setIsGameStarted] = useState(false)
     const [timelineString, setTimelineString] = useState<string>(defaultTimeLine)
     const [BPM, setBPM] = useState("180")
@@ -39,7 +42,7 @@ const SimpleMaimai = (props: Props) => {
         }, { passive: false });
         return listener
     }, [])
-    
+
     useEffect(() => {
         let listener;
         if (document.webkitFullscreenEnabled) {
@@ -83,12 +86,12 @@ const SimpleMaimai = (props: Props) => {
                 const vmin = Math.min(canvasRef.current.clientWidth, canvasRef.current.clientHeight)
                 const config: GameConfig = {
                     RMG_CENTERLINE_RADIUS: vmin * .4,
-                    RMG_OBJECT_RADIUS: vmin * .4 * .1,
+                    RMG_OBJECT_RADIUS: vmin * .4 * (gameType === "maimai" ? .1 : .05),
                     BPM: parseInt(BPM),
                     SPEED: parseInt(speed),
                     DURATION: 3000 / parseInt(speed),
                 }
-                game.current = new Game(canvasRef.current, 'maimai', music, timeline, config)
+                game.current = new Game(canvasRef.current, gameType, music, timeline, config)
                 // // // // console.log("🚀 ~ file: maimai-simple.tsx ~ line 24 ~ useEffect ~ game", game)
             }
         } catch (e) {
@@ -112,7 +115,7 @@ const SimpleMaimai = (props: Props) => {
             </Head>
             <div className='flex w-full justify-center mb20' >
                 <button onClick={() => {
-                    if (document.documentElement.webkitRequestFullscreen) {
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
                         document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
                         screen?.orientation?.lock("landscape-primary").catch((err) =>
                             console.log("err", err))
@@ -120,7 +123,7 @@ const SimpleMaimai = (props: Props) => {
                         setModalIsOpen(true)
 
                     }
-                    else if (document.fullscreenEnabled) {
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
                         let dom = document.documentElement
 
                         dom.requestFullscreen({ navigationUI: "show" })
@@ -156,11 +159,79 @@ const SimpleMaimai = (props: Props) => {
                     // game.current = null
                 }} className='btn btn-secondary mx-5'>Reset Game</button>
             </div>
-
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-simai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-simai" >simai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-4k"  >4k</label>
+            </div>
             <div className='inner inner-720'>
                 <textarea value={timelineString} onChange={(e) => {
                     setTimelineString(e.target.value)
                 }} className='px-4 py-2 box box-shadow mb20 w-full h-40' placeholder='notes'></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        if (timelineString !== defaultTimeLine)
+                            setTimelineString(defaultTimeLine)
+                        else {
+                            setTimelineString("")
+                        }
+                    }} className='btn btn-secondary m-2 '>{timelineString !== defaultTimeLine ? "Default" : 'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
                 <input value={BPM} onChange={(e) => {
                     setBPM(e.target.value)
                 }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
@@ -192,8 +263,8 @@ const SimpleMaimai = (props: Props) => {
                             marginRight: '-50%',
                             padding: '0rem',
                             transform: 'translate(-50%, -50%)',
-                            height: '100%',
-                            width: '100%',
+                            height: enalbleFullScreen ? '100%' : '80%',
+                            width: enalbleFullScreen ? '100%' : '80%',
                             display: 'flex',
                             flexDirection: 'column',
                             border: 'none',
@@ -221,10 +292,10 @@ const SimpleMaimai = (props: Props) => {
                     }} className='btn btn-secondary absolute bottom-3 left-3'>Start Game</button>
                     <button onClick={() => {
                         // let dom = document.documentElement
-                        if (document.webkitExitFullscreen) {
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
                             document.webkitExitFullscreen()
                         }
-                        else if (document.exitFullscreen) document.exitFullscreen().catch(e => { })
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
                         else {
                             setModalIsOpen(false)
                         }

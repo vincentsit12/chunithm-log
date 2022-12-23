@@ -30,7 +30,7 @@ const Header = (props: Props) => {
                     <li><Link href={'/song'}><a onClick={(e) => {
                         setActive(false)
                     }}>Song List</a></Link></li>
-                    <li><Link href={'/playground/maimai-simple'}><a onClick={(e) => {
+                    <li><Link href={'/playground'}><a onClick={(e) => {
                         // e.preventDefault()
                         setActive(false)
                     }}>Playground</a></Link></li>
