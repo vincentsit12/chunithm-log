@@ -134,7 +134,8 @@ export class ActionPoint {
         const { x, y } = poseLandmark
         const canvasX = x * this.canvas.width
         const canvasY = y * this.canvas.height
-        const collideRange = RMG_OBJECT_RADIUS * 5
+        const collideRange = this.type === "maimai" ? RMG_OBJECT_RADIUS * 5 : 0.2 * this.canvas.width
+
         return !(
             (canvasX < (this.xInCanvs - collideRange)) ||
             (canvasX > (this.xInCanvs + collideRange)) ||
