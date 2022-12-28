@@ -4,9 +4,12 @@ import { isArray } from 'lodash'
 import Head from 'next/head';
 import React, { useEffect, useRef, useState } from 'react'
 import Modal from 'react-modal';
+import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
 
 type Props = {}
+// const defaultTimeLine = '["123", "1/4h1:2/3h1:3", "1", "0", "3", "4", "0", "6"], ["5", "0", "7", "8", "0", "2", "3", "4"], ["6", "7", "8", "0", "6", "5", "0", "3"], ["4", "7", "82", "1", "7", "82", "3", "4"], ["3", "2", "1", "0", "3", "4", "0", "6"], ["5", "0", "7", "8", "0", "2", "3", "4"], ["6", "7", "8", "0", "61", "5", "0", "38"], ["4", "7", "82", "18", "7", "82", "37", "48"], ["18", "0", "7", "0", "2", "0", "8", "1", "0", "1", "8", "0", "2", "0", "8", "0"], ["3", "0", "7", "0", "4", "0", "6", "3", "0", "3", "6", "0", "4", "0", "6", "0"], ["3", "0", "4", "0", "3", "0", "6", "3", "0", "3", "7", "0", "2", "0", "8", "0"], ["1", "0", "6", "0", "3", "0", "6", "2", "0", "2", "6", "0", "4", "0", "6", "0"], ["3", "0", "6", "0", "2", "0", "8", "1", "8", "1", "8", "0", "3", "0", "1", "0"], ["4", "0", "6", "0", "3", "0", "5", "2", "0", "2", "6", "0", "1", "0", "7", "0"], ["2", "0", "6", "0", "8", "0", "6", "1", "6", "1", "6", "0", "5", "0", "3", "0"], ["4", "0", "3", "0", "6", "0", "2", "5", "0", "5", "1", "0", "7", "8", "1", "2"], ["8", "0", "7", "0", "2", "0", "6", "1", "0", "1", "5", "0", "8", "0", "4", "0"], ["1", "0", "6", "0", "2", "0", "5", "1", "6", "1", "5", "0", "1", "5", "1", "7"], ["18", "0", "6", "0", "3", "0", "6", "2", "0", "2", "7", "0", "8", "0", "6", "0"], ["1", "0", "5", "0", "2", "0", "5", "3", "4", "3", "5", "0", "4", "5", "6", "7"], ["68", "0", "2", "0", "8", "0", "2", "7", "0", "7", "3", "0", "6", "0", "4", "0"], ["6", "0", "2", "0", "7", "0", "1", "8", "2", "7", "3", "0", "5", "4", "6", "4"], ["53", "0", "7", "0", "2", "0", "6", "8", "0", "8", "5", "0", "2", "0", "8", "0"], ["3", "0", "6", "0", "4", "0", "5", "4", "6", "3", "7", "0", "2", "3", "4", "5"], ["67", "0", "5", "0", "7", "0", "6", "5", "6", "5", "6", "0", "5", "0", "3", "0"], ["1", "0", "3", "0", "5", "0", "4", "6", "4", "6", "4", "0", "3", "5", "3", "5"], ["36", "0", "7", "0", "1", "0", "6", "5", "6", "5", "6", "0", "5", "0", "7", "0"], ["4", "0", "1", "0", "3", "0", "4", "5", "4", "5", "4", "0", "7", "8", "1", "2"], ["13", "0", "5", "0", "7", "0", "6", "5", "6", "5", "4", "0", "5", "0", "3", "0"], ["1", "0", "3", "0", "5", "0", "6", "5", "6", "5", "4", "0", "3", "5", "3", "5"], ["36", "0", "7", "0", "1", "0", "6", "5", "6", "5", "4", "0", "5", "0", "7", "0"], ["4", "0", "1", "0", "3", "0", "4", "5", "4", "5", "6", "0", "6", "7", "8", "1"], ["2", "1", "2", "1", "2", "0", "7", "8", "7", "8", "7", "0", "1", "8", "1", "0"], ["6", "5", "6", "5", "6", "0", "3", "4", "3", "4", "3", "0", "5", "4", "5", "0"], ["4", "5", "4", "5", "4", "0", "5", "4", "5", "4", "5", "0", "3", "6", "3", "0"], ["7", "2", "7", "2", "7", "0", "2", "7", "2", "7", "2", "0", "8", "1", "8", "0"], ["2", "1", "2", "1", "2", "0", "7", "8", "7", "8", "7", "0", "1", "8", "1", "8"], ["3", "4", "3", "4", "3", "0", "6", "5", "6", "5", "6", "0", "4", "5", "4", "5"], ["3", "6", "3", "6", "3", "0", "7", "2", "7", "2", "7", "0", "1", "8", "1", "8"], ["3", "4", "3", "2", "3", "0", "5", "4", "5", "6", "5", "0", "6", "7", "8", "1"], ["28", "7", "3", "0", "6", "0", "4", "5", "3", "0", "8", "0", "2", "7", "3", "8"], ["2", "7", "2", "0", "8", "0", "1", "7", "8", "0", "3", "0", "7", "2", "6", "3"], ["54", "6", "4", "0", "7", "0", "4", "5", "3", "0", "7", "0", "5", "6", "4", "7"], ["3", "5", "4", "0", "7", "0", "5", "6", "3", "0", "7", "0", "6", "7", "8", "1"], ["27", "8", "1", "0", "8", "0", "2", "7", "3", "0", "6", "0", "5", "4", "6", "5"], ["7", "5", "6", "0", "1", "0", "8", "1", "7", "0", "2", "0", "6", "3", "5", "4"], ["53", "6", "4", "0", "7", "0", "1", "8", "2", "0", "6", "0", "1", "8", "1", "6"], ["1", "4", "2", "0", "6", "0", "3", "0", "5", "4", "5", "0", "4", "5", "6", "7"], ["8", "1", "8", "1", "8", "0", "72", "27", "18", "0", "0", "0", "8", "0", "0", "0"], ["2", "7", "1", "0", "8", "2", "8", "2", "7", "3", "7", "0", "4", "5", "3", "6"], ["7", "4", "8", "0", "2", "1", "2", "1", "3", "4", "3", "0", "6", "5", "7", "4"], ["6", "5", "6", "0", "4", "5", "4", "5", "3", "6", "3", "0", "6", "3", "7", "2"], ["8", "1", "8", "1", "7", "2", "7", "2", "6", "3", "6", "3", "5", "4", "5", "4"], ["6", "3", "7", "2", "8", "1", "7", "2", "8", "1", "7", "2", "8", "1", "7", "2"], ["6", "3", "5", "4", "5", "3", "6", "2", "5", "1", "6", "2", "7", "3", "8", "4"], ["7", "3", "6", "2", "5", "1", "4", "8", "37", "48", "51", "62", "37", "84", "15", "26"]'
 const defaultTimeLine = '["3", "2", "1", "0", "3", "4", "0", "6"], ["5", "0", "7", "8", "0", "2", "3", "4"], ["6", "7", "8", "0", "6", "5", "0", "3"], ["4", "7", "82", "1", "7", "82", "3", "4"], ["3", "2", "1", "0", "3", "4", "0", "6"], ["5", "0", "7", "8", "0", "2", "3", "4"], ["6", "7", "8", "0", "61", "5", "0", "38"], ["4", "7", "82", "18", "7", "82", "37", "48"], ["18", "0", "7", "0", "2", "0", "8", "1", "0", "1", "8", "0", "2", "0", "8", "0"], ["3", "0", "7", "0", "4", "0", "6", "3", "0", "3", "6", "0", "4", "0", "6", "0"], ["3", "0", "4", "0", "3", "0", "6", "3", "0", "3", "7", "0", "2", "0", "8", "0"], ["1", "0", "6", "0", "3", "0", "6", "2", "0", "2", "6", "0", "4", "0", "6", "0"], ["3", "0", "6", "0", "2", "0", "8", "1", "8", "1", "8", "0", "3", "0", "1", "0"], ["4", "0", "6", "0", "3", "0", "5", "2", "0", "2", "6", "0", "1", "0", "7", "0"], ["2", "0", "6", "0", "8", "0", "6", "1", "6", "1", "6", "0", "5", "0", "3", "0"], ["4", "0", "3", "0", "6", "0", "2", "5", "0", "5", "1", "0", "7", "8", "1", "2"], ["8", "0", "7", "0", "2", "0", "6", "1", "0", "1", "5", "0", "8", "0", "4", "0"], ["1", "0", "6", "0", "2", "0", "5", "1", "6", "1", "5", "0", "1", "5", "1", "7"], ["18", "0", "6", "0", "3", "0", "6", "2", "0", "2", "7", "0", "8", "0", "6", "0"], ["1", "0", "5", "0", "2", "0", "5", "3", "4", "3", "5", "0", "4", "5", "6", "7"], ["68", "0", "2", "0", "8", "0", "2", "7", "0", "7", "3", "0", "6", "0", "4", "0"], ["6", "0", "2", "0", "7", "0", "1", "8", "2", "7", "3", "0", "5", "4", "6", "4"], ["53", "0", "7", "0", "2", "0", "6", "8", "0", "8", "5", "0", "2", "0", "8", "0"], ["3", "0", "6", "0", "4", "0", "5", "4", "6", "3", "7", "0", "2", "3", "4", "5"], ["67", "0", "5", "0", "7", "0", "6", "5", "6", "5", "6", "0", "5", "0", "3", "0"], ["1", "0", "3", "0", "5", "0", "4", "6", "4", "6", "4", "0", "3", "5", "3", "5"], ["36", "0", "7", "0", "1", "0", "6", "5", "6", "5", "6", "0", "5", "0", "7", "0"], ["4", "0", "1", "0", "3", "0", "4", "5", "4", "5", "4", "0", "7", "8", "1", "2"], ["13", "0", "5", "0", "7", "0", "6", "5", "6", "5", "4", "0", "5", "0", "3", "0"], ["1", "0", "3", "0", "5", "0", "6", "5", "6", "5", "4", "0", "3", "5", "3", "5"], ["36", "0", "7", "0", "1", "0", "6", "5", "6", "5", "4", "0", "5", "0", "7", "0"], ["4", "0", "1", "0", "3", "0", "4", "5", "4", "5", "6", "0", "6", "7", "8", "1"], ["2", "1", "2", "1", "2", "0", "7", "8", "7", "8", "7", "0", "1", "8", "1", "0"], ["6", "5", "6", "5", "6", "0", "3", "4", "3", "4", "3", "0", "5", "4", "5", "0"], ["4", "5", "4", "5", "4", "0", "5", "4", "5", "4", "5", "0", "3", "6", "3", "0"], ["7", "2", "7", "2", "7", "0", "2", "7", "2", "7", "2", "0", "8", "1", "8", "0"], ["2", "1", "2", "1", "2", "0", "7", "8", "7", "8", "7", "0", "1", "8", "1", "8"], ["3", "4", "3", "4", "3", "0", "6", "5", "6", "5", "6", "0", "4", "5", "4", "5"], ["3", "6", "3", "6", "3", "0", "7", "2", "7", "2", "7", "0", "1", "8", "1", "8"], ["3", "4", "3", "2", "3", "0", "5", "4", "5", "6", "5", "0", "6", "7", "8", "1"], ["28", "7", "3", "0", "6", "0", "4", "5", "3", "0", "8", "0", "2", "7", "3", "8"], ["2", "7", "2", "0", "8", "0", "1", "7", "8", "0", "3", "0", "7", "2", "6", "3"], ["54", "6", "4", "0", "7", "0", "4", "5", "3", "0", "7", "0", "5", "6", "4", "7"], ["3", "5", "4", "0", "7", "0", "5", "6", "3", "0", "7", "0", "6", "7", "8", "1"], ["27", "8", "1", "0", "8", "0", "2", "7", "3", "0", "6", "0", "5", "4", "6", "5"], ["7", "5", "6", "0", "1", "0", "8", "1", "7", "0", "2", "0", "6", "3", "5", "4"], ["53", "6", "4", "0", "7", "0", "1", "8", "2", "0", "6", "0", "1", "8", "1", "6"], ["1", "4", "2", "0", "6", "0", "3", "0", "5", "4", "5", "0", "4", "5", "6", "7"], ["8", "1", "8", "1", "8", "0", "72", "27", "18", "0", "0", "0", "8", "0", "0", "0"], ["2", "7", "1", "0", "8", "2", "8", "2", "7", "3", "7", "0", "4", "5", "3", "6"], ["7", "4", "8", "0", "2", "1", "2", "1", "3", "4", "3", "0", "6", "5", "7", "4"], ["6", "5", "6", "0", "4", "5", "4", "5", "3", "6", "3", "0", "6", "3", "7", "2"], ["8", "1", "8", "1", "7", "2", "7", "2", "6", "3", "6", "3", "5", "4", "5", "4"], ["6", "3", "7", "2", "8", "1", "7", "2", "8", "1", "7", "2", "8", "1", "7", "2"], ["6", "3", "5", "4", "5", "3", "6", "2", "5", "1", "6", "2", "7", "3", "8", "4"], ["7", "3", "6", "2", "5", "1", "4", "8", "37", "48", "51", "62", "37", "84", "15", "26"]'
+
 declare global {
     interface Document {
         webkitFullscreenEnabled?: boolean;
@@ -23,14 +26,15 @@ const SimpleMaimai = (props: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const modalRef = useRef<any>(null)
     const game = useRef<Game>()
-    const [enalbleFullScreen, setEnalbleFullScreen] = useState(true)
+    const [enalbleFullScreen, setEnalbleFullScreen] = useState(false)
     const [gameType, setGameType] = useState<GameType>('djmania')
-
+    const [youtubeLink, setYoutubeLink] = useState('')
     const [isGameStarted, setIsGameStarted] = useState(false)
     const [timelineString, setTimelineString] = useState<string>(defaultTimeLine)
     const [BPM, setBPM] = useState("180")
-    const [speed, setSpeed] = useState<string>("8")
+    const [speed, setSpeed] = useState<string>("6")
     const [modalIsOpen, setModalIsOpen] = useState(false)
+    const youtubeRef = useRef()
     useEffect(() => {
         let listener = window.addEventListener('keydown', (e) => game.current?.onKeyboard(e))
 
@@ -91,10 +95,11 @@ const SimpleMaimai = (props: Props) => {
                     SPEED: parseInt(speed),
                     DURATION: 3000 / parseInt(speed),
                 }
-                game.current = new Game(canvasRef.current, gameType, music, timeline, config)
+                game.current = new Game(canvasRef.current, gameType, (youtubeLink && youtubeRef.current) ? youtubeRef.current : music, timeline, config)
                 // // // // console.log("🚀 ~ file: maimai-simple.tsx ~ line 24 ~ useEffect ~ game", game)
             }
         } catch (e) {
+            console.log("🚀 ~ file: index.tsx:100 ~ initGame ~ e", e)
             alert('invalid timeline/setting!')
         }
     }
@@ -108,6 +113,31 @@ const SimpleMaimai = (props: Props) => {
             return k
         })
     }
+
+    const closeGame = () => {
+        game.current?.reset()
+    }
+
+
+    const youtubeVideoOnReady: YouTubeProps['onReady'] = (e) => {
+        console.log('youtube video ready')
+        youtubeRef.current = e.target;
+    }
+
+    const youtubeVideoOnError: YouTubeProps['onError'] = (e) => {
+        console.log('youtube video error')
+        youtubeRef.current = undefined;
+    }
+
+    const youtubeOpts: YouTubeProps['opts'] = {
+        height: '390',
+        width: '640',
+        playerVars: {
+            // https://developers.google.com/youtube/player_parameters
+            // autoplay: 1,
+        },
+    };
+
     return (
         <LayoutWrapper>
             <Head>
@@ -115,6 +145,7 @@ const SimpleMaimai = (props: Props) => {
             </Head>
             <div className='flex w-full justify-center mb20' >
                 <button onClick={() => {
+
                     if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
                         document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
                         screen?.orientation?.lock("landscape-primary").catch((err) =>
@@ -144,18 +175,9 @@ const SimpleMaimai = (props: Props) => {
                     else {
                         setModalIsOpen(true)
                     }
-
-
-
-                    // if (game.current?.isStarted) {
-                    //     game.current?.reset()
-                    // }
-                    // initGame()
-                    // game.current?.startGame()
-
                 }} className='btn btn-secondary mx-5'>Start Game</button>
                 <button onClick={() => {
-                    game.current?.reset()
+                    closeGame()
                     // game.current = null
                 }} className='btn btn-secondary mx-5'>Reset Game</button>
             </div>
@@ -180,17 +202,25 @@ const SimpleMaimai = (props: Props) => {
                 <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-4k"  >4k</label>
             </div>
             <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link'></input>
+                <YouTube videoId={youtubeLink} opts={youtubeOpts} style={{display : 'none'}}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} />
                 <textarea value={timelineString} onChange={(e) => {
                     setTimelineString(e.target.value)
-                }} className='px-4 py-2 box box-shadow mb20 w-full h-40' placeholder='notes'></textarea>
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
                 <div className='flex w-full justify-center mb20 flex-wrap' >
                     <button onClick={() => {
-                        if (timelineString !== defaultTimeLine)
-                            setTimelineString(defaultTimeLine)
-                        else {
-                            setTimelineString("")
-                        }
-                    }} className='btn btn-secondary m-2 '>{timelineString !== defaultTimeLine ? "Default" : 'Reset'}</button>
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
                     <button onClick={() => {
                         setTimelineString(timelineString => {
                             return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
@@ -239,8 +269,12 @@ const SimpleMaimai = (props: Props) => {
                     setSpeed(e.target.value)
 
                 }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
                 <Modal
                     isOpen={modalIsOpen}
+                    onAfterOpen={() => {
+                        initGame()
+                    }}
                     // onAfterOpen={afterOpenModal}
                     // onRequestClose={closeModal}
                     ariaHideApp={false}
@@ -263,8 +297,8 @@ const SimpleMaimai = (props: Props) => {
                             marginRight: '-50%',
                             padding: '0rem',
                             transform: 'translate(-50%, -50%)',
-                            height: enalbleFullScreen ? '100%' : '80%',
-                            width: enalbleFullScreen ? '100%' : '80%',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: enalbleFullScreen ? '100%' : '90%',
                             display: 'flex',
                             flexDirection: 'column',
                             border: 'none',
@@ -286,10 +320,10 @@ const SimpleMaimai = (props: Props) => {
                         if (game.current?.isStarted) {
                             game.current?.reset()
                         }
-                        initGame()
+
                         game.current?.startGame()
 
-                    }} className='btn btn-secondary absolute bottom-3 left-3'>Start Game</button>
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
                     <button onClick={() => {
                         // let dom = document.documentElement
                         if (document.webkitExitFullscreen && enalbleFullScreen) {
@@ -298,10 +332,11 @@ const SimpleMaimai = (props: Props) => {
                         else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
                         else {
                             setModalIsOpen(false)
+                            closeGame()
                         }
 
                         // game.current = null
-                    }} className='btn btn-secondary absolute bottom-3 right-3'>Close Game</button>
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
                     {/* </div> */}
                 </Modal>
 

@@ -110,11 +110,11 @@ export class ActionPoint {
     }
     onTouch = (color: string) => {
         if (!this.onHitTimer) {
-            this.alpha = .3;
+            this.alpha = .2;
             this.onTouched = true
             this.onTouchColor = color;
             this.onHitTimer = setInterval(() => {
-                this.alpha -= .15
+                this.alpha -= .1
                 if (this.alpha <= 0) {
                     clearInterval(this.onHitTimer)
                     this.onHitTimer = null
@@ -123,7 +123,7 @@ export class ActionPoint {
                 }
             }, 100);
         } else {
-            this.alpha = .5;
+            this.alpha = .2;
             this.onTouched = true
             this.onTouchColor = color;
         }
@@ -134,14 +134,28 @@ export class ActionPoint {
         const { x, y } = poseLandmark
         const canvasX = x * this.canvas.width
         const canvasY = y * this.canvas.height
-        const collideRange = this.type === "maimai" ? RMG_OBJECT_RADIUS * 5 : 0.2 * this.canvas.width
+        let collideRange = 0
+        switch (this.type) {
+            case "maimai":
+                collideRange = RMG_OBJECT_RADIUS * 5
+                return !(
+                    (canvasX < (this.xInCanvs - collideRange)) ||
+                    (canvasX > (this.xInCanvs + collideRange)) ||
+                    (canvasY < (this.yInCanvs - collideRange)) ||
+                    (canvasY > (this.yInCanvs + collideRange))
+                );
 
-        return !(
-            (canvasX < (this.xInCanvs - collideRange)) ||
-            (canvasX > (this.xInCanvs + collideRange)) ||
-            (canvasY < (this.yInCanvs - collideRange)) ||
-            (canvasY > (this.yInCanvs + collideRange))
-        );
+            case "djmania":
+                collideRange = this.canvas.vmin / 4 / 2
+                return !(
+                    (canvasX < (this.xInCanvs - collideRange)) ||
+                    (canvasX > (this.xInCanvs + collideRange))
+                );
+            default:
+                break;
+        }
+
+
 
 
 
@@ -208,12 +222,13 @@ export class ActionPoint {
                 break;
 
             case "djmania":
+                const laneWidth = this.canvas.vmin / 4
 
                 if (this.text) {
                     ctx.beginPath();
-                    ctx.setTransform(1, 0, 0, 1, this.xInCanvs, this.yInCanvs - (this.yInCanvs - this.canvas.height / 2) / 5);
+                    ctx.setTransform(1, 0, 0, 1, this.xInCanvs, this.yInCanvs + RMG_OBJECT_RADIUS * 2.5);
                     // ctx.rotate((22.5 + (this.index * 45)) * Math.PI / 180);
-                    ctx.font = `bold ${RMG_OBJECT_RADIUS}px Arial`;
+                    ctx.font = `bold ${RMG_OBJECT_RADIUS * 2}px Arial`;
                     ctx.textAlign = "center";
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = `rgba(255,255,255 ,${this.textAlpha})`
@@ -225,25 +240,14 @@ export class ActionPoint {
                 }
                 if (this.onTouched) {
                     ctx.beginPath();
-                    ctx.fillStyle = this.onTouchColor.replace('%', this.alpha.toString());
+                    ctx.fillStyle = `rgba(255,255,255, ${this.alpha.toString()}`;
 
-                    ctx.arc(this.xInCanvs, this.yInCanvs, this.radius * 3, 0, 2 * Math.PI);
+                    ctx.rect(this.xInCanvs - laneWidth / 2, 0, laneWidth, this.canvas.height);
                     ctx.fill();
                     ctx.closePath()
                 }
 
-                ctx.beginPath();
-                ctx.arc(this.xInCanvs, this.yInCanvs, this.radius, 0, 2 * Math.PI);
 
-                //  ctx.arc(this.xInCanvs, this.yInCanvs, RMG_OBJECT_RADIUS / 3.5, 0, 2 * Math.PI);
-
-                ctx.fillStyle = `rgba(255,255,255,1)`;
-                ctx.fill();
-                ctx.closePath()
-                //  ctx.lineWidth = this.radius * .3
-                //  ctx.strokeStyle = 'black'
-                //  ctx.stroke();
-                //  ctx.closePath();
 
                 break;
             default:

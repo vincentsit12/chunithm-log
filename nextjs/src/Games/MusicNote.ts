@@ -11,7 +11,7 @@ export class MusicNote {
 
     targetX: number
     targetY: number
-    targetWidth: number
+    targetLength: number
     index: number
     // reactionPoint: ActionPoint
     radius: number
@@ -21,7 +21,7 @@ export class MusicNote {
     duration: number
 
     isEach: boolean
-    width: number
+    length: number
 
     holdDuration?: number
     holdingTime: number
@@ -70,18 +70,17 @@ export class MusicNote {
                 this.targetX = reactionPoint.x + deltaX * killDelay
                 this.targetY = reactionPoint.y + deltaY * killDelay
                 //for hold - .4 * canvas.vmin - .4 * canvas.vmin / 4 + this.radius * 2 = max width for start point to action point
-                this.targetWidth = .4 * canvas.vmin - .4 * canvas.vmin / 4 + this.radius * 2
+                this.targetLength = .4 * canvas.vmin - .4 * canvas.vmin / 4 + this.radius * 2
 
                 break;
             case 'djmania':
-                //.5 . 5 (start point)
                 var deltaY;
                 this.x = reactionPoint.x
                 this.y = 0;
                 deltaY = reactionPoint.y / DURATION
                 this.targetX = reactionPoint.x
                 this.targetY = reactionPoint.y + deltaY * killDelay
-                this.targetWidth = .4 * canvas.vmin - .4 * canvas.vmin / 4 + this.radius * 2
+                this.targetLength = reactionPoint.y + this.radius
 
                 break;
         }
@@ -94,7 +93,7 @@ export class MusicNote {
         this.isEach = noteInfo.isEach
 
         //hold
-        this.width = this.radius * 2;
+        this.length = this.radius * 2;
         this.holdDuration = noteInfo.holdDuration
         this.holdingTime = 0
         this.holdingStartTime = 0;
@@ -111,7 +110,7 @@ export class MusicNote {
 
     }
 
-    draw = (x: number, y: number, width: number, visible = true) => {
+    draw = (x: number, y: number, length: number, visible = true) => {
         // this.canvas.ctx.globalCompositeOperation = 'destination-atop'
         const ctx = this.canvas.ctx
 
@@ -140,15 +139,13 @@ export class MusicNote {
                     if (!this.reversed) {
 
                         ctx.rotate((-67.5 + 45 * (this.index - 1)) * Math.PI / 180);
-                        this.roundRect(ctx, (.4 * this.canvas.vmin * .25) - this.radius, - this.radius, width, this.radius * 2, this.radius, false, true);
+                        this.roundRect(ctx, (.4 * this.canvas.vmin * .25) - this.radius, -this.radius, length, this.radius * 2, this.radius, false, true);
                     } else {
                         ctx.rotate(((-67.5 + 45 * (this.index - 1) + 180)) * Math.PI / 180);
-                        this.roundRect(ctx, -1 * (.4 * this.canvas.vmin + this.radius), -this.radius, width, this.radius * 2, this.radius, false, true);
+                        this.roundRect(ctx, -1 * (.4 * this.canvas.vmin + this.radius), -this.radius, length, this.radius * 2, this.radius, false, true);
                     }
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.closePath();
-
-
                 }
                 else {
                     //center small judgement hint circle
@@ -166,6 +163,7 @@ export class MusicNote {
                 }
                 break;
             case 'djmania':
+                const laneWidth = this.canvas.vmin / 4
                 if (!visible) {
                     ctx.strokeStyle = 'transparent';
                 }
@@ -185,11 +183,11 @@ export class MusicNote {
                     ctx.beginPath();
                     // ctx.setTransform(1, 0, 0, 1, this.canvas.width / 2, this.canvas.height / 2);
                     if (!this.reversed) {
-
                         // ctx.rotate((-67.5 + 45 * (this.index - 1)) * Math.PI / 180);
-                        this.roundRect(ctx, .4 * this.canvas.vmin * .25 - this.radius, - this.radius, width, this.radius * 2, this.radius, false, true);
+                        this.roundRect(ctx, x - laneWidth / 2, -this.radius, laneWidth, length, this.radius, true, true);
                     } else {
-                        this.roundRect(ctx, -1 * (.4 * this.canvas.vmin + this.radius), -this.radius, width, this.radius * 2, this.radius, false, true);
+                        this.roundRect(ctx, x - laneWidth / 2, this.canvas.height * 0.9 - length, laneWidth, length, this.radius, true, true);
+
                     }
                     // ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.closePath();
@@ -197,9 +195,9 @@ export class MusicNote {
 
                 }
                 else {
-                    this.roundRect(ctx, x - .1 * this.canvas.width, y, .2 * this.canvas.width, this.radius * 2, this.radius, true, true);
+                    this.roundRect(ctx, x - laneWidth / 2, y, laneWidth, this.radius, this.radius, true, true);
 
-                    // ctx.beginPath();
+                    // ctx.beginPath(); 
                     // ctx.arc(x, y, this.radius, 0, 2 * Math.PI);
                     // ctx.fill();
                     // ctx.closePath();

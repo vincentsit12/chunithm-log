@@ -1,16 +1,20 @@
 import { log } from "console"
+import e from "cors"
+import { YouTubeEvent } from "react-youtube"
 import { ActionPoint } from "./ActionPoint"
 import { MusicNote } from "./MusicNote"
 
 export class Game {
     canvasElement: HTMLCanvasElement
     canvas: Canvas
-    music: HTMLAudioElement
+    music: any
     type: GameType
     timeline: (string | string[])[]
     isStarted: boolean
     // isCountDownStarted: boolean
     score: number
+    totalScore: number
+    combo: number
     timer: any
     reactionPoints: ActionPoint[]
     musicNotes: MusicNote[]
@@ -21,7 +25,7 @@ export class Game {
     constructor(
         canvas: HTMLCanvasElement,
         type: GameType,
-        music: HTMLAudioElement,
+        music: any,
         timeline: (string | string[])[],
         config: GameConfig
     ) {
@@ -53,6 +57,8 @@ export class Game {
         // this.isCountDownStarted = false;
 
         this.score = 0;
+        this.combo = 0;
+        this.totalScore = 0;
         //reaction game 
 
         // this.timer = null
@@ -65,10 +71,18 @@ export class Game {
         this.timerId = []
         this.drawId = 0
         this.config = config
+
         this.music = music
-        music.volume = .5
-        music.muted = true
-        music.load()
+        if (this.music instanceof HTMLAudioElement) {
+            music.volume = .5
+            // music.muted = true
+            music.load()
+        }
+        else {
+            music.unMute()
+        }
+
+
 
 
         // let tscore = 0
@@ -100,6 +114,7 @@ export class Game {
             if (reactionTime <= 50) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 // console.log('perfect', reactionTime);
+                this.combo++
                 this.score += 1000
                 color = `rgba(255, 138, 6 ,%)`
                 this.reactionPoints[_index].showJudgement('PERFECT', `rgba(255, 138, 6 ,%)`)
@@ -109,6 +124,7 @@ export class Game {
             else if (reactionTime <= 100) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 // console.log('great', reactionTime);
+                this.combo++
                 this.score += 800
                 color = `rgba(214, 78, 62 ,%)`
                 this.reactionPoints[_index].showJudgement('GREAT', `rgba(214, 78, 62 ,%)`)
@@ -117,7 +133,7 @@ export class Game {
             }
             else if (reactionTime >= 100 && reactionTime <= 150) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
-
+                this.combo++
                 this.score += 500
                 color = `rgba(11, 250, 80 ,%)`
                 this.reactionPoints[_index].showJudgement('GOOD', `rgba(11, 250, 80 ,%)`)
@@ -139,80 +155,75 @@ export class Game {
 
         let time = 240 / BPM * 1000 * (i + 1) + 240 / BPM / length * j * 1000 - DURATION
 
-        //tap-hold
+        //each tap-hold mix 
         if (notesString.includes('/')) {
-            var note1 = 0, note2 = 0
-            let eachArray = notesString.split('/')
+            let notesArray = notesString.split('/')
+            for (var i = 0; i < notesArray.length; i++) {
+                let type: NoteType = notesArray[i].includes('h') ? 'hold' : 'tap'
 
-            let holdArray = eachArray[1].split('h')
+                if (type === 'hold') {
+                    let holdArray = notesArray[i].split('h')
+                    let index = parseInt(holdArray[0]) % judgementPointCount || judgementPointCount
+                    let reactionPoint = this.reactionPoints[index - 1]
+                    let holdTimingArray = holdArray[1].split(':')
+                    let holdDuration = 1 / parseInt(holdTimingArray[0]) * parseInt(holdTimingArray[1]) * 240 / BPM * 1000
+                    this.musicNotes.push(
+                        new MusicNote(this.canvas, Math.random(),
+                            { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
+                            { gameType: this.type, type: type, holdDuration: holdDuration, isEach: true, time: time },
+                            reactionPoint.killMusicNote, this.config))
 
-            let holdDuration = 1 / parseInt(holdArray[1]) * parseInt(holdArray[2]) * 240 / BPM * 1000
 
-            note1 = parseInt(eachArray[1]) % judgementPointCount || judgementPointCount
-            let reactionPoint = this.reactionPoints[note1 - 1]
+                }
+                //each tap
+                else {
+                    let index = parseInt(notesArray[i]) % judgementPointCount || judgementPointCount
+                    let reactionPoint = this.reactionPoints[index - 1]
+                    this.musicNotes.push(
+                        new MusicNote(this.canvas, Math.random(),
+                            { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
+                            { gameType: this.type, type: type, isEach: true, time: time },
+                            reactionPoint.killMusicNote, this.config))
+                }
 
 
-            note2 = notePos % judgementPointCount || judgementPointCount
-            let reactionPoint2 = this.reactionPoints[note2 - 1]
+            }
 
-
-            this.musicNotes.push(
-                new MusicNote(this.canvas, Math.random(),
-                    { index: note1, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
-                    { gameType: this.type, type: 'hold', holdDuration: holdDuration, isEach: true, time: time },
-                    reactionPoint.killMusicNote, this.config))
-
-            this.musicNotes.push(new MusicNote(this.canvas, Math.random(),
-                { index: note2, x: reactionPoint2.xInCanvs, y: reactionPoint2.yInCanvs },
-                { gameType: this.type, type: 'tap', isEach: true, time: time },
-                reactionPoint2.killMusicNote, this.config))
         }
 
         //tap , hold , tap-tap
         else {
             //hold
             if (notesString.includes('h')) {
-                var note1 = notePos % judgementPointCount || judgementPointCount
                 let holdArray = notesString.split('h')
-                let holdDuration = 1 / parseInt(holdArray[1]) * parseInt(holdArray[2]) * 240 / BPM * 1000
-                let reactionPoint = this.reactionPoints[note1 - 1]
+                let index = parseInt(holdArray[0]) % judgementPointCount || judgementPointCount
+                let reactionPoint = this.reactionPoints[index - 1]
+                let holdTimingArray = holdArray[1].split(':')
+                let holdDuration = 1 / parseInt(holdTimingArray[0]) * parseInt(holdTimingArray[1]) * 240 / BPM * 1000
                 this.musicNotes.push(
                     new MusicNote(this.canvas, Math.random(),
-                        { index: note1, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
-                        { gameType: this.type, type: 'hold', holdDuration: holdDuration, isEach: false, time: time },
+                        { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
+                        { gameType: this.type, type: 'hold', holdDuration: holdDuration, isEach: true, time: time },
                         reactionPoint.killMusicNote, this.config))
             }
-            //each tap
+            //each tap, tap
             else if (notePos - 1 >= 0) {
-                if (notePos - 1 > 9) {
+                let isEach = notesString.length > 1
+                for (var i = 0; i < notesString.length; i++) {
 
-                    let digit1 = Math.trunc(notePos / 10) % judgementPointCount || judgementPointCount
-                    let digit2 = (notePos % 10) % judgementPointCount || judgementPointCount
-                    let reactionPoint = this.reactionPoints[digit1 - 1]
-                    let reactionPoint2 = this.reactionPoints[digit2 - 1]
+                    let index = parseInt(notesString[i]) % judgementPointCount || judgementPointCount
+
+
+                    let reactionPoint = this.reactionPoints[index - 1]
+
 
                     this.musicNotes.push(new MusicNote(this.canvas, Math.random(),
-                        { index: digit1, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
-                        { gameType: this.type, type: 'tap', isEach: true, time: time },
-                        reactionPoint.killMusicNote, this.config))
-                    this.musicNotes.push(new MusicNote(this.canvas, Math.random(),
-                        { index: digit2, x: reactionPoint2.xInCanvs, y: reactionPoint2.yInCanvs },
-                        { gameType: this.type, type: 'tap', isEach: true, time: time },
-                        reactionPoint2.killMusicNote, this.config))
-
-
-                }
-                //tap
-                else {
-                    var note1 = notePos % judgementPointCount || judgementPointCount
-                    let reactionPoint = this.reactionPoints[note1 - 1]
-
-                    this.musicNotes.push(new MusicNote(this.canvas, Math.random(),
-                        { index: note1, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
-                        { gameType: this.type, type: 'tap', isEach: false, time: time },
+                        { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
+                        { gameType: this.type, type: 'tap', isEach: isEach, time: time },
                         reactionPoint.killMusicNote, this.config))
 
                 }
+
             }
         }
     }
@@ -252,11 +263,10 @@ export class Game {
                 if (k.type === 'hold') {
                     this.timerId.push(setTimeout(() => {
                         //reverse
-                        // console.log('reverse: ');
                         k.reached = false
                         k.reversed = true
                         // k.width = k.targetWidth
-                        k.targetWidth = RMG_OBJECT_RADIUS * 2
+                        k.targetLength = this.type === 'maimai' ? RMG_OBJECT_RADIUS * 2 : 0
                         k.startTime = null
 
 
@@ -293,42 +303,44 @@ export class Game {
                 var currentX = note.x + ((note.targetX - note.x) * deltaTime);
                 var currentY = note.y + ((note.targetY - note.y) * deltaTime);
 
-                var currentWidth = note.width + ((note.targetWidth - note.width) * judgementTime);
+                var currentLength = note.length + ((note.targetLength - note.length) * judgementTime);
                 if (note.type === 'hold') {
                     if (judgementTime >= 1) {
 
                         if (note.reached) {
-                            note.draw(currentX, currentY, note.targetWidth);
+                            note.draw(currentX, currentY, note.targetLength);
                         }
                         else {
                             // console.log('reached');
                             note.reached = true
-                            note.width = note.targetWidth
-                            note.draw(note.x, note.y, note.targetWidth);
-
+                            note.length = note.targetLength
+                            note.draw(note.x, note.y, note.targetLength);
                         }
 
                         if (note.reached && note.reversed) {
 
                             if (note.holdingTime >= note.holdDuration! * 0.5) {
                                 // console.log('perfect', reactionTime);
+                                this.combo++
                                 this.score += 1000
                                 this.reactionPoints[i].showJudgement('PERFECT', `rgba(255, 138, 6 ,%`)
 
                             }
                             else if (note.holdingTime >= note.holdDuration! * 0.3) {
                                 // console.log('great', reactionTime);
+                                this.combo++
                                 this.score += 800
                                 // this.reactionPoints[_index].changeColor('red')
                                 this.reactionPoints[i].showJudgement('GREAT', `rgba(214, 78, 62 ,%`)
 
                             }
                             else if (note.holdingTime > 0) {
-
+                                this.combo++
                                 this.score += 500
                                 this.reactionPoints[i].showJudgement('GOOD', `rgba(11, 250, 80 ,%`)
                             }
                             else if (note.holdingTime <= 0) {
+                                this.combo = 0
                                 this.reactionPoints[i].showJudgement('MISS', `rgba(115, 115, 115  ,%`)
 
                             }
@@ -338,7 +350,7 @@ export class Game {
                         }
                     }
                     else {
-                        note.draw(currentX, currentY, currentWidth);
+                        note.draw(currentX, currentY, currentLength);
                     }
                 }
 
@@ -348,8 +360,10 @@ export class Game {
                     }
                     if (deltaTime >= 1) { // note means we ended our animation
                         if (note.reached) {
-                            if (!note.hit)
+                            if (!note.hit) {
+                                this.combo = 0
                                 this.reactionPoints[i].showJudgement('MISS', `rgba(115, 115, 115, %`)
+                            }
 
                             // note.draw(note.x, note.y, false)
 
@@ -358,7 +372,7 @@ export class Game {
                         }
                     }
                     else {
-                        note.draw(currentX, currentY, currentWidth);
+                        note.draw(currentX, currentY, currentLength);
                     }
                 }
 
@@ -447,9 +461,14 @@ export class Game {
     // }
 
     endGame = () => {
-        if (this.music.duration > 0 && !this.music.paused) {
-            this.music.pause();
-            this.music.currentTime = 0;
+        if (this.music instanceof HTMLAudioElement) {
+            if (this.music.duration > 0 && !this.music.paused) {
+                this.music.pause();
+                this.music.currentTime = 0;
+            }
+        }
+        else {
+
         }
         // fetch('./result', {
         //     method: 'POST', // or 'PUT'
@@ -472,26 +491,25 @@ export class Game {
 
                 var boxCount = 8;
 
-                let startPoint = this.rotate(.5, .5, .9, .5, 67.5, true)
+                var startPoint = this.rotate(.5, .5, .9, .5, 67.5, true)
                 for (var i = 0; i < boxCount; i++) {
 
                     var newPoint = this.rotate(.5, .5, startPoint.x, startPoint.y, 45 * i)
 
                     this.reactionPoints.push(this.generateFixedReactionPoints(newPoint.x, newPoint.y, i));
                 }
-                this.music.muted = false
+                // this.music.muted = false
 
                 break;
             case "djmania":
-
                 var boxCount = 4;
-                let xStartPoint = 0.1
-                let averageWidth = 0.8 / boxCount
+                let xStartPoint = ((this.canvas.vmax - this.canvas.vmin) / 2) / this.canvas.width
+                let averageWidth = 1 / boxCount
                 for (var i = 0; i < boxCount; i++) {
-                    console.log((xStartPoint + (averageWidth * (i + 0.5))))
-                    this.reactionPoints.push(this.generateFixedReactionPoints((xStartPoint + (averageWidth * (i + 0.5))), .9, i));
+                    let x = averageWidth * (i + 0.5) * this.canvas.vmin / this.canvas.width
+                    this.reactionPoints.push(this.generateFixedReactionPoints((xStartPoint + x), .9, i));
                 }
-                this.music.muted = false
+                // this.music.muted = false
 
                 break;
             default:
@@ -678,7 +696,7 @@ export class Game {
         this.isStarted = true;
         // this.poseLandmarks = [];
         this.score = 0;
-
+        this.combo = 0;
         this.drawId = requestAnimationFrame(this.draw)
 
 
@@ -691,12 +709,19 @@ export class Game {
 
         this.preGenerateMusicNote()
 
-        this.music.play().then(() => {
-            this.scheuleMusicNote()
+        if (this.music instanceof HTMLAudioElement) {
+            this.music.play().then(() => {
+                this.scheuleMusicNote()
 
-        }).catch((e => {
-            alert(e)
-        }));
+            }).catch((e => {
+                alert(e)
+            }));
+        }
+        else {
+            this.music.playVideo()
+            this.scheuleMusicNote()
+        }
+
 
     }
 
@@ -751,10 +776,20 @@ export class Game {
         this.timerId = []
         this.musicNotes = []
         this.reactionPoints = []
-        this.score = 0
+
+        this.score = 0;
+        this.combo = 0;
+        this.totalScore = 0;
+
         this.isStarted = false
-        this.music.pause()
-        this.music.currentTime = 0;
+        if (this.music instanceof HTMLAudioElement) {
+            this.music.pause()
+            this.music.currentTime = 0;
+        }
+        else {
+            this.music.pauseVideo()
+            this.music.seekTo(0)
+        }
         this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         cancelAnimationFrame(this.drawId)
 
@@ -772,17 +807,21 @@ export class Game {
         //draw game field
         switch (this.type) {
             case 'maimai':
+                ctx.strokeStyle = 'white';
                 ctx.arc(.5 * this.canvas.width, .5 * this.canvas.height, RMG_CENTERLINE_RADIUS, 0, 2 * Math.PI);
 
                 break;
             case 'djmania':
+
+                ctx.strokeStyle = 'gray';
+                const startPoint = (this.canvas.vmax - this.canvas.vmin) / 2
                 for (var i = 0; i < 5; i++) {
-                    ctx.moveTo((.1 + i * .2) * this.canvas.width, 0 * this.canvas.height)
-                    ctx.lineTo((.1 + i * .2) * this.canvas.width, .9 * this.canvas.height);
+                    ctx.moveTo(startPoint + (i * .25) * this.canvas.vmin, 0)
+                    ctx.lineTo(startPoint + (i * .25) * this.canvas.vmin, this.canvas.height);
                 }
 
-                ctx.moveTo(.1 * this.canvas.width, .9 * this.canvas.height)
-                ctx.lineTo(.9 * this.canvas.width, .9 * this.canvas.height);
+                ctx.moveTo(startPoint, .9 * this.canvas.height)
+                ctx.lineTo(startPoint + this.canvas.vmin, .9 * this.canvas.height);
 
                 break;
             default:
@@ -790,8 +829,20 @@ export class Game {
                 break;
         }
         ctx.lineWidth = RMG_OBJECT_RADIUS * .1
-        ctx.strokeStyle = 'white';
+
         ctx.stroke();
+        ctx.closePath()
+
+
+
+        ctx.beginPath();
+        ctx.font = `bold ${RMG_OBJECT_RADIUS * 10}px Arial`;
+        ctx.textAlign = "center";
+        // ctx.lineWidth = 2;
+        // ctx.strokeStyle = `rgba(255,255,255, 1})`
+        // ctx.strokeText(this.combo.toString(), 0, 0);
+        ctx.fillStyle = `rgba(255,255,255, .7)`
+        ctx.fillText(this.combo.toString(), .5 * this.canvas.width, .3 * this.canvas.height);
         ctx.closePath()
 
         //draw music note and judgement line
