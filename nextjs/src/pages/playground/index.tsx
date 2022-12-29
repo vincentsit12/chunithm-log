@@ -32,7 +32,7 @@ const Playground = (props: Props) => {
     const [gameType, setGameType] = useState<GameType>('djmania')
     const [youtubeLink, setYoutubeLink] = useState('')
     const [isGameStarted, setIsGameStarted] = useState(false)
-    const [timelineString, setTimelineString] = useState<string>(defaultTimeLine)
+    const [timelineString, setTimelineString] = useState<string>('')
     const [BPM, setBPM] = useState("180")
     const [speed, setSpeed] = useState<string>("6")
     const [modalIsOpen, setModalIsOpen] = useState(false)
@@ -45,7 +45,6 @@ const Playground = (props: Props) => {
             return youtubeLink
         }
     }, [youtubeLink])
-    console.log("🚀 ~ file: index.tsx:41 ~ youtubeId ~ youtubeId", youtubeId)
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
 
@@ -60,7 +59,7 @@ const Playground = (props: Props) => {
         }
     }, [])
     useEffect(() => {
-        console.log(router.query?.music?.toString())
+        // console.log(router.query?.music?.toString())
         setYoutubeLink(router.query?.music?.toString() ?? '')
     }, [router])
     useEffect(() => {
@@ -132,7 +131,6 @@ const Playground = (props: Props) => {
                 // // // // console.log("🚀 ~ file: maimai-simple.tsx ~ line 24 ~ useEffect ~ game", game)
             }
         } catch (e) {
-            console.log("🚀 ~ file: index.tsx:100 ~ initGame ~ e", e)
             alert('invalid timeline/setting!')
         }
     }
@@ -153,11 +151,13 @@ const Playground = (props: Props) => {
 
 
     const youtubeVideoOnReady: YouTubeProps['onReady'] = (e) => {
-        console.log("🚀 ~ file: index.tsx:155 ~ Playground ~ e", e)
+
         if (e.target.videoTitle) {
             console.log('youtube video ready')
             e.target.setVolume(20)
+            e.target.unMute()
             youtubeRef.current = e.target;
+            
         }
     }
 
@@ -172,9 +172,9 @@ const Playground = (props: Props) => {
         playerVars: {
             // https://developers.google.com/youtube/player_parameters
             // autoplay: 1,
-            controls : 0,
-            disablekb : 1,
-            fs : 0
+            controls: 0,
+            disablekb: 1,
+            fs: 0
         },
     };
 
@@ -185,12 +185,17 @@ const Playground = (props: Props) => {
             </Head>
             <div className='flex w-full justify-center mb20' >
                 <button onClick={() => {
-
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
                     if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
                         document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
                         if (screen?.orientation) {
-                            screen.orientation.lock("landscape-primary").catch((err) =>
-                                console.log("err", err)).finally(() => {
+                            screen.orientation.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
                                     setModalIsOpen(true)
                                 })
                         }
@@ -208,7 +213,7 @@ const Playground = (props: Props) => {
                             .then(() => {
                                 // setModalIsOpen(true)
                                 if (screen?.orientation) {
-                                    screen.orientation.lock("landscape-primary").catch((err) =>
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
                                         console.log("err", err)).finally(() => {
                                             setModalIsOpen(true)
                                         })
@@ -255,9 +260,13 @@ const Playground = (props: Props) => {
                     setYoutubeLink(e.target.value)
 
 
-                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link'></input>
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
                 <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
-                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} />
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
                 <textarea value={timelineString} onChange={(e) => {
                     setTimelineString(e.target.value)
                 }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
@@ -347,7 +356,7 @@ const Playground = (props: Props) => {
                             padding: '0rem',
                             transform: 'translate(-50%, -50%)',
                             height: enalbleFullScreen ? '100%' : '90%',
-                            width: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
                             display: 'flex',
                             flexDirection: 'column',
                             border: 'none',

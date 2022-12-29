@@ -21,7 +21,6 @@ export class Game {
     config: GameConfig
     timerId: any[]
     drawId: number
-    // deltaD: number
     constructor(
         canvas: HTMLCanvasElement,
         type: GameType,
@@ -29,18 +28,10 @@ export class Game {
         timeline: (string | string[])[],
         config: GameConfig
     ) {
-        // this.config;
-
-        // this.poseLandmarks = [];
         this.type = type;
-
-
-        //delta D is ~= (action point - music note start point) / music note size 
-        // this.deltaD = this.type === "maimai" ? 4 : 8
-
+        // this.poseLandmarks = [];
         // this.playerName = playerName || 'GUEST'
         this.canvasElement = canvas
-        // this.canvasElement.addEventListener('touchstart', this.ontouchstart);
         canvas.width = canvas.clientWidth
         canvas.height = canvas.clientHeight
         this.canvas = {
@@ -60,7 +51,6 @@ export class Game {
         this.combo = 0;
         this.totalScore = 0;
         //reaction game 
-
         // this.timer = null
 
         //reaction music game
@@ -78,24 +68,7 @@ export class Game {
             // music.muted = true
             music.load()
         }
-        else {
-            music.unMute()
-        }
-
-
-
-
-        // let tscore = 0
-        // let t = timeline.flat()
-        // for (let i = 0; i <= t.length; i++) {
-        //     if (parseInt(t[i]) > 9) {
-        //         tscore += 2000;
-        //     }
-        //     else if (parseInt(t[i]) > 0) {
-        //         tscore += 1000;
-        //     }
-        // }
-
+  
     }
     checkReactionTime = (index: number) => {
         let color = ''
@@ -115,7 +88,7 @@ export class Game {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 // console.log('perfect', reactionTime);
                 this.combo++
-                this.score += 1000
+                this.score += 500
                 color = `rgba(255, 138, 6 ,%)`
                 this.reactionPoints[_index].showJudgement('PERFECT', `rgba(255, 138, 6 ,%)`)
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
@@ -125,7 +98,7 @@ export class Game {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 // console.log('great', reactionTime);
                 this.combo++
-                this.score += 800
+                this.score += 400
                 color = `rgba(214, 78, 62 ,%)`
                 this.reactionPoints[_index].showJudgement('GREAT', `rgba(214, 78, 62 ,%)`)
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
@@ -134,7 +107,7 @@ export class Game {
             else if (reactionTime >= 100 && reactionTime <= 150) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 this.combo++
-                this.score += 500
+                this.score += 250
                 color = `rgba(11, 250, 80 ,%)`
                 this.reactionPoints[_index].showJudgement('GOOD', `rgba(11, 250, 80 ,%)`)
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
@@ -173,7 +146,7 @@ export class Game {
                             { gameType: this.type, type: type, holdDuration: holdDuration, isEach: true, time: time },
                             reactionPoint.killMusicNote, this.config))
 
-
+                    this.totalScore += 1000
                 }
                 //each tap
                 else {
@@ -184,6 +157,8 @@ export class Game {
                             { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
                             { gameType: this.type, type: type, isEach: true, time: time },
                             reactionPoint.killMusicNote, this.config))
+
+                    this.totalScore += 500
                 }
 
 
@@ -205,6 +180,7 @@ export class Game {
                         { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
                         { gameType: this.type, type: 'hold', holdDuration: holdDuration, isEach: true, time: time },
                         reactionPoint.killMusicNote, this.config))
+                this.totalScore += 1000
             }
             //each tap, tap
             else if (notePos - 1 >= 0) {
@@ -221,7 +197,7 @@ export class Game {
                         { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
                         { gameType: this.type, type: 'tap', isEach: isEach, time: time },
                         reactionPoint.killMusicNote, this.config))
-
+                    this.totalScore += 500
                 }
 
             }
@@ -470,18 +446,6 @@ export class Game {
         else {
 
         }
-        // fetch('./result', {
-        //     method: 'POST', // or 'PUT'
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //         score: this.score,
-        //         name: this.playerName,
-        //     }),
-        // }).then(r => {
-        //     window.location.href = `./result?type=${this.type}&score=${this.score}&player=${this.playerName}`
-        // })
     }
 
     initPoints = () => {
@@ -503,7 +467,7 @@ export class Game {
                 break;
             case "djmania":
                 var boxCount = 4;
-                let xStartPoint = ((this.canvas.vmax - this.canvas.vmin) / 2) / this.canvas.width
+                let xStartPoint = ((this.canvas.width - this.canvas.vmin) / 2) / this.canvas.width
                 let averageWidth = 1 / boxCount
                 for (var i = 0; i < boxCount; i++) {
                     let x = averageWidth * (i + 0.5) * this.canvas.vmin / this.canvas.width
@@ -719,7 +683,7 @@ export class Game {
         }
         else {
             this.music.playVideo()
-            this.scheuleMusicNote()
+            // this.scheuleMusicNote()
         }
 
 
@@ -819,12 +783,14 @@ export class Game {
             case 'maimai':
                 ctx.strokeStyle = 'white';
                 ctx.arc(.5 * this.canvas.width, .5 * this.canvas.height, RMG_CENTERLINE_RADIUS, 0, 2 * Math.PI);
-
+                ctx.lineWidth = RMG_OBJECT_RADIUS * .1
+                ctx.stroke();
+                ctx.closePath()
                 break;
             case 'djmania':
 
                 ctx.strokeStyle = 'gray';
-                const startPoint = (this.canvas.vmax - this.canvas.vmin) / 2
+                const startPoint = (this.canvas.width - this.canvas.vmin) / 2
                 for (var i = 0; i < 5; i++) {
                     ctx.moveTo(startPoint + (i * .25) * this.canvas.vmin, 0)
                     ctx.lineTo(startPoint + (i * .25) * this.canvas.vmin, this.canvas.height);
@@ -833,27 +799,32 @@ export class Game {
                 ctx.moveTo(startPoint, .9 * this.canvas.height)
                 ctx.lineTo(startPoint + this.canvas.vmin, .9 * this.canvas.height);
 
+
+
+
+                ctx.lineWidth = RMG_OBJECT_RADIUS * .1
+                ctx.stroke();
+
+
+                ctx.font = `bold ${RMG_OBJECT_RADIUS * 10}px Arial`;
+                ctx.textAlign = "center";
+                // ctx.lineWidth = 2;
+                // ctx.strokeStyle = `rgba(255,255,255, 1})`
+                // ctx.strokeText(this.combo.toString(), 0, 0);
+                ctx.fillStyle = `rgba(255,255,255, .5)`
+                ctx.fillText(this.combo.toString(), .5 * this.canvas.width, .25 * this.canvas.height);
+                ctx.font = `bold ${RMG_OBJECT_RADIUS * 2}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText(`  ${((this.score / this.totalScore) * 100).toFixed(2)}%`, .5 * this.canvas.width, RMG_OBJECT_RADIUS * 2.5);
+
+                ctx.closePath()
+
                 break;
             default:
 
                 break;
         }
-        ctx.lineWidth = RMG_OBJECT_RADIUS * .1
 
-        ctx.stroke();
-        ctx.closePath()
-
-
-
-        ctx.beginPath();
-        ctx.font = `bold ${RMG_OBJECT_RADIUS * 10}px Arial`;
-        ctx.textAlign = "center";
-        // ctx.lineWidth = 2;
-        // ctx.strokeStyle = `rgba(255,255,255, 1})`
-        // ctx.strokeText(this.combo.toString(), 0, 0);
-        ctx.fillStyle = `rgba(255,255,255, .7)`
-        ctx.fillText(this.combo.toString(), .5 * this.canvas.width, .3 * this.canvas.height);
-        ctx.closePath()
 
         //draw music note and judgement line
         this.update();
