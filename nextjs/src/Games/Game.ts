@@ -725,28 +725,38 @@ export class Game {
 
     }
 
+    checkKeyboardEvent = (e: KeyboardEvent, i: number) => {
+        if (e.type === "keydown" && !e.repeat) {
+            let color = this.checkReactionTime(i)
+            this.reactionPoints[i - 1].onTouch(color)
+        }
+        else if (e.type === "keyup") {
+            let note = this.reactionPoints[i - 1].musicNotes[0]
+            if (note && note.type == 'hold') {
+                note.hit = false
+                note.holdingStartTime = 0;
+            }
+        }
+    }
+
     onKeyboard = (e: KeyboardEvent) => {
         // keyborad
         // window.addEventListener('keydown', (e) => {
         if (!this.isStarted || this.type === 'maimai') return
-        let s;
+
         switch (e.key) {
 
             case 'z':
-                s = this.checkReactionTime(1)
-                this.reactionPoints[0].onTouch(s)
+                this.checkKeyboardEvent(e, 1)
                 break;
             case 'x':
-                s = this.checkReactionTime(2)
-                this.reactionPoints[1].onTouch(s)
+                this.checkKeyboardEvent(e, 2)
                 break;
             case '.':
-                s = this.checkReactionTime(3)
-                this.reactionPoints[2].onTouch(s)
+                this.checkKeyboardEvent(e, 3)
                 break;
             case '/':
-                s = this.checkReactionTime(4)
-                this.reactionPoints[3].onTouch(s)
+                this.checkKeyboardEvent(e, 4)
                 break;
             // case 'a':
             //     s = this.checkReactionTime(5)

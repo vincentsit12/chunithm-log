@@ -2,7 +2,8 @@ import LayoutWrapper from 'components/LayoutWrapper'
 import { Game } from 'Games/Game'
 import { isArray } from 'lodash'
 import Head from 'next/head';
-import React, { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/router';
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Modal from 'react-modal';
 import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
 
@@ -22,8 +23,9 @@ declare global {
         ALLOW_KEYBOARD_INPUT: any
     }
 }
-const SimpleMaimai = (props: Props) => {
+const Playground = (props: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const router = useRouter()
     const modalRef = useRef<any>(null)
     const game = useRef<Game>()
     const [enalbleFullScreen, setEnalbleFullScreen] = useState(false)
@@ -35,49 +37,80 @@ const SimpleMaimai = (props: Props) => {
     const [speed, setSpeed] = useState<string>("6")
     const [modalIsOpen, setModalIsOpen] = useState(false)
     const youtubeRef = useRef()
+    const youtubeId = useMemo(() => {
+        try {
+            let url = new URL(youtubeLink)
+            return url.searchParams.get('v') ?? youtubeLink
+        } catch (error) {
+            return youtubeLink
+        }
+    }, [youtubeLink])
+    console.log("🚀 ~ file: index.tsx:41 ~ youtubeId ~ youtubeId", youtubeId)
     useEffect(() => {
-        let listener = window.addEventListener('keydown', (e) => game.current?.onKeyboard(e))
+        const onKeyDown = (e: KeyboardEvent) => {
 
-        return listener
+            game.current?.onKeyboard(e)
+        }
+        window.addEventListener('keydown', onKeyDown)
+        window.addEventListener('keyup', onKeyDown)
+
+        return () => {
+            window.removeEventListener('keydown', onKeyDown)
+            window.removeEventListener('keyup', onKeyDown)
+        }
     }, [])
     useEffect(() => {
-        let listener = document.addEventListener('touchmove', function (event) {
-            { if (event.targetTouches.length > 1) event.preventDefault(); }
-        }, { passive: false });
-        return listener
+        console.log(router.query?.music?.toString())
+        setYoutubeLink(router.query?.music?.toString() ?? '')
+    }, [router])
+    useEffect(() => {
+        const onTouchMove = (e: TouchEvent) => {
+            if (e.targetTouches.length > 1) e.preventDefault();
+        }
+        let listener = document.addEventListener('touchmove', onTouchMove
+            , { passive: false });
+        return () => document.removeEventListener('touchmove', onTouchMove);
     }, [])
+
 
     useEffect(() => {
         let listener;
+        const onWebkitFullScreenChange = () => {
+            if (!document.webkitFullscreenElement) {
+                screen?.orientation?.unlock()
+                game.current?.reset()
+                setModalIsOpen(false)
+            }
+        }
+        const onFullScreenChange = () => {
+
+            if (!document.webkitFullscreenElement) {
+                screen?.orientation?.unlock()
+                game.current?.reset()
+                setModalIsOpen(false)
+            }
+        }
         if (document.webkitFullscreenEnabled) {
-            listener = document.addEventListener('webkitfullscreenchange', (e) => {
-
-                if (!document.webkitFullscreenElement) {
-                    screen?.orientation?.unlock()
-                    game.current?.reset()
-                    setModalIsOpen(false)
-                }
-            })
-
+            listener = document.addEventListener('webkitfullscreenchange', onWebkitFullScreenChange)
         }
         else if (document.fullscreenEnabled) {
-            listener = document.addEventListener('fullscreenchange', (e) => {
-
-                if (!document.fullscreenElement) {
-                    screen?.orientation?.unlock()
-                    game.current?.reset()
-                    setModalIsOpen(false)
-                }
-            })
+            listener = document.addEventListener('fullscreenchange', onFullScreenChange)
         }
 
-        return listener
+        return () => {
+            if (document.webkitFullscreenEnabled) {
+                document.removeEventListener('webkitfullscreenchange', onWebkitFullScreenChange)
+            }
+            else if (document.fullscreenEnabled) {
+                document.removeEventListener('fullscreenchange', onFullScreenChange)
+            }
+        }
     }, [])
 
     useEffect(() => {
         document.documentElement.style.overflow = modalIsOpen ? 'hidden' : 'auto'
     }, [modalIsOpen])
-    const customStyles = {}
+
     const initGame = () => {
         try {
 
@@ -120,8 +153,12 @@ const SimpleMaimai = (props: Props) => {
 
 
     const youtubeVideoOnReady: YouTubeProps['onReady'] = (e) => {
-        console.log('youtube video ready')
-        youtubeRef.current = e.target;
+        console.log("🚀 ~ file: index.tsx:155 ~ Playground ~ e", e)
+        if (e.target.videoTitle) {
+            console.log('youtube video ready')
+            e.target.setVolume(20)
+            youtubeRef.current = e.target;
+        }
     }
 
     const youtubeVideoOnError: YouTubeProps['onError'] = (e) => {
@@ -130,11 +167,14 @@ const SimpleMaimai = (props: Props) => {
     }
 
     const youtubeOpts: YouTubeProps['opts'] = {
-        height: '390',
-        width: '640',
+        height: '320',
+        width: '320',
         playerVars: {
             // https://developers.google.com/youtube/player_parameters
             // autoplay: 1,
+            controls : 0,
+            disablekb : 1,
+            fs : 0
         },
     };
 
@@ -148,10 +188,17 @@ const SimpleMaimai = (props: Props) => {
 
                     if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
                         document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
-                        screen?.orientation?.lock("landscape-primary").catch((err) =>
-                            console.log("err", err))
+                        if (screen?.orientation) {
+                            screen.orientation.lock("landscape-primary").catch((err) =>
+                                console.log("err", err)).finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
 
-                        setModalIsOpen(true)
+
 
                     }
                     else if (enalbleFullScreen && document.fullscreenEnabled) {
@@ -160,12 +207,15 @@ const SimpleMaimai = (props: Props) => {
                         dom.requestFullscreen({ navigationUI: "show" })
                             .then(() => {
                                 // setModalIsOpen(true)
-                                screen.orientation.lock("landscape-primary")
-                                    .then(function () {
-                                    })
-                                    .catch((err) => {
-                                        console.log("err", err)
-                                    }).finally(() => setModalIsOpen(true))
+                                if (screen?.orientation) {
+                                    screen.orientation.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
                             })
                             .catch(function (error) {
                                 alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
@@ -178,7 +228,6 @@ const SimpleMaimai = (props: Props) => {
                 }} className='btn btn-secondary mx-5'>Start Game</button>
                 <button onClick={() => {
                     closeGame()
-                    // game.current = null
                 }} className='btn btn-secondary mx-5'>Reset Game</button>
             </div>
             <div className="flex justify-center items-center mb-4">
@@ -204,8 +253,10 @@ const SimpleMaimai = (props: Props) => {
             <div className='inner inner-720'>
                 <input value={youtubeLink} onChange={(e) => {
                     setYoutubeLink(e.target.value)
+
+
                 }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link'></input>
-                <YouTube videoId={youtubeLink} opts={youtubeOpts} style={{display : 'none'}}
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
                     onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} />
                 <textarea value={timelineString} onChange={(e) => {
                     setTimelineString(e.target.value)
@@ -272,10 +323,8 @@ const SimpleMaimai = (props: Props) => {
 
                 <Modal
                     isOpen={modalIsOpen}
-                    onAfterOpen={() => {
-                        initGame()
-                    }}
-                    // onAfterOpen={afterOpenModal}
+
+                    onAfterOpen={() => initGame()}
                     // onRequestClose={closeModal}
                     ariaHideApp={false}
                     ref={modalRef}
@@ -302,7 +351,7 @@ const SimpleMaimai = (props: Props) => {
                             display: 'flex',
                             flexDirection: 'column',
                             border: 'none',
-                            backgroundColor: 'black'
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
                         },
                     }}
                 // contentLabel="Example Modal"
@@ -345,5 +394,5 @@ const SimpleMaimai = (props: Props) => {
     )
 }
 
-export default SimpleMaimai
+export default Playground
 
