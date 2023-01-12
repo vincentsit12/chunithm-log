@@ -23,6 +23,7 @@ import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
 import 'rc-tooltip/assets/bootstrap_white.css';
 import { log } from 'console'
+import { Op } from 'sequelize'
 
 type Props = {
   ratingList: Rating[];
@@ -73,14 +74,14 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
   const _renderTableRow = () => {
 
     return _.map(sortedRatingList, (k, i) => {
-      return <tr key={i} className={classNames('cursor-pointer', 'hover:bg-gray-300/[.4]', 'active:bg-gray-300/[.4]', { 'border-b': i === 29 && !searchText, 'border-b-red-700': i === 29 && !searchText })} onClick={() => {
-        router.push(k.song)
-      }}>
+      return <tr key={i} className={classNames("even:bg-gray-300/[.6]", 'hover:bg-gray-500/[.4]', 'hover:bg-gray-500/[.4]', { 'border-b': i === 29 && !searchText, 'border-b-red-700': i === 29 && !searchText })} >
         <td>{k.order ?? '-'}</td>
         <td className='song'>{k.song}</td>
         <td>{k.internalRate}</td>
         <td>{k.score}</td>
-        <td className='txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
+        <td onClick={() => {
+          router.push(k.song)
+        }} className='txt-white cursor-pointer'><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
       </tr >
     })
   }
@@ -183,7 +184,15 @@ export async function getServerSideProps(context: NextPageContext) {
 
     const userID = decrypt(encryptUserId)
 
-    let data = (await Users.findOne({ where: { id: parseInt(userID) }, include: { model: Records, include: [{ model: Songs }] } }))
+    let data = (await Users.findOne({
+      where: { id: parseInt(userID) }, include: {
+        model: Records,
+
+        include: [{
+          model: Songs,
+        }]
+      }
+    }))
 
     const ratingList = _.map(data?.records, function (o) {
       let song: Song = o.song[o.difficulty]

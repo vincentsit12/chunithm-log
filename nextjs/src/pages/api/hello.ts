@@ -7,6 +7,7 @@ import withErrorHandler from 'utils/errorHandler'
 import Cors from 'cors'
 import { runMiddleware } from 'utils/runMiddleware'
 import { getToken } from 'next-auth/jwt'
+import { Sequelize } from 'sequelize'
 
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
@@ -24,11 +25,11 @@ async function handler(
   await runMiddleware(req, res, cors)
   // const token = await getToken({ req, secret: process.env.JWT_SECRET })
 
-  let data = await Songs.findOne({ where: { display_name: 'J219' } })
-  if (!data) {
+  let data = await Songs.findAll({ order: Sequelize.literal('random()'), limit: 1 })
+  if (!data.length) {
     throw new BadRequestError('no this song')
   }
-  res.status(200).send(data)
+  res.status(200).send(data[0])
 }
 
 export default withErrorHandler(handler)

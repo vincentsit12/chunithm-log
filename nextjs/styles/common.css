@@ -14,7 +14,7 @@ html {
 body {
   color: #000000;
   line-height: 1.6;
-  background-image: linear-gradient(to top, #24E1F295, #d9ebee, #24E1F250);
+  background-image: linear-gradient(.25turn, #24baff90, #d9ebee, #24baff90);
   min-width: 320px;
   font-family: 'M PLUS 1', sans-serif;
 }
@@ -1011,11 +1011,14 @@ custom
 #rating-table {
   min-height: 600px;
   z-index: 2;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
+  overflow-x: hidden;
+  border: none;
   text-align: center;
   position: relative;
 
 }
+
 
 #rating-table th {
   padding: 4px;

@@ -710,6 +710,18 @@ export class Game {
 
         switch (e.key) {
 
+            case 'a':
+                this.checkKeyboardEvent(e, 1)
+                break;
+            case 'c':
+                this.checkKeyboardEvent(e, 2)
+                break;
+            case 'n':
+                this.checkKeyboardEvent(e, 3)
+                break;
+            case 'l':
+                this.checkKeyboardEvent(e, 4)
+                break;
             case 'z':
                 this.checkKeyboardEvent(e, 1)
                 break;

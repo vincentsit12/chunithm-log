@@ -2,6 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import logo from '../../public/logo2.png'
 type Props = {
     children: React.ReactNode
 }
@@ -13,9 +14,9 @@ const LayoutWrapper: React.FC<Props> = ({ children }) => {
             <div style={{ 'margin': '3.125rem auto' }}>
                 <div className='mb20 tc'>
                     <div className=''>
-                        <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/record/musicGenre/master' : '/home'}>
+                        <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
                             <a>
-                                <Image alt='chunithm' src={'/logo2.png'} height={200} width={400} ></Image>
+                                <Image alt='chunithm' src={logo} height={200} width={400} ></Image>
                             </a>
                         </Link>
                     </div>

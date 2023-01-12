@@ -31,7 +31,6 @@ const Playground = (props: Props) => {
     const [enalbleFullScreen, setEnalbleFullScreen] = useState(false)
     const [gameType, setGameType] = useState<GameType>('djmania')
     const [youtubeLink, setYoutubeLink] = useState('')
-    const [isGameStarted, setIsGameStarted] = useState(false)
     const [timelineString, setTimelineString] = useState<string>('')
     const [BPM, setBPM] = useState("180")
     const [speed, setSpeed] = useState<string>("6")
@@ -77,16 +76,16 @@ const Playground = (props: Props) => {
         const onWebkitFullScreenChange = () => {
             if (!document.webkitFullscreenElement) {
                 screen?.orientation?.unlock()
-                game.current?.reset()
                 setModalIsOpen(false)
+                game.current?.reset()
             }
         }
         const onFullScreenChange = () => {
 
-            if (!document.webkitFullscreenElement) {
+            if (!document.fullscreenElement) {
                 screen?.orientation?.unlock()
-                game.current?.reset()
                 setModalIsOpen(false)
+                game.current?.reset()
             }
         }
         if (document.webkitFullscreenEnabled) {
@@ -157,7 +156,7 @@ const Playground = (props: Props) => {
             e.target.setVolume(20)
             e.target.unMute()
             youtubeRef.current = e.target;
-            
+
         }
     }
 
@@ -192,7 +191,7 @@ const Playground = (props: Props) => {
                     if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
                         document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
                         if (screen?.orientation) {
-                            screen.orientation.lock("landscape-primary")
+                            screen.orientation?.lock("landscape-primary")
                                 .catch((err) =>
                                     console.log("err", err))
                                 .finally(() => {

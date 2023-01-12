@@ -2,17 +2,11 @@ import axios from 'axios'
 import type { NextPage, NextPageContext } from 'next'
 import { Session } from 'next-auth'
 import { getSession, signOut, useSession } from 'next-auth/react'
-import Head from 'next/head'
-import Image from 'next/image'
-import { Rating } from 'types'
-import { getRatingList } from 'utils/api'
+
 import _, { isInteger, isString } from 'lodash'
-import Users from 'db/model/users'
-import Records from 'db/model/records'
+
 import Songs from 'db/model/songs'
-import { MdOutlineContentCopy } from 'react-icons/md'
-import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/calculateRating'
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
 import { useMemo, useState } from 'react'
@@ -52,7 +46,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
     return _.map(sortedRatingList, (k, i) => {
       if (isString(k.master) || isString(k.expert) || isString(k.ultima))
         console.log("🚀 ~ file: song.tsx ~ line 55 ~ return_.map ~ k", k)
-      return <tr key={i} className='cursor-pointer hover:bg-gray-300/[.4] active:bg-gray-300/[.4]' onClick={() => {
+      return <tr key={i} className='cursor-pointer even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' onClick={() => {
         router.push(k.display_name)
       }}>
         {/* <td className='w-10'>{k.id}</td> */}
@@ -75,7 +69,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
             setSearchText(e.target.value)
           }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
         </div>
-        <div id='rating-table' className='box box-shadow mb20'>
+        <div id='rating-table' className='box box-shadow mb20 '>
           {songList.length > 0 &&
             <table >
               <thead>

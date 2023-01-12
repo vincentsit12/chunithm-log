@@ -31,6 +31,7 @@ export class ActionPoint {
 
     index: number
     musicNotes: MusicNote[]
+    answerSound: HTMLAudioElement
     config: GameConfig
     constructor(canvas: Canvas, type: GameType, x: number, y: number, kill: () => void, index: number, config: GameConfig) {
         this.type = type;
@@ -63,8 +64,8 @@ export class ActionPoint {
 
         this.timer = null
         this.kill = kill;
-        // this.answer_sound = new Audio('click.mp3')
-
+        this.answerSound = new Audio('/click.mp3')
+        this.answerSound.load()
         // this.answer_sound.volume = 1
 
         //reaction music game
@@ -109,6 +110,13 @@ export class ActionPoint {
         }
     }
     onTouch = (color: string) => {
+        if (this.answerSound.currentTime !== 0 && !this.answerSound.ended) {
+            // console.log(this.answerSound.currentTime)
+            // this.answerSound.play()
+        }
+        else if (this.answerSound.currentTime === 0 || this.answerSound.ended){
+            this.answerSound.play()
+        }
         if (!this.onHitTimer) {
             this.alpha = .2;
             this.onTouched = true

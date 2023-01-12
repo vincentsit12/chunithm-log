@@ -2,6 +2,7 @@
     const difficultyList = ['ultima', 'master', 'expert']
     let scoreList = []
     let isLoading = false
+    let isAlertShown = false
     const hostUrl = 'https://chuni-log.com'
     // const hostUrl = 'http://localhost:3000'
     function showLoadingView() {
@@ -23,6 +24,21 @@
             }
         });
     }
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i <ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
     // function loadHTML() {
     //     var xmlhttp = new XMLHttpRequest();
 
@@ -43,16 +59,20 @@
     //     }
     //     loadHTML()
     async function getScoreList(difficulty, songs) {
-        const url = 'https://chunithm-net-eng.com/mobile/record/musicGenre/' + difficulty
-        return fetch(url, { credentials: 'include' })
+
+        let params = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+        let formData = new FormData();
+        formData.append('genre', 99);
+        formData.append('token', getCookie('_t'));
+        const url = 'https://chunithm-net-eng.com/mobile/record/musicGenre/send' + params
+        return fetch(url, { method: 'POST', body: formData, credentials: 'include' })
             .then(function (response) {
                 return response.text()
             }).then(function (html) {
                 var doc = new DOMParser().parseFromString(html, 'text/html');
                 const musiclist = $(doc).find('.musiclist_box')
                 if (musiclist.length <= 0) {
-                    throw ('fail, please try again on this link ' + url);
-
+                    throw ('fail, please login and try again');
                 }
                 else {
 
@@ -86,16 +106,26 @@
 
             }).catch(e => {
                 isLoading = false
-                console.log('calculateRating', e)
-                alert('fail, please try again on the musicGenre/' + difficulty + ' page')
+                if (!isAlertShown) {
+                    isAlertShown = true
+                    alert(e)
+                }
+
             });
     }
 
 
     async function init() {
-        for (let i = 0; i < difficultyList.length; i++) {
-            await getScoreList(difficultyList[i])
+        try {
+            for (let i = 0; i < difficultyList.length; i++) {
+                await getScoreList(difficultyList[i])
+            }
+        } catch (e) {
+            isLoading = false
+            console.log('calculateRating', e)
+            alw
         }
+
         if (scoreList.length <= 0) throw "no songs record, please retry"
         console.table(scoreList)
         fetch(hostUrl + "/api/record/" + userID, {
@@ -104,7 +134,7 @@
             body: JSON.stringify({ data: scoreList, }),
         })
             .then((r) => r.text()).then(r => {
-                window.open(hostUrl)
+                window.location = hostUrl
             }).catch(e => {
                 alert(e)
             }).finally(() => {
