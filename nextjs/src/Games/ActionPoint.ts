@@ -22,6 +22,7 @@ export class ActionPoint {
     onTouched: boolean
     onTouchColor: string
 
+    isReady: boolean
 
     timer: any
     kill: () => void
@@ -65,7 +66,8 @@ export class ActionPoint {
         this.timer = null
         this.kill = kill;
         this.answerSound = new Audio('/click.mp3')
-        this.answerSound.load()
+        // this.answerSound.load()
+        this.answerSound.addEventListener('canplaythrough', this.setIsReady)
         // this.answer_sound.volume = 1
 
         //reaction music game
@@ -75,7 +77,11 @@ export class ActionPoint {
         this.musicNotes = [];
 
         this.index = index;
+        this.isReady = false
+    }
 
+    setIsReady = () => {
+            this.isReady = true
     }
     killMusicNote = (id: number) => {
         this.musicNotes = this.musicNotes.filter(k => k.id != id)
@@ -114,7 +120,7 @@ export class ActionPoint {
             // console.log(this.answerSound.currentTime)
             // this.answerSound.play()
         }
-        else if (this.answerSound.currentTime === 0 || this.answerSound.ended){
+        else if (this.answerSound.currentTime === 0 || this.answerSound.ended) {
             this.answerSound.play()
         }
         if (!this.onHitTimer) {

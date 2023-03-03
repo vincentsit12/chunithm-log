@@ -19,6 +19,7 @@ Songs.init({
     expert: {
         type: DataTypes.JSONB,
     },
+    
 
 
 }, {

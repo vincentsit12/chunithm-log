@@ -6,7 +6,7 @@ const $ = require('jquery')
 
 const getRating = async () => {
     try {
-        const links = ['https://gamerch.com/chunithm/entry/491431','https://gamerch.com/chunithm/entry/491432', 'https://gamerch.com/chunithm/entry/491433']
+        const links = ['https://gamerch.com/chunithm/entry/491431', 'https://gamerch.com/chunithm/entry/491432', 'https://gamerch.com/chunithm/entry/491433']
         // "https://chunithm.gamerch.com/CHUNITHM%20NEW%20PLUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%EF%BC%88%E5%AE%9A%E6%95%B0%E9%A0%86%EF%BC%892"]
         // const wsChromeEndpointurl = 'ws://127.0.0.1:9222/devtools/browser/58b05181-1096-470c-b9b9-a8e27578a62c';
         // const browser = await puppeteer.connect({
@@ -69,40 +69,45 @@ const getRating = async () => {
                         }
                         else {
 
-                            if (_td[0].innerText === "EXP") {
-                                diffculty = 'expert'
+                            if (_td[0].innerText === "ULT") {
+                                diffculty = 'ultima'
                             }
                             else if (_td[0].innerText === "MAS") {
                                 diffculty = 'master'
                             }
-                            else if (_td[0].innerText === "ULT") {
-                                diffculty = 'ultima'
+                            else if (_td[0].innerText === "EXP") {
+                                diffculty = 'expert'
                             }
-
+                            else if (_td[0].innerText === "ADV") {
+                                diffculty = 'advanced'
+                            }
                             else {
-                                let textEle = $(row[index]).find('td > a')
-                                let songName = textEle[0] ? textEle[0].innerText : ''
-                                let comboEle = $(row[index]).find('td')[1]
-                                let combo = comboEle ? comboEle.innerText : '0'
-                                let key
-                                if (songName && rate > 0) {
-                                    key = toASCII(songName).replace(/[\n\s'’]/g, '')
+                                if (diffculty !== "advanced") {
+                                    let textEle = $(row[index]).find('td > a')
+                                    let songName = textEle[0] ? textEle[0].innerText : ''
+                                    let comboEle = $(row[index]).find('td')[1]
+                                    let combo = comboEle ? comboEle.innerText : '0'
+                                    let key
+                                    if (songName && rate > 0) {
+                                        key = toASCII(songName).replace(/[\n\s'’]/g, '')
 
-                                    if (!list[key]) {
-                                        list[key] = {
-                                            displayName: songName.replace(/[\n]/g, ''),
-                                            [diffculty]: {
+                                        if (!list[key]) {
+                                            list[key] = {
+                                                displayName: songName.replace(/[\n]/g, ''),
+                                                [diffculty]: {
+                                                    rate: rate,
+                                                    combo: parseInt(combo),
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            list[key][diffculty] = {
                                                 rate: rate,
                                                 combo: parseInt(combo),
                                             }
                                         }
                                     }
-                                    else {
-                                        list[key][diffculty] = {
-                                            rate: rate,
-                                            combo: parseInt(combo),
-                                        }
-                                    }
+
                                 }
                             }
                             index++
@@ -179,7 +184,7 @@ const getRating = async () => {
 // const init = async () => {
 //     let r = await getRating()
 //     console.log(Object.keys(r).length);
-  
+
 //     Object.keys(r).forEach(k => {
 //         if (r[k].master && r[k].master.rate === 0) {
 //             console.log(r[k])

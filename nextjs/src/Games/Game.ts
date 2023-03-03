@@ -1,5 +1,3 @@
-import { log } from "console"
-import e from "cors"
 import { YouTubeEvent } from "react-youtube"
 import { ActionPoint } from "./ActionPoint"
 import { MusicNote } from "./MusicNote"
@@ -68,7 +66,7 @@ export class Game {
             // music.muted = true
             music.load()
         }
-  
+
     }
     checkReactionTime = (index: number) => {
         let color = ''
@@ -651,11 +649,22 @@ export class Game {
     kill = () => {
         this.reactionPoints = this.reactionPoints.filter((k, i) => k.alpha > 0)
     }
-    startGame = () => {
+    startGame = async () => {
         // scoreDiv.style.display = 'block'
 
         this.initPoints();
 
+        await new Promise((resolve) => {
+            let timer = setInterval(() => {
+                if (!this.reactionPoints.some(k => !k.isReady)) {
+                    console.log("action notes init finish")
+                    //ready to start game 
+                    clearInterval(timer)
+                    this.reactionPoints.forEach((k) => k.answerSound.removeEventListener("canplaythrough", k.setIsReady))
+                    resolve(true);
+                }
+            }, 500)
+        })
 
         this.isStarted = true;
         // this.poseLandmarks = [];

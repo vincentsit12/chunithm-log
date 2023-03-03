@@ -2,3 +2,7 @@
 # */.env.*
 .DS_Store
 /reaction-music-game
+nextjs/src/components/test.tsx
+/nginx
+
+# git rm -r --cached .
