@@ -18,3 +18,9 @@
     text-align: center !important;
     border: none !important;
 }
+
+@layer components {
+    .test {
+        @apply !h-40
+    }
+}

@@ -45,7 +45,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
 
     return _.map(sortedRatingList, (k, i) => {
       if (isString(k.master) || isString(k.expert) || isString(k.ultima))
-        console.log("🚀 ~ file: song.tsx ~ line 55 ~ return_.map ~ k", k)
+
       return <tr key={i} className='cursor-pointer even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' onClick={() => {
         router.push(k.display_name)
       }}>

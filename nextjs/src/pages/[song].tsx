@@ -57,16 +57,27 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
                 <div className='box box-shadow inner-p20'>
                     <h4 className='tc bold mb20'>{song.display_name}</h4>
                     <div className='flex justify-center w-full mb20' >
-                        <div className="flex justify-between ">
-                            {song.master && <button onClick={() => {
-                                setDifficulty("master")
-                            }} className={`btn bg-master${difficulty != "master" ? "-20" : ""} p-3 mx-10 `}>Master</button>}
-                            {song.expert && <button onClick={() => {
-                                setDifficulty("expert")
-                            }} className={`btn bg-expert${difficulty != "expert" ? "-20" : ""} p-3 mx-10 `}>Expert</button>}
-                            {song.ultima && <button onClick={() => {
-                                setDifficulty("ultima")
-                            }} className={`btn bg-ultima${difficulty != "ultima" ? "-20" : ""} p-3 mx-10 `}>Ultima</button>}
+                        <div className="flex flex-wrap justify-center w-full">
+                            {song.master &&
+                                <div className='m-2'>
+                                    <button onClick={() => {
+                                        setDifficulty("master")
+                                    }} className={`btn bg-master${difficulty != "master" ? "-20" : ""} p-3  `}>Master</button>
+                                </div>
+                            }
+                            {song.expert &&
+                                <div className='m-2'>
+                                    <button onClick={() => {
+                                        setDifficulty("expert")
+                                    }} className={`btn bg-expert${difficulty != "expert" ? "-20" : ""} p-3  `}>Expert</button>
+                                </div>}
+                            {song.ultima &&
+                                <div className='m-2'>
+                                    <button onClick={() => {
+                                        setDifficulty("ultima")
+                                    }} className={`btn bg-ultima${difficulty != "ultima" ? "-20" : ""} p-3 `}>Ultima</button>
+                                </div>
+                            }
                         </div>
                     </div>
                     <div className='tc'>
