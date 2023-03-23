@@ -16,7 +16,7 @@ const LayoutWrapper: React.FC<Props> = ({ children }) => {
                     <div className=''>
                         <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
                             <a>
-                                <Image alt='chunithm' src={logo} height={200} width={400} ></Image>
+                                <Image objectFit='contain'  alt='chunithm' src={logo} height={200} width={400} ></Image>
                             </a>
                         </Link>
                     </div>

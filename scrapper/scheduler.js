@@ -30,10 +30,13 @@ async function createSchedule() {
                 if (index >= 0) {
                     values[i].id = songs[index].id
                 }
-                // console.log("🚀 ~ file: scheduler.js ~ line 30 ~ updateDB ~ i", values)
-            }
 
-            // await Songs.destroy({ where: {}, force: true })
+            }
+            // console.log("🚀 ~ file: scheduler.js:32 ~ updateDB ~ values:", values)
+
+            // const fs = require('fs')
+            // fs.writeFileSync('test3.json', JSON.stringify(values))
+
             await Songs.bulkCreate(values,
                 {
                     updateOnDuplicate: ['display_name', 'master', 'expert', 'ultima', 'updatedAt'],
