@@ -39,6 +39,7 @@ services:
   datascraper :
     image: chunithm-log-datascraper
     restart: always
+    restart-delay: 10s
     build: 
       context: ./scrapper
     networks:
