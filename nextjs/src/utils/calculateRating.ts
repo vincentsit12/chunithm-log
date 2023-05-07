@@ -53,5 +53,5 @@ export function reEscape(chars: string) {
 }
 
 export const generateScript = (id: string) => {
-    return `javascript: (function () {var a = document.createElement('script'); a.src = "https://chuni-log.com/calculateRating.min.js"; window.userID = "${id}"; document.body.appendChild(a);})();`
+    return `javascript: (function () {var a = document.createElement('script'); a.src = "https://chuni-log.io.kookiym.com/calculateRating.min.js"; window.userID = "${id}"; document.body.appendChild(a);})();`
 }
