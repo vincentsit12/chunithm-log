@@ -20,7 +20,7 @@ services:
 
   adminer:
     image: adminer
-    restart: always
+    restart: on-failure
     ports:
       - 5480:8080
     networks:
@@ -28,7 +28,7 @@ services:
 
   web:
     image: chunithm-log-web
-    restart: always
+    restart: on-failure
     build: 
       context: ./nextjs
     ports:
@@ -38,8 +38,7 @@ services:
 
   datascraper :
     image: chunithm-log-datascraper
-    restart: always
-    restart-delay: 10s
+    restart: on-failure
     build: 
       context: ./scrapper
     networks:
