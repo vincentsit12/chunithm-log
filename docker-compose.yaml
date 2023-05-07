@@ -27,6 +27,7 @@ services:
 
   web:
     image: chunithm-log-web
+    restart: always
     build: 
       context: ./nextjs
     ports:
@@ -36,16 +37,15 @@ services:
 
   datascraper :
     image: chunithm-log-datascraper
+    restart: always
     build: 
       context: ./scrapper
     networks:
       - chinilog
 
-
 networks:
   chinilog:
     driver: bridge
-
 
 volumes:
   data:
