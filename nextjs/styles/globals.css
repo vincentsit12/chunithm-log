@@ -1,0 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.ReactModal__Body--open {
+    /* height: 100vh; */
+    /* overflow: hidden; */
+    /* pointer-events: none; */
+}
+
+.rc-tooltip-inner {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    text-align: center !important;
+    border: none !important;
+}
+
+@layer components {
+    .test {
+        @apply !h-40
+    }
+}
