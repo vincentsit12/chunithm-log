@@ -4,7 +4,7 @@
     let isLoading = false
     let isAlertShown = false
     // const hostUrl = 'https://chuni-log.com'
-    const hostUrl = 'https://chuni-log.io.kookiym.com/'
+    const hostUrl = 'https://chuni-log.io.kookiym.com'
     // const hostUrl = 'http://localhost:3000'
     function showLoadingView() {
         isLoading = true
