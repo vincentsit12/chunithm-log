@@ -6,7 +6,7 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}  
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
@@ -15,7 +15,8 @@ services:
       - 5432:5432
     networks:
       - chinilog
-    
+    env_file:
+      - ./.env
 
   adminer:
     image: adminer
