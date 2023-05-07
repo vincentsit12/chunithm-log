@@ -13,12 +13,17 @@ services:
       - ./postgres/data:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      - chinilog
+    
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - 5480:5480
+      - 5480:8080
+    networks:
+      - chinilog
 
   web:
     image: chunithm-log-web
@@ -26,11 +31,21 @@ services:
       context: ./nextjs
     ports:
       - '4100:4100'
+    networks:
+      - chinilog
 
   datascraper :
     image: chunithm-log-datascraper
     build: 
       context: ./scrapper
+    networks:
+      - chinilog
+
+
+networks:
+  chinilog:
+    driver: bridge
+
 
 volumes:
   data:
