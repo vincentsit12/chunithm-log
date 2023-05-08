@@ -9,6 +9,7 @@ class MyDocument extends Document {
                 <title>Chuni-Log</title>
 
                 <Head>
+                    {/* <meta name="viewport" content="width=device-width"></meta> */}
                     <meta name='description' content="chunithm international ver score viewer"></meta>
                     <link rel="icon" href="logo.png" />
                     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -65,7 +65,6 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
     switch (d) {
       case 'master':
         return 'bg-master'
-        break;
 
       default:
         break;
@@ -146,15 +145,15 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
             : <div className='inner-p20 w-full h-full text-left'>
               <p className='mb10'>
                 {`
-                  1. Save the following script into a browser bookmark:
+                  1. Save the above script into a browser bookmark
                 `}
               </p>
               <p className='mb10'>
-                {`2. Open this page (required login) https://chunithm-net-eng.com/mobile/home/ or https://chunithm-net-eng.com/mobile/record/musicGenre/master`}
+                {`2. Open this page (required login) `}<Link href={"https://chunithm-net-eng.com/mobile/home/"}>https://chunithm-net-eng.com/mobile/home/</Link>
               </p>
               <p className='mb10'>
                 {`
-                  3. click the bookmark`
+                  3. click the bookmark and wait for redirecting to this page`
                 }
               </p>
             </div>}
