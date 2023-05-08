@@ -24,7 +24,7 @@ RUN yarn build
 FROM node:16.15.0-alpine3.14 AS runner
 WORKDIR /app
 ENV HOST=0.0.0.0
-ENV PORT=3000
+ENV PORT=4100
 ENV NODE_ENV=production
 
 RUN addgroup -g 1001 -S nodejs
@@ -40,5 +40,5 @@ COPY --chown=nextjs:nodejs --from=builder /app/.next ./.next
 
 
 USER nextjs
-EXPOSE 3000
+EXPOSE 4100
 CMD [ "yarn", "start" ]
