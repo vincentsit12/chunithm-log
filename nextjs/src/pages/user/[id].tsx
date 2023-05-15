@@ -159,7 +159,7 @@ export async function getServerSideProps(context: NextPageContext) {
         }
         const ratingList = _.map(data?.records, function (o) {
             let song: Song = o.song[o.difficulty]
-            let rating = calculateSingleSongRating(song?.rate, o.score)
+            let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
             let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
             return result
         });
