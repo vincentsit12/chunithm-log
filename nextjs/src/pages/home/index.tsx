@@ -27,11 +27,13 @@ import { Op } from 'sequelize'
 
 type Props = {
   ratingList: Rating[];
-  userId: string
+  userId: string;
+  userName : string
 };
 
 
-const Home: NextPage<Props> = ({ ratingList, userId }) => {
+const Home: NextPage<Props> = ({ ratingList, userId ,userName }) => {
+
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
   const [searchText, setSearchText] = useState('')
@@ -65,7 +67,6 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
     switch (d) {
       case 'master':
         return 'bg-master'
-        break;
 
       default:
         break;
@@ -90,7 +91,9 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
     <LayoutWrapper>
 
       <div className='inner inner-720 tc' >
+        <h1 className='mb-2'>{`User: ${userName}`}</h1>
         <div className='flex box box-shadow mb20' >
+
           <div id='script' >
             <p> {generateScript(userId)}</p>
           </div>
@@ -146,15 +149,15 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
             : <div className='inner-p20 w-full h-full text-left'>
               <p className='mb10'>
                 {`
-                  1. Save the following script into a browser bookmark:
+                  1. Save the above script into a browser bookmark
                 `}
               </p>
               <p className='mb10'>
-                {`2. Open this page (required login) https://chunithm-net-eng.com/mobile/home/ or https://chunithm-net-eng.com/mobile/record/musicGenre/master`}
+                {`2. Open this page (required login) `}<Link href={"https://chunithm-net-eng.com/mobile/home/"}>https://chunithm-net-eng.com/mobile/home/</Link>
               </p>
               <p className='mb10'>
                 {`
-                  3. click the bookmark`
+                  3. click the bookmark and wait for redirecting to this page`
                 }
               </p>
             </div>}
@@ -205,7 +208,8 @@ export async function getServerSideProps(context: NextPageContext) {
       props: {
         ratingList: _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
         // average
-        userId: encryptUserId
+        userId: encryptUserId,
+        userName : data?.username
       },
     }
   }
