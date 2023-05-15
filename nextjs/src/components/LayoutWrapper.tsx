@@ -12,7 +12,7 @@ const LayoutWrapper: React.FC<Props> = ({ children }) => {
     return (
         <div id='container'>
             <div style={{ 'margin': '3.125rem auto' }}>
-                <div className='mb20 tc'>
+                <div className='mb-2 tc'>
                     <div className=''>
                         <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
                             <Image className='cursor-pointer'  objectFit='contain'  alt='chunithm' src={logo} height={200} width={400} ></Image>

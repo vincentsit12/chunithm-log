@@ -27,12 +27,11 @@ import { Op } from 'sequelize'
 
 type Props = {
     ratingList: Rating[];
-    userId: string;
-    userName : string;
+    userName: string;
 };
 
 
-const User: NextPage<Props> = ({ ratingList, userId, userName }) => {
+const User: NextPage<Props> = ({ ratingList, userName }) => {
     const [copied, setCopied] = useState(false)
     const timer = useRef<NodeJS.Timeout>()
     const [searchText, setSearchText] = useState('')
@@ -82,7 +81,7 @@ const User: NextPage<Props> = ({ ratingList, userId, userName }) => {
 
             <div className='inner inner-720 tc' >
 
-                <h1 className='mb-2'>{userName}</h1>
+                <h1 className='mb-2'>{`User: ${userName}`}</h1>
 
                 <div className='mb20  items-center'>
                     <div className="space-x-5">
@@ -130,19 +129,24 @@ export async function getServerSideProps(context: NextPageContext) {
 
     try {
         // let session = await getSession(context)
- 
+
         const userId = context.query.id
 
         if (!userId) return {
-          redirect: {
-            permanent: false,
-            destination: '/login',
-          }
+            redirect: {
+                permanent: false,
+                destination: '/login',
+            }
         }
 
 
         let data = (await Users.findOne({
-            where: { username: userId }, include: {
+            where: {
+                [Op.or]: [
+                    { username: userId },
+                    { id : userId },
+                ]
+            }, include: {
                 model: Records,
 
                 include: [{
@@ -164,7 +168,7 @@ export async function getServerSideProps(context: NextPageContext) {
             props: {
                 ratingList: _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
                 // average
-                userName : data.username,
+                userName: data.username,
             },
         }
     }

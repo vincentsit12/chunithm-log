@@ -27,11 +27,13 @@ import { Op } from 'sequelize'
 
 type Props = {
   ratingList: Rating[];
-  userId: string
+  userId: string;
+  userName : string
 };
 
 
-const Home: NextPage<Props> = ({ ratingList, userId }) => {
+const Home: NextPage<Props> = ({ ratingList, userId ,userName }) => {
+
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
   const [searchText, setSearchText] = useState('')
@@ -89,7 +91,9 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
     <LayoutWrapper>
 
       <div className='inner inner-720 tc' >
+        <h1 className='mb-2'>{`User: ${userName}`}</h1>
         <div className='flex box box-shadow mb20' >
+
           <div id='script' >
             <p> {generateScript(userId)}</p>
           </div>
@@ -204,7 +208,8 @@ export async function getServerSideProps(context: NextPageContext) {
       props: {
         ratingList: _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
         // average
-        userId: encryptUserId
+        userId: encryptUserId,
+        userName : data?.username
       },
     }
   }
