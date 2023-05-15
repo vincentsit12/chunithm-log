@@ -14,7 +14,6 @@ Records.init({
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-
     },
     song_id: {
         type: DataTypes.INTEGER,
@@ -28,7 +27,11 @@ Records.init({
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-
+    type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue : "best"
+    },
 
     
 

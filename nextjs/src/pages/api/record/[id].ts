@@ -13,6 +13,7 @@ import e from 'cors'
 import { reEscape } from 'utils/calculateRating'
 import CryptoJS from 'crypto-js'
 import { decrypt } from 'utils/encrypt'
+import { Difficulty, RecordType } from 'types'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -23,8 +24,9 @@ const cors = Cors({
 })
 type RequestBody = {
     name: string,
-    difficulty: 'master' | 'ultima' | 'expert',
+    difficulty: Difficulty,
     score: number
+    type : RecordType
 }
 async function handler(
     req: NextApiRequest,
@@ -42,7 +44,7 @@ async function handler(
             return o.name;
         });
         const validSongsData = _.filter<RequestBody>(req.body.data, k => songsObj[reEscape(k.name)] !== undefined)
-        let response = _.map<RequestBody, any>(validSongsData, ((k) => {
+        let data = _.map<RequestBody, any>(validSongsData, ((k) => {
 
             return {
                 // name: k.name,
@@ -51,12 +53,13 @@ async function handler(
                 // rate: songsObj[reEscape(k.name)][k.difficulty],
                 difficulty: k.difficulty,
                 score: k.score,
+                type : k.type
             }
         }))
 
 
         await Records.destroy({ where: { user_id: userId }, force: true })
-        await Records.bulkCreate(response)
+        await Records.bulkCreate(data)
 
 
         res.status(200).send('update success')
