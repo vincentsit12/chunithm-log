@@ -6,3 +6,4 @@ nextjs/src/components/test.tsx
 /nginx
 
 # git rm -r --cached .
+scrapper/config/config.json

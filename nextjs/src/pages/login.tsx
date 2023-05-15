@@ -56,7 +56,7 @@ export default function Login() {
         <LayoutWrapper>
             <form onSubmit={handleSubmitForm} >
                 <div className="inner-540 inner inner-p40 tc bg-white box-shadow relative" >
-                    <h1 className='tc mb20'>Chunithm Log</h1>
+                    <h1 className='tc mb20'>Chuni Log</h1>
                     <h4 className="bold">Login</h4>
                     <div className="inner inner-p20 ">
                         {error && <div className="bold txt-secondary tl  font14">Please check your username/password is input correctly.</div>}

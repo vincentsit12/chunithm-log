@@ -26,13 +26,15 @@ import { log } from 'console'
 import { Op } from 'sequelize'
 
 type Props = {
-  ratingList: Rating[];
+  bestRatingList: Rating[],
+  recentRatingList: Rating[]
   userId: string;
-  userName : string
+  userName?: string
 };
 
 
-const Home: NextPage<Props> = ({ ratingList, userId ,userName }) => {
+const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
+  console.log("🚀 ~ file: index.tsx:37 ~ recentRatingList:", recentRatingList)
 
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
@@ -46,22 +48,26 @@ const Home: NextPage<Props> = ({ ratingList, userId ,userName }) => {
   // }, [searchText, ratingList])
   const sortedRatingList = useMemo(() => {
     if (searchText)
-      return _.filter(_.orderBy(ratingList, ['master.rate'], ['desc']), k => {
+      return _.filter(_.orderBy(bestRatingList, ['master.rate'], ['desc']), k => {
         if (parseFloat(searchText) > 0.0) {
           let searchRate = parseFloat(searchText)
           return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
         }
         else return k.song.toUpperCase().includes(searchText.toUpperCase())
       })
-    else return (_.orderBy(ratingList, ['rating'], ['desc']))
-  }, [searchText, ratingList])
+    else return (_.orderBy(bestRatingList, ['rating'], ['desc']))
+  }, [searchText, bestRatingList])
 
-  const [average, max] = useMemo(() => {
-    const top30 = _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30)
+  const [average, max, recentAverage, recent] = useMemo(() => {
+    const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
-    if (top30.length < 1) return [0, 0]
-    return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40]
-  }, [ratingList])
+    const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
+    const recent = (top30Total + recentTotal) / (30 + recentRatingList.length)
+    if (top30.length < 1) return [0, 0, 0, 0]
+    return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40, recentRatingList.length > 0 ? recentTotal / recentRatingList.length : 0, recent]
+  }, [bestRatingList, recentRatingList])
+
+
 
   const renderRatingColor = (d: string) => {
     switch (d) {
@@ -91,7 +97,7 @@ const Home: NextPage<Props> = ({ ratingList, userId ,userName }) => {
     <LayoutWrapper>
 
       <div className='inner inner-720 tc' >
-        <h1 className='mb-2'>{`User: ${userName}`}</h1>
+        {userName && <h1 className='mb-2'>{`User: ${userName}`}</h1>}
         <div className='flex box box-shadow mb20' >
 
           <div id='script' >
@@ -132,6 +138,14 @@ const Home: NextPage<Props> = ({ ratingList, userId ,userName }) => {
               {`Max : ${toFixedTrunc(max, 2)}`}
             </span>
           </div>
+          <div className="space-x-5">
+            <span>
+              {`Recent : ${toFixedTrunc(recentAverage, 2)}`}
+            </span>
+            <span>
+              {`Now : ${toFixedTrunc(recent, 2)}`}
+            </span>
+          </div>
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
         <div className='inner inner-720'  >
@@ -140,7 +154,7 @@ const Home: NextPage<Props> = ({ ratingList, userId ,userName }) => {
           }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
         </div>
         <div id='rating-table' className='box box-shadow mb20'>
-          {ratingList.length > 0 ?
+          {bestRatingList.length > 0 ?
             <table >
               <tbody>
                 {_renderTableRow()}
@@ -190,26 +204,36 @@ export async function getServerSideProps(context: NextPageContext) {
     let data = (await Users.findOne({
       where: { id: parseInt(userID) }, include: {
         model: Records,
-
         include: [{
           model: Songs,
         }]
       }
     }))
 
-    const ratingList = _.map(data?.records, function (o) {
-      let song: Song = o.song[o.difficulty]
-      let rating = calculateSingleSongRating(song?.rate, o.score)
-      let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
-      return result
-    });
+    
+    const bestRatingList =
+      _.map(_.filter(data?.records, k => k.type === 'best'), function (o) {
+        let song: Song = o.song[o.difficulty]
+        let rating = calculateSingleSongRating(song?.rate, o.score)
+        let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+        return result
+      });
+    const recentRatingList =
+      _.map(_.filter(data?.records, k => k.type === 'recent'), function (o) {
+
+        let song: Song = o.song[o.difficulty]
+        let rating = calculateSingleSongRating(song?.rate, o.score)
+        let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+        return result
+      });
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {
       props: {
-        ratingList: _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
+        bestRatingList: _.map(_.orderBy(bestRatingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
+        recentRatingList,
         // average
         userId: encryptUserId,
-        userName : data?.username
+        userName: data?.username ?? ""
       },
     }
   }
