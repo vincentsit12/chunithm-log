@@ -24,14 +24,16 @@ import Tooltip from 'rc-tooltip'
 import 'rc-tooltip/assets/bootstrap_white.css';
 import { log } from 'console'
 import { Op } from 'sequelize'
+import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
 
 type Props = {
-    ratingList: Rating[];
+    bestRatingList: Rating[],
+    recentRatingList: Rating[]
     userName: string;
 };
 
 
-const User: NextPage<Props> = ({ ratingList, userName }) => {
+const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) => {
     const [copied, setCopied] = useState(false)
     const timer = useRef<NodeJS.Timeout>()
     const [searchText, setSearchText] = useState('')
@@ -42,39 +44,17 @@ const User: NextPage<Props> = ({ ratingList, userName }) => {
     //     return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
     //   else return (_.orderBy(ratingList, ['rating'], ['desc']))
     // }, [searchText, ratingList])
-    const sortedRatingList = useMemo(() => {
-        if (searchText)
-            return _.filter(_.orderBy(ratingList, ['master.rate'], ['desc']), k => {
-                if (parseFloat(searchText) > 0.0) {
-                    let searchRate = parseFloat(searchText)
-                    return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
-                }
-                else return k.song.toUpperCase().includes(searchText.toUpperCase())
-            })
-        else return (_.orderBy(ratingList, ['rating'], ['desc']))
-    }, [searchText, ratingList])
 
-    const [average, max] = useMemo(() => {
-        const top30 = _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30)
+
+    const [average, max, recentAverage, recent] = useMemo(() => {
+        const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
         const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
-        if (top30.length < 1) return [0, 0]
-        return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40]
-    }, [ratingList])
+        const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
+        const recent = (top30Total + recentTotal) / (30 + recentRatingList.length)
+        if (top30.length < 1) return [0, 0, 0, 0]
+        return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40, recentRatingList.length > 0 ? recentTotal / recentRatingList.length : 0, recent]
+    }, [bestRatingList, recentRatingList])
 
-    const _renderTableRow = () => {
-
-        return _.map(sortedRatingList, (k, i) => {
-            return <tr key={i} className={classNames("even:bg-gray-300/[.6]", 'hover:bg-gray-500/[.4]', 'hover:bg-gray-500/[.4]', { 'border-b': i === 29 && !searchText, 'border-b-red-700': i === 29 && !searchText })} >
-                <td>{k.order ?? '-'}</td>
-                <td className='song'>{k.song}</td>
-                <td>{k.internalRate}</td>
-                <td>{k.score}</td>
-                <td onClick={() => {
-                    router.push(k.song)
-                }} className='txt-white cursor-pointer'><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
-            </tr >
-        })
-    }
 
     return (
         <LayoutWrapper>
@@ -92,27 +72,18 @@ const User: NextPage<Props> = ({ ratingList, userName }) => {
                             {`Max : ${toFixedTrunc(max, 2)}`}
                         </span>
                     </div>
+                    <div className="space-x-5">
+                        <span>
+                            {`Recent : ${toFixedTrunc(recentAverage, 2)}`}
+                        </span>
+                        <span>
+                            {`Now : ${toFixedTrunc(recent, 2)}`}
+                        </span>
+                    </div>
                     {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
                 </div>
-                <div className='inner inner-720'  >
-                    <input value={searchText} onChange={(e) => {
-                        setSearchText(e.target.value)
-                    }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
-                </div>
-                <div id='rating-table' className='box box-shadow mb20'>
-                    {ratingList.length > 0 ?
-                        <table >
-                            <tbody>
-                                {_renderTableRow()}
-                            </tbody>
-                        </table>
-                        : <div className='inner-p20 w-full h-full text-left'>
-                            <p className='mb10'>
-                                Player not yet uploaded any score
-                            </p>
-                        </div>}
-                </div>
-                {/* <button className="btn btn-secondary" onClick={() => { signOut() }}>Logout</button> */}
+                <RecentRatingTable recentRatingList={recentRatingList} />
+                <BestRatingTable ratingList={bestRatingList} />
             </div>
         </LayoutWrapper >
     )
@@ -144,7 +115,7 @@ export async function getServerSideProps(context: NextPageContext) {
             where: {
                 [Op.or]: [
                     { username: userId },
-                    { id : userId },
+                    { id: userId },
                 ]
             }, include: {
                 model: Records,
@@ -157,17 +128,26 @@ export async function getServerSideProps(context: NextPageContext) {
         if (!data) return {
             notFound: true,
         }
-        const ratingList = _.map(data?.records, function (o) {
-            let song: Song = o.song[o.difficulty]
-            let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
-            let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
-            return result
-        });
+        const bestRatingList =
+            _.map(_.filter(data?.records, k => k.type === 'best'), function (o) {
+                let song: Song = o.song[o.difficulty]
+                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
+                let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+                return result
+            });
+        const recentRatingList =
+            _.map(_.filter(data?.records, k => k.type === 'recent'), function (o) {
+                let song: Song = o.song[o.difficulty]
+                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
+                let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+                return result
+            });
         // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
         return {
             props: {
-                ratingList: _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
-                // average
+                bestRatingList: _.map(_.orderBy(bestRatingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
+                recentRatingList,
+                // average                // average
                 userName: data.username,
             },
         }
@@ -175,9 +155,7 @@ export async function getServerSideProps(context: NextPageContext) {
     catch (e) {
         console.log(e)
         return {
-            props: {
-                ratingList: [] as Rating[],
-            },
+            notFound: true,
         }
     }
 }

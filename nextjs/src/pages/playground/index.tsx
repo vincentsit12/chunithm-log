@@ -182,7 +182,7 @@ const Playground = (props: Props) => {
             <Head>
                 <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
             </Head>
-            <div className='flex w-full justify-center mb20' >
+            <div className='flex w-full justify-center my-5' >
                 <button onClick={() => {
                     if (!timelineString) {
                         alert('no notes!')

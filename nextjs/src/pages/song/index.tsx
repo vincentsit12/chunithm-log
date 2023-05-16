@@ -24,16 +24,16 @@ const SongPage: NextPage<Props> = ({ songList }) => {
 
   const sortedRatingList = useMemo(() => {
     if (searchText)
-    return _.filter(_.orderBy(songList, ['master.rate'], ['desc']), k => {
-      if (parseFloat(searchText) > 0.0) {
-        let searchRate = parseFloat(searchText)
-        return k.display_name.toUpperCase().includes(searchText.toUpperCase()) || (k.master?.rate === searchRate) || (k.expert?.rate === searchRate) || (k.ultima?.rate === searchRate)
-      }
-      else return k.display_name.toUpperCase().includes(searchText.toUpperCase())
-    })
+      return _.filter(_.orderBy(songList, ['master.rate'], ['desc']), k => {
+        if (parseFloat(searchText) > 0.0) {
+          let searchRate = parseFloat(searchText)
+          return k.display_name.toUpperCase().includes(searchText.toUpperCase()) || (k.master?.rate === searchRate) || (k.expert?.rate === searchRate) || (k.ultima?.rate === searchRate)
+        }
+        else return k.display_name.toUpperCase().includes(searchText.toUpperCase())
+      })
     else return (_.orderBy(songList, ['master.rate'], ['desc']))
   }, [searchText, songList])
-  
+
 
   const renderRatingColor = (d: string) => {
     switch (d) {
@@ -47,11 +47,11 @@ const SongPage: NextPage<Props> = ({ songList }) => {
 
     return _.map(sortedRatingList, (k, i) => {
 
-      return <tr key={i} className='cursor-pointer even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' onClick={() => {
-        router.push(k.display_name)
-      }}>
+      return <tr key={i} className=' even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' >
         {/* <td className='w-10'>{k.id}</td> */}
-        <td>{k.display_name}</td>
+        <td className='cursor-pointer ' onClick={() => {
+          router.push(`/song/${k.display_name}`)
+        }}>{k.display_name}</td>
         <td className='w-20'>{k.ultima?.rate ?? '-'}</td>
         <td className='w-20'>{k.master?.rate ?? '-'}</td>
         <td className='w-20'>{k.expert?.rate ?? '-'}</td>

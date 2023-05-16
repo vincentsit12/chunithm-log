@@ -939,9 +939,10 @@ animation
   }
 }
 
-.fadeIn {
-  animation: fadeIn linear .3s
+.collapse {
+  transition: max-height ease-in-out .3s
 }
+
 
 @keyframes fadeIn {
   0% {
@@ -1086,3 +1087,8 @@ canvas {
   user-select: none;
   display: block;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+

@@ -15,7 +15,7 @@ import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/c
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { log } from 'console'
 import Slider from 'rc-slider';
 import { ScoreCalculator } from 'components/ScoreCalculator'
@@ -34,7 +34,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
     const [difficulty, setDifficulty] = useState<Difficulty>("master")
 
-    const songData = song[difficulty]
+    const songData = song[difficulty] ?? {}
 
     const recordData = useMemo(() => {
         return _.find(record, (k) => k.difficulty === difficulty)
@@ -49,6 +49,16 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
     //     [difficulty, song]
     // )
 
+    useEffect(() => {
+        if (!song["master"]) {
+            if (song["ultima"]) {
+                setDifficulty('ultima')
+            }
+            else if (song["expert"]) {
+                setDifficulty('expert')
+            }
+        }
+    }, [])
 
     const { data: session, status } = useSession()
     return (
@@ -93,7 +103,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
                         }
                         <div className='divide-solid w-full  my-8 bg-slate-300 h-0.5'></div>
-                        <ScoreCalculator rate={song[difficulty].rate} score={recordData?.score ?? 1010000} combo={songData.combo} haveScore={recordData?.score !== undefined} />
+                        <ScoreCalculator rate={songData.rate} score={recordData?.score ?? 1010000} combo={songData.combo} haveScore={recordData?.score !== undefined} />
                     </div>
                 </div>
             </div>
@@ -105,6 +115,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
 export default SongPage
 
 export async function getServerSideProps(context: NextPageContext) {
+
     context.res?.setHeader(
         'Cache-Control',
         'public, s-maxage=600,'
@@ -115,6 +126,7 @@ export async function getServerSideProps(context: NextPageContext) {
 
     let session = await getSession(context)
     let song = await Songs.findOne({ where: { display_name: songName } })
+
     if (!song) return {
         notFound: true,
     }
@@ -128,15 +140,6 @@ export async function getServerSideProps(context: NextPageContext) {
         })
     }
 
-    // let data: any = (await Users.findOne({where: {id: session?.user.id }, include: {model: Records, include: [{model: Songs }] } }))
-
-    // const ratingList = _.map(data.records, function (o) {
-    //   let song: Song = JSON.parse(o.song[o.difficulty])
-    //   let rating = calculateSingleSongRating(song?.rate, o.score)
-    //   let result: Rating = {song: o.song.display_name, combo: song?.combo ?? null, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
-    //   return result
-    // });
-    // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {
         props: {
             // average
