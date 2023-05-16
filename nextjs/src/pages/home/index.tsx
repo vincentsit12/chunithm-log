@@ -24,6 +24,7 @@ import Tooltip from 'rc-tooltip'
 import 'rc-tooltip/assets/bootstrap_white.css';
 import { log } from 'console'
 import { Op } from 'sequelize'
+import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
 
 type Props = {
   bestRatingList: Rating[],
@@ -33,10 +34,10 @@ type Props = {
 };
 
 
+
 const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
-  const [searchText, setSearchText] = useState('')
   const router = useRouter()
   const ref = useRef(null)
   // const sortedRatingList = useMemo(() => {
@@ -44,17 +45,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
   //     return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
   //   else return (_.orderBy(ratingList, ['rating'], ['desc']))
   // }, [searchText, ratingList])
-  const sortedRatingList = useMemo(() => {
-    if (searchText)
-      return _.filter(_.orderBy(bestRatingList, ['master.rate'], ['desc']), k => {
-        if (parseFloat(searchText) > 0.0) {
-          let searchRate = parseFloat(searchText)
-          return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
-        }
-        else return k.song.toUpperCase().includes(searchText.toUpperCase())
-      })
-    else return (_.orderBy(bestRatingList, ['rating'], ['desc']))
-  }, [searchText, bestRatingList])
+
 
   const [average, max, recentAverage, recent] = useMemo(() => {
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
@@ -76,20 +67,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
         break;
     }
   }
-  const _renderTableRow = () => {
 
-    return _.map(sortedRatingList, (k, i) => {
-      return <tr key={i} className={classNames("even:bg-gray-300/[.6]", 'hover:bg-gray-500/[.4]', 'hover:bg-gray-500/[.4]', { 'border-b': i === 29 && !searchText, 'border-b-red-700': i === 29 && !searchText })} >
-        <td>{k.order ?? '-'}</td>
-        <td className='song'>{k.song}</td>
-        <td>{k.internalRate}</td>
-        <td>{k.score}</td>
-        <td onClick={() => {
-          router.push(k.song)
-        }} className='txt-white cursor-pointer'><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
-      </tr >
-    })
-  }
 
   return (
     <LayoutWrapper>
@@ -146,35 +124,8 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
           </div>
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
-        <div className='inner inner-720'  >
-          <input value={searchText} onChange={(e) => {
-            setSearchText(e.target.value)
-          }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
-        </div>
-        <div id='rating-table' className='box box-shadow mb20'>
-          {bestRatingList.length > 0 ?
-            <table >
-              <tbody>
-                {_renderTableRow()}
-              </tbody>
-            </table>
-            : <div className='inner-p20 w-full h-full text-left'>
-              <p className='mb10'>
-                {`
-                  1. Save the above script into a browser bookmark
-                `}
-              </p>
-              <p className='mb10'>
-                {`2. Open this page (required login) `}<Link href={"https://chunithm-net-eng.com/mobile/home/"}>https://chunithm-net-eng.com/mobile/home/</Link>
-              </p>
-              <p className='mb10'>
-                {`
-                  3. click the bookmark and wait for redirecting to this page`
-                }
-              </p>
-            </div>}
-        </div>
-        {/* <button className="btn btn-secondary" onClick={() => { signOut() }}>Logout</button> */}
+        <RecentRatingTable recentRatingList={recentRatingList} />
+        <BestRatingTable ratingList={bestRatingList} />
       </div>
     </LayoutWrapper >
   )
@@ -218,7 +169,6 @@ export async function getServerSideProps(context: NextPageContext) {
       });
     const recentRatingList =
       _.map(_.filter(data?.records, k => k.type === 'recent'), function (o) {
-
         let song: Song = o.song[o.difficulty]
         let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
         let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
