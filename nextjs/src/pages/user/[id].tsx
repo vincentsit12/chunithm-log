@@ -101,7 +101,7 @@ export async function getServerSideProps(context: NextPageContext) {
     try {
         // let session = await getSession(context)
 
-        const userId = context.query.id
+        const userId = context.query.id as string
 
         if (!userId) return {
             redirect: {
@@ -115,7 +115,7 @@ export async function getServerSideProps(context: NextPageContext) {
             where: {
                 [Op.or]: [
                     { username: userId },
-                    { id: userId },
+                    { id: isNaN(parseInt(userId)) ? 0 :parseInt(userId)},
                 ]
             }, include: {
                 model: Records,
