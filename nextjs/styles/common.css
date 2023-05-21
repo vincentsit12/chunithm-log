@@ -15,10 +15,11 @@ body {
   color: #000000;
   line-height: 1.6;
   background-image: linear-gradient(.25turn, #24baff90, #d9ebee, #24baff90);
-  background-repeat:no-repeat;
+  background-repeat:repeat-y;
   background-attachment: fixed;
   min-width: 320px;
   font-family: 'M PLUS 1', sans-serif;
+  overflow: hidden;
 }
 
 @media screen and (max-width: 576px) {
