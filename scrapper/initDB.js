@@ -8,7 +8,7 @@ const { Op } = require("sequelize");
 
 // const { getRating } = require('./scrapper');
 
-const { sequelize : db, users : Users , records : Records  , songs : Songs} = models;
+const { sequelize: db, users: Users, records: Records, songs: Songs } = models;
 
 async function initDB() {
 
@@ -36,10 +36,11 @@ async function initDB() {
         console.log('Connection has been established successfully.');
 
         let count = await Users.findAll()
-        console.log("🚀 ~ file: init.js ~ line 40 ~ initDB ~ count", count)
+        console.log("🚀 ~ file: init.js ~ line 40 ~ initDB ~ count", count.length)
         // let z = await Songs.destroy({where : {display_name : ['1', `WORLD'S END`, `無印`, 'NEW', "マップボーナス・限界突破", 'スキル比較', '称号', "マップ一覧" ]}})
 
-        // let x = (await Users.findOne({ where: { id: 5 }, include: { model: Records, include: { model: Songs, } } }))
+        let x = (await Users.findOne({ where: { id: 5 }, include: { model: Records, where: { type: 'recent' }, include: { model: Songs, } } }))
+        console.log("🚀 ~ file: initDB.js:43 ~ initDB ~ x:", x.records)
 
         await db.close()
     } catch (error) {

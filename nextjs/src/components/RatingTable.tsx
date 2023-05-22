@@ -69,7 +69,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
             setSearchText(e.target.value)
         }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
     </div>
-        <div id='rating-table' className='box box-shadow mb20'>
+        <div id='rating-table' className='box box-shadow'>
             {ratingList.length > 0 ?
                 <table >
                     <tbody>
