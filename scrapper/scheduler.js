@@ -13,7 +13,6 @@ async function createSchedule() {
             let ratingList = await getRating()
 
             let values = _.toPairs(ratingList).map((k) => {
-                // if (k[0].includes('\)'))
                 return {
                     name: k[0],
                     display_name: k[1].displayName,
