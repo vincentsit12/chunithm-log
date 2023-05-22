@@ -12,7 +12,7 @@ type Props = {
 const LayoutWrapper: React.FC<Props> = ({ children }) => {
     const router = useRouter()
     return (
-        <div id='container'>
+        <div id='container' className='chuni-log-bg'>
             <div className='mb-2 tc'>
                 <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
                     <div className='relative mx-auto w-fit cursor-pointer overflow-hidden'>
