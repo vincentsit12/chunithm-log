@@ -12,19 +12,21 @@ type Props = {
 const LayoutWrapper: React.FC<Props> = ({ children }) => {
     const router = useRouter()
     return (
-        <div id='container' className='chuni-log-bg'>
-            <div className='mb-2 tc'>
-                <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
-                    <div className='relative mx-auto w-fit cursor-pointer overflow-hidden'>
-                        <Image className='' objectFit='contain' alt='chunithm-2' src={logo2} height={200} width={400} ></Image>
-                        <div className='cursor-pointer absolute absolute_center bottom-2'>
-                            <Image objectFit='contain' alt='chunithm' src={logo} height={200} width={200} ></Image>
+        <div className='chuni-log-bg'>
+            <div id='container'>
+                <div className='mb-2 tc'>
+                    <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
+                        <div className='relative mx-auto w-fit cursor-pointer overflow-hidden'>
+                            <Image className='' objectFit='contain' alt='chunithm-2' src={logo2} height={200} width={400} ></Image>
+                            <div className='cursor-pointer absolute absolute_center bottom-2'>
+                                <Image objectFit='contain' alt='chunithm' src={logo} height={200} width={200} ></Image>
+                            </div>
                         </div>
-                    </div>
-                </Link>
-            </div>
-            {children}
+                    </Link>
+                </div>
+                {children}
 
+            </div>
         </div>
     )
 }
