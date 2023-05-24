@@ -14,13 +14,13 @@ const Header = (props: Props) => {
     return (
         <header id='header'>
             <div className={classNames('header-menu', { 'active': active })}>
-                <a className='menu-trigger' onClick={() => {
+                <div className='menu-trigger' onClick={() => {
                     setActive(!active)
                 }}>
                     <span></span>
                     <span></span>
                     <span></span>
-                </a>
+                </div>
             </div>
             <nav className={classNames('nav-dropmenu', { animation: active })}>
                 <ul>

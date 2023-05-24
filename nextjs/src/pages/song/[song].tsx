@@ -116,11 +116,7 @@ export default SongPage
 
 export async function getServerSideProps(context: NextPageContext) {
 
-    context.res?.setHeader(
-        'Cache-Control',
-        'public, s-maxage=600,'
-    )
-
+    context.res?.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=120')
 
     const songName = context.query.song
 

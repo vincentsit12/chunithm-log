@@ -5,12 +5,13 @@ import Document, { Html, Head, Main, NextScript } from 'next/document'
 class MyDocument extends Document {
     render() {
         return (
-            <Html>
+            <Html lang='en'>
                 <title>Chuni-Log</title>
 
                 <Head>
                     {/* <meta name="viewport" content="width=device-width"></meta> */}
                     <meta name='description' content="chunithm international ver score viewer"></meta>
+                    <meta name="theme-color" content="rgba(255,255,255,0.98)"></meta>
                     <link rel="icon" href="/logo.png" />
                     <link rel="preconnect" href="https://fonts.googleapis.com" />
                     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

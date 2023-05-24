@@ -8,14 +8,14 @@ html {
   overflow-x: hidden;
   /* -webkit-tap-highlight-color: rgba(0, 0, 0, 0); */
   overflow-y: scroll;
-  overscroll-behavior-y: none;
+  /* overscroll-behavior-y: none; */
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
   color: #000000;
   line-height: 1.6;
-  background-color: #24baff40;
+  background-color: #24baff95;
   min-width: 320px;
   font-family: 'M PLUS 1', sans-serif;
   /* overflow: hidden; */
@@ -151,7 +151,7 @@ header
   cursor: pointer;
 }
 
-.header-menu a {
+.menu-trigger {
   position: relative;
   height: 100%;
   width: 100%;
@@ -165,7 +165,7 @@ header
   width: 100%;
   height: .125rem;
   background-color: #21618C;
-  border-radius: 2px;
+  /* border-radius: .5rem; */
   transition: all .3s;
   opacity: 1;
 }
@@ -988,19 +988,29 @@ animation
 custom
 --------------------------------------------------------*/
 .box {
-  background-image: linear-gradient(to bottom, #d9e9ee, #d9ebee);
-  /* background-color: #d9e9ee; */
-
-  border: 1px rgba(255, 255, 255, 0.1) solid;
+  background-color: #d9e9ee;
+  /* border: 4px rgba(0, 0, 0, 1) solid; */
   color: black;
   border-radius: 10px;
+
+  /* border : 0 */
+
+}
+input.box {
+  background-color: #d9e9ee;
+  /* border: 4px rgba(0, 0, 0, 1) solid; */
+  color: black;
+  border-radius: 10px;
+  -webkit-appearance: none;
+  /* border : 0 */
 }
 
 .chuni-log-bg {
   background-image: linear-gradient(.25turn, #24baff90, #d9ebee, #24baff90);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
+  background-attachment: fixed;
+  /* background-size: cover; */
+  /* background-repeat: no-repeat; */
+  /* background-position: center; */
 }
 
 #script {
@@ -1089,13 +1099,35 @@ custom
   }
 }
 
+.rating-table-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+
+.rating-table-row .cell {
+  padding: 0px 8px;
+  /* min-width: 100px */
+}
+
+.rating-table-row #song {
+  flex: 1
+}
+
 #rating-table td {
   padding: 8px;
 }
 
 @media screen and (max-width: 576px) {
+
+  .rating-table-row,
   #rating-table td {
     padding: 4px
+  }
+
+  .rating-table-row .cell {
+    padding: 0 4px
   }
 }
 

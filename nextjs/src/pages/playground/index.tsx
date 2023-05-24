@@ -238,7 +238,7 @@ const Playground = (props: Props) => {
                 <input onChange={(e) => {
                     setEnalbleFullScreen(e.target.checked)
                 }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
-                <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-fullscreen"  >Full Screen</label>
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
             </div>
             <div className="flex justify-center items-center mb-4 form-check">
                 <input onChange={(e) => {
@@ -246,13 +246,13 @@ const Playground = (props: Props) => {
                         setGameType("maimai")
                     }
                 }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
-                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-jsmai" >jsmai</label>
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
                 <input onChange={(e) => {
                     if (e.target.checked) {
                         setGameType("djmania")
                     }
                 }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
-                <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-4k"  >4k</label>
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
             </div>
             <div className='inner inner-720'>
                 <input value={youtubeLink} onChange={(e) => {
