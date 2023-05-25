@@ -92,7 +92,7 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
 export default User
 
 export async function getServerSideProps(context: NextPageContext) {
-    context.res?.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=120')
+    context.res?.setHeader('Cache-Control', 'public, s-maxage=60')
     try {
         // let session = await getSession(context)
 
