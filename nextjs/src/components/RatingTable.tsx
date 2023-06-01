@@ -40,6 +40,7 @@ const cache = new CellMeasurerCache({
     fixedWidth: true,
     defaultHeight: 100
 });
+
 export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     const [searchText, setSearchText] = useState('')
     const router = useRouter()
@@ -56,13 +57,13 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 else return k.song.toUpperCase().includes(searchText.toUpperCase())
             })
         else return (_.orderBy(ratingList, ['rating'], ['desc']))
-    }, [searchText, ratingList])
+    }, [searchText])
 
 
     const _renderTableRow = useCallback(() => {
         const tableRowsNum = tableRowsNumber < 0 ? sortedRatingList.length : tableRowsNumber
         return _.map(_.take(sortedRatingList, tableRowsNum), (k, i) => {
-            return <tr key={k.song + i} className={classNames({ 'border-b': i === 29 && !searchText && tableRowsNumber > 30, 'border-b-red-700': i === 29 && !searchText })} >
+            return <tr key={k.song + i} className={classNames({ 'border-b': i === 29 && !searchText && tableRowsNumber > 30 || tableRowsNumber < 0, 'border-b-red-700': i === 29 && !searchText })} >
                 <td>{k.order ?? '-'}</td>
                 <td className='song'>{k.song}</td>
                 <td>{toFixedTrunc(k.internalRate, 1)}</td>
@@ -72,7 +73,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 }} className='txt-white cursor-pointer'><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
             </tr >
         })
-    }, [searchText, sortedRatingList, tableRowsNumber])
+    }, [sortedRatingList, tableRowsNumber])
 
 
     return <><div className='inner inner-720'  >
@@ -81,22 +82,22 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
     </div>
         <div className='flex justify-center items-center mb-4 form-check'>
-            <input onChange={(e) => {
+        <input onChange={(e) => {
                 setTableRowsNumber(30)
-            }} checked={tableRowsNumber == 30} id="recent" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Top 30</label>
+            }} checked={tableRowsNumber == 30} id="record-30" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-30" >Top 30</label>
             <input onChange={(e) => {
                 setTableRowsNumber(100)
-            }} checked={tableRowsNumber == 100} id="recent" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Top 100</label>
+            }} checked={tableRowsNumber == 100} id="record-100" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-100" >Top 100</label>
             <input onChange={(e) => {
                 setTableRowsNumber(500)
-            }} checked={tableRowsNumber == 500} id="recent" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Top 500</label>
+            }} checked={tableRowsNumber == 500} id="record-500" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-500" >Top 500</label>
             <input onChange={(e) => {
                 setTableRowsNumber(-1)
-            }} checked={tableRowsNumber == -1} id="recent" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >All</label>
+            }} checked={tableRowsNumber == -1} id="record-all" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-all" >All</label>
         </div>
         <div id='rating-table' className='box box-shadow'>
             {ratingList.length > 0 ?
@@ -154,6 +155,91 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 //         </WindowScroller>
                 //     }}
                 // </AutoSizer>
+                <table >
+                    <tbody>
+                        {_renderTableRow()}
+                    </tbody>
+                </table>
+                : <div className='inner-p20 w-full h-full text-left'>
+                    <p className='mb10'>
+                        {`
+            1. Save the above script into a browser bookmark
+          `}
+                    </p>
+                    <p className='mb10'>
+                        {`2. Open this page (required login) `}<Link href={"https://chunithm-net-eng.com/mobile/home/"}>https://chunithm-net-eng.com/mobile/home/</Link>
+                    </p>
+                    <p className='mb10'>
+                        {`
+            3. click the bookmark and wait for redirecting to this page`
+                        }
+                    </p>
+                </div>}
+        </div>
+    </>
+}
+
+export const BestRatingTable2 = ({ ratingList }: { ratingList: Rating[] }) => {
+
+    const [searchText, setSearchText] = useState('')
+    const router = useRouter()
+    const ref = useRef()
+    const [tableRowsNumber, setTableRowsNumber] = useState(100)
+
+    const sortedRatingList = () => {
+        if (searchText)
+            return _.filter(_.orderBy(ratingList, ['master.rate'], ['desc']), k => {
+                if (parseFloat(searchText) > 0.0) {
+                    let searchRate = parseFloat(searchText)
+                    return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
+                }
+                else return k.song.toUpperCase().includes(searchText.toUpperCase())
+            })
+        else return (_.orderBy(ratingList, ['rating'], ['desc']))
+    }
+
+
+    const _renderTableRow = () => {
+        const list = sortedRatingList()
+        const tableRowsNum = tableRowsNumber < 0 ? list.length : tableRowsNumber
+        return _.map(_.take(list, tableRowsNum), (k, i) => {
+            return <tr key={k.song + i} className={classNames({ 'border-b': i === 29 && !searchText && tableRowsNumber > 30 || tableRowsNumber < 0, 'border-b-red-700': i === 29 && !searchText })} >
+                <td>{k.order ?? '-'}</td>
+                <td className='song'>{k.song}</td>
+                <td>{toFixedTrunc(k.internalRate, 1)}</td>
+                <td>{k.score}</td>
+                <td onClick={() => {
+                    router.push(`/song/${k.song}`)
+                }} className='txt-white cursor-pointer'><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
+            </tr >
+        })
+    }
+
+    return <><div className='inner inner-720'  >
+        <input value={searchText} onChange={(e) => {
+            setSearchText(e.target.value)
+        }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
+    </div>
+        <div className='flex justify-center items-center mb-4 form-check'>
+            <input onChange={(e) => {
+                setTableRowsNumber(30)
+            }} checked={tableRowsNumber == 30} id="record-30" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-30" >Top 30</label>
+            <input onChange={(e) => {
+                setTableRowsNumber(100)
+            }} checked={tableRowsNumber == 100} id="record-100" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-100" >Top 100</label>
+            <input onChange={(e) => {
+                setTableRowsNumber(500)
+            }} checked={tableRowsNumber == 500} id="record-500" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-500" >Top 500</label>
+            <input onChange={(e) => {
+                setTableRowsNumber(-1)
+            }} checked={tableRowsNumber == -1} id="record-all" className="checkbox" type="checkbox" />
+            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-all" >All</label>
+        </div>
+        <div id='rating-table' className='box box-shadow'>
+            {ratingList.length > 0 ?
                 <table >
                     <tbody>
                         {_renderTableRow()}

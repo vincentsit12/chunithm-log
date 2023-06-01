@@ -40,11 +40,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
   const timer = useRef<NodeJS.Timeout>()
   const router = useRouter()
   const ref = useRef(null)
-  // const sortedRatingList = useMemo(() => {
-  //   if (searchText)
-  //     return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
-  //   else return (_.orderBy(ratingList, ['rating'], ['desc']))
-  // }, [searchText, ratingList])
+
 
   const [average, max, recentAverage, recent] = useMemo(() => {
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
@@ -54,19 +50,6 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
     if (top30.length < 1) return [0, 0, 0, 0]
     return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40, recentRatingList.length > 0 ? recentTotal / recentRatingList.length : 0, recent]
   }, [bestRatingList, recentRatingList])
-
-
-
-  const renderRatingColor = (d: string) => {
-    switch (d) {
-      case 'master':
-        return 'bg-master'
-
-      default:
-        break;
-    }
-  }
-
 
   return (
     <LayoutWrapper>
