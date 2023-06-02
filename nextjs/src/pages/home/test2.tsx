@@ -21,7 +21,6 @@ import { hash } from 'bcryptjs'
 import Link from 'next/link'
 import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
-import 'rc-tooltip/assets/bootstrap_white.css';
 import { log } from 'console'
 import { Op } from 'sequelize'
 import { BestRatingTable, BestRatingTable2, RecentRatingTable } from 'components/RatingTable'
@@ -67,7 +66,7 @@ const Home: NextPage<Props> = () => {
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
         {/* <RecentRatingTable recentRatingList={recentRatingList} /> */}
-        <BestRatingTable2 ratingList={testrecord} />
+        <BestRatingTable ratingList={testrecord} />
       </div>
     </LayoutWrapper >
   )

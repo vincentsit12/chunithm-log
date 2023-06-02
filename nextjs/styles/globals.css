@@ -24,8 +24,11 @@
     #__next {
         @apply h-full;
     }
-    #rating-table tr {
+    .rating-table-row {
         @apply even:bg-gray-300/[.6] hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
+    }
+    .rating-table-row-2 {
+        @apply hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
     }
     .checkbox {
         @apply w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600

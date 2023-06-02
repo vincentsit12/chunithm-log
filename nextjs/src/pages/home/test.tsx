@@ -1,11 +1,6 @@
-import axios from 'axios'
 import type { NextPage, NextPageContext } from 'next'
-import { Session } from 'next-auth'
 import { getSession, signOut, useSession } from 'next-auth/react'
-import Head from 'next/head'
-import Image from 'next/image'
 import { Rating, Song } from 'types'
-import { getRatingList } from 'utils/api'
 import _, { isString } from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
@@ -14,16 +9,10 @@ import { MdOutlineContentCopy } from 'react-icons/md'
 import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/calculateRating'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
-import classNames from 'classnames'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
-import { hash } from 'bcryptjs'
-import Link from 'next/link'
 import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
-import 'rc-tooltip/assets/bootstrap_white.css';
-import { log } from 'console'
-import { Op } from 'sequelize'
 import { BestRatingTable, BestRatingTable2, RecentRatingTable } from 'components/RatingTable'
 
 type Props = {
