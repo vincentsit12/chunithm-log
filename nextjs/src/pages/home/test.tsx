@@ -13,7 +13,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
-import { BestRatingTable, BestRatingTable2, RecentRatingTable } from 'components/RatingTable'
+import 'rc-tooltip/assets/bootstrap_white.css';
+import { BestRatingTable, RatingTable, RecentRatingTable } from 'components/RatingTable'
 
 type Props = {
     bestRatingList: Rating[],
@@ -103,8 +104,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
                     </div>
                     {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
                 </div>
-                <RecentRatingTable recentRatingList={recentRatingList} />
-                <BestRatingTable2 ratingList={bestRatingList} />
+                <RatingTable ratingList={bestRatingList} recentRatingList={recentRatingList}/>
             </div>
         </LayoutWrapper >
     )

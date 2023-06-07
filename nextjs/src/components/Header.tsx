@@ -24,21 +24,21 @@ const Header = (props: Props) => {
             </div>
             <nav className={classNames('nav-dropmenu', { animation: active })}>
                 <ul>
-                    <li><Link href={haveSession ? '/home' : '/login'}><a onClick={(e) => {
+                    <li><Link href={haveSession ? '/home' : '/login'} onClick={(e) => {
                         setActive(false)
-                    }}>{haveSession ? 'Home' : 'Login'}</a></Link></li>
-                    <li><Link href={'/song'}><a onClick={(e) => {
+                    }}>{haveSession ? 'Home' : 'Login'}</Link></li>
+                    <li><Link href={'/song'} onClick={(e) => {
                         setActive(false)
-                    }}>Song List</a></Link></li>
-                    <li><Link href={'/playground'}><a onClick={(e) => {
-                        // e.preventDefault()
-                        setActive(false)
-                    }}>Playground</a></Link></li>
-                    {haveSession && <li><Link href={'/'}><a onClick={(e) => {
+                    }}>Song List</Link></li>
+                    <li><Link href={'/playground'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Playground</Link></li>
+                    {haveSession && <li><Link href={'/'} onClick={(e) => {
                         e.preventDefault()
                         setActive(false)
                         signOut()
-                    }}>Logout</a></Link></li>}
+                    }}>Logout</Link></li>}
                 </ul>
             </nav>
         </header>

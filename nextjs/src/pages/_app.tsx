@@ -3,6 +3,8 @@ import "../../styles/globals.css"
 import "../../styles/utils.css"
 import "../../styles/common.css"
 
+import localFont from 'next/font/local';
+
 
 import { SessionProvider } from "next-auth/react"
 
@@ -15,6 +17,14 @@ import { useEffect } from "react"
 import { Session } from "next-auth"
 NProgress.configure({ showSpinner: false });
 
+
+// export const mplus1 = M_PLUS_1({
+//   subsets: ['latin'],
+//   weight: ['400', '500', '700'],
+//   display: 'swap',
+//   fallback: ['Arial'],
+// })
+const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.ttf' });
 
 export default function App({
   Component,
@@ -31,11 +41,14 @@ export default function App({
     });
   }, [])
   return (
-    <SessionProvider session={session}>
-      <Head><title>Chuni-Log</title></Head>
-      <Header />
-      <Component {...pageProps} />
-    </SessionProvider>
+    <main className={myFont.className}>
+      <SessionProvider session={session}>
+        <Head><title>Chuni-Log</title></Head>
+        <Header />
+        <Component  {...pageProps} />
+      </SessionProvider>
+
+    </main>
 
   )
 }

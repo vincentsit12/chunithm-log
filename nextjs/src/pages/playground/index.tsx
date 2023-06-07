@@ -398,6 +398,1734 @@ const Playground = (props: Props) => {
                 </Modal>
 
             </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
+            <div className='flex w-full justify-center my-5' >
+                <button onClick={() => {
+                    if (!timelineString) {
+                        alert('no notes!')
+                        return
+                    }
+                    if (enalbleFullScreen && document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(document.documentElement.ALLOW_KEYBOARD_INPUT)
+                        if (screen?.orientation) {
+                            screen.orientation?.lock("landscape-primary")
+                                .catch((err) =>
+                                    console.log("err", err))
+                                .finally(() => {
+                                    setModalIsOpen(true)
+                                })
+                        }
+                        else {
+                            setModalIsOpen(true)
+                        }
+
+
+
+                    }
+                    else if (enalbleFullScreen && document.fullscreenEnabled) {
+                        let dom = document.documentElement
+
+                        dom.requestFullscreen({ navigationUI: "show" })
+                            .then(() => {
+                                // setModalIsOpen(true)
+                                if (screen?.orientation) {
+                                    screen.orientation?.lock("landscape-primary").catch((err) =>
+                                        console.log("err", err)).finally(() => {
+                                            setModalIsOpen(true)
+                                        })
+                                }
+                                else {
+                                    setModalIsOpen(true)
+                                }
+                            })
+                            .catch(function (error) {
+                                alert(`An error occurred while trying to switch into fullscreen mode: ${error.message} (${error.name})`);
+                            })
+
+                    }
+                    else {
+                        setModalIsOpen(true)
+                    }
+                }} className='btn btn-secondary mx-5'>Start Game</button>
+                <button onClick={() => {
+                    closeGame()
+                }} className='btn btn-secondary mx-5'>Reset Game</button>
+            </div>
+            <div className="flex justify-center items-center mb-4">
+                <input onChange={(e) => {
+                    setEnalbleFullScreen(e.target.checked)
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
+            </div>
+            <div className="flex justify-center items-center mb-4 form-check">
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("maimai")
+                    }
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
+                <input onChange={(e) => {
+                    if (e.target.checked) {
+                        setGameType("djmania")
+                    }
+                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
+            </div>
+            <div className='inner inner-720'>
+                <input value={youtubeLink} onChange={(e) => {
+                    setYoutubeLink(e.target.value)
+
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='youtube link/id'></input>
+                <YouTube videoId={youtubeId} opts={youtubeOpts} style={{ display: 'none' }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        if (e.data === 1) {
+                            game.current?.scheuleMusicNote()
+                        }
+                    }} />
+                <textarea value={timelineString} onChange={(e) => {
+                    setTimelineString(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                    placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
+                <div className='flex w-full justify-center mb20 flex-wrap' >
+                    <button onClick={() => {
+                        setTimelineString(defaultTimeLine)
+
+                    }} className='btn btn-secondary m-2 '>{"Default"}</button>
+                    <button onClick={() => {
+
+                        setTimelineString("")
+
+                    }} className='btn btn-secondary m-2 '>{'Reset'}</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4]'
+                        })
+                    }} className='btn btn-secondary m-2 '>+LTR階段</button>
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[4,3,2,1,4,3,2,1,4,3,2,1,4,3,2,1]'
+                        })
+                    }} className='btn btn-secondary m-2'>+RTL階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LRトリル</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RLトリル</button>
+
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[1,2,3,2,1,2,3,2,1,2,3,2,1]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+LTR螺旋階段</button>
+
+                    <button onClick={() => {
+                        setTimelineString(timelineString => {
+                            return timelineString + (timelineString ? "," : "") + '[3,2,1,2,3,2,1,2,3,2,1,2,3]'
+                        })
+                        // game.current = null
+                    }} className='btn btn-secondary m-2'>+RTL螺旋階段</button>
+
+                </div>
+                <input value={BPM} onChange={(e) => {
+                    setBPM(e.target.value)
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='bpm'></input>
+                <input value={speed} onChange={(e) => {
+                    setSpeed(e.target.value)
+
+                }} className='px-4 py-2 box box-shadow mb20 w-full' placeholder='speed'></input>
+
+                <Modal
+                    isOpen={modalIsOpen}
+
+                    onAfterOpen={() => initGame()}
+                    // onRequestClose={closeModal}
+                    ariaHideApp={false}
+                    ref={modalRef}
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1000,
+                        },
+                        content: {
+                            top: '50%',
+                            left: '50%',
+                            right: 'auto',
+                            bottom: 'auto',
+                            marginRight: '-50%',
+                            padding: '0rem',
+                            transform: 'translate(-50%, -50%)',
+                            height: enalbleFullScreen ? '100%' : '90%',
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: 'none',
+                            backgroundColor: 'rgba(0, 0, 0, 1)'
+                        },
+                    }}
+                // contentLabel="Example Modal"
+                >
+                    <div className="h-full w-full">
+                        <canvas
+                            onTouchStart={e => game.current?.ontouchstart(e)}
+                            onTouchMove={e => game.current?.ontouchmove(e)}
+                            onTouchEnd={e => game.current?.ontouchend(e)}
+                            className='w-full h-full' ref={canvasRef}></canvas>
+                    </div>
+                    {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
+                    <button onClick={() => {
+
+                        if (game.current?.isStarted) {
+                            game.current?.reset()
+                        }
+
+                        game.current?.startGame()
+
+                    }} className='btn btn-secondary absolute top-3 left-3'>Start Game</button>
+                    <button onClick={() => {
+                        // let dom = document.documentElement
+                        if (document.webkitExitFullscreen && enalbleFullScreen) {
+                            document.webkitExitFullscreen()
+                        }
+                        else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
+                        else {
+                            setModalIsOpen(false)
+                            closeGame()
+                        }
+
+                        // game.current = null
+                    }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
+                    {/* </div> */}
+                </Modal>
+
+            </div>
         </LayoutWrapper >
     )
 }
