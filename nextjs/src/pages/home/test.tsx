@@ -104,7 +104,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
                     </div>
                     {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
                 </div>
-                <RatingTable ratingList={bestRatingList} recentRatingList={recentRatingList}/>
+                <RatingTable ratingList={bestRatingList} recentRatingList={recentRatingList} />
             </div>
         </LayoutWrapper >
     )

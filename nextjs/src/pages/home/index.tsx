@@ -9,12 +9,15 @@ import { MdOutlineContentCopy } from 'react-icons/md'
 import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/calculateRating'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
 import 'rc-tooltip/assets/bootstrap_white.css';
 import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
+import Modal from 'components/Modal'
+import axios from 'axios'
+import { getRecommandList } from 'utils/api'
 
 type Props = {
   bestRatingList: Rating[],
@@ -23,14 +26,36 @@ type Props = {
   userName?: string
 };
 
+const RecommadSongs = ({ avg }: { avg: number }) => {
+  const [list, setList] = useState<Songs[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    let upper = Math.max(avg + 0.1 - 2.15, 10)
+    let lower = Math.max(avg - 2.15, 0)
+    getRecommandList(lower, upper).then(d => {
+      setList(d.data)
+    }).catch((e) => {
+
+    })
+
+  }, [])
+
+  return <ul>
+    {_.map(list, (k, i) => {
+      return <li>
+        {`${i}. ${k.display_name} ${k.id}}`}
+      </li>
+    })}
+  </ul>
+}
 
 const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
   const router = useRouter()
   const ref = useRef(null)
-
+  const [isModalOpen, setIsModalOpen] = useState(true)
 
   const [average, max, recentAverage, recent] = useMemo(() => {
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
@@ -99,6 +124,9 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
         <RecentRatingTable recentRatingList={recentRatingList} />
         <BestRatingTable ratingList={bestRatingList} />
       </div>
+      {/* <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
+        <RecommadSongs avg={average} />
+      </Modal> */}
     </LayoutWrapper >
   )
 }
@@ -133,14 +161,14 @@ export async function getServerSideProps(context: NextPageContext) {
       _.map(_.filter(data?.records, k => k.type === 'best'), function (o) {
         let song: Song = o.song[o.difficulty]
         let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
-        let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+        let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, updatedAt: o.updatedAt.toISOString() }
         return result
       });
     const recentRatingList =
       _.map(_.filter(data?.records, k => k.type === 'recent'), function (o) {
         let song: Song = o.song[o.difficulty]
         let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
-        let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+        let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty }
         return result
       });
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30

@@ -21,7 +21,7 @@ import { getSession } from 'next-auth/react'
 
 async function handler(
     req: NextApiRequest,
-    res: NextApiResponse<Rating[] | null>
+    res: NextApiResponse<Users | null>
 ) {
 
     if (req.method !== 'GET') throw new BadRequestError(`do not accept ${req.method} `)
@@ -29,8 +29,9 @@ async function handler(
    
     if (!session) throw new UnauthenticatedError('please login first')
 
-    let data : Users | null = (await Users.findOne({ where: { id: req.body.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
+    let data : Users | null = (await Users.findOne({ where: { id: req.query.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
     if (!data) throw new BadRequestError(`no data`);
+    res.status(200).json(data)
     const ratingList = _.map(data.records, function (o) {
         let song: Song = o.song[o.difficulty]
         let rating = calculateSingleSongRating(song?.rate, o.score)
@@ -38,7 +39,7 @@ async function handler(
         return result
     });
 
-    res.status(200).json(ratingList)
+    // res.status(200).json(ratingList)
 }
 
 export default withErrorHandler(handler)

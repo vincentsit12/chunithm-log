@@ -5,7 +5,10 @@ import { MusicNote } from "./MusicNote"
 export class Game {
     canvasElement: HTMLCanvasElement
     canvas: Canvas
-    music: any
+    music: {
+        ref: any,
+        startTime: number
+    }
     type: GameType
     timeline: (string | string[])[]
     isStarted: boolean
@@ -61,10 +64,10 @@ export class Game {
         this.config = config
 
         this.music = music
-        if (this.music instanceof HTMLAudioElement) {
-            music.volume = .5
+        if (this.music.ref instanceof HTMLAudioElement) {
+            this.music.ref.volume = .5
             // music.muted = true
-            music.load()
+            this.music.ref.load()
         }
 
     }
@@ -435,10 +438,10 @@ export class Game {
     // }
 
     endGame = () => {
-        if (this.music instanceof HTMLAudioElement) {
-            if (this.music.duration > 0 && !this.music.paused) {
-                this.music.pause();
-                this.music.currentTime = 0;
+        if (this.music.ref instanceof HTMLAudioElement) {
+            if (this.music.ref.duration > 0 && !this.music.ref.paused) {
+                this.music.ref.pause();
+                this.music.ref.currentTime = 0;
             }
         }
         else {
@@ -682,8 +685,8 @@ export class Game {
 
         this.preGenerateMusicNote()
 
-        if (this.music instanceof HTMLAudioElement) {
-            this.music.play().then(() => {
+        if (this.music.ref instanceof HTMLAudioElement) {
+            this.music.ref.play().then(() => {
                 this.scheuleMusicNote()
 
             }).catch((e => {
@@ -691,7 +694,7 @@ export class Game {
             }));
         }
         else {
-            this.music.playVideo()
+            this.music.ref.playVideo()
             // this.scheuleMusicNote()
         }
 
@@ -782,8 +785,8 @@ export class Game {
             this.music.currentTime = 0;
         }
         else {
-            this.music.pauseVideo()
-            this.music.seekTo(0)
+            this.music.ref.pauseVideo()
+            this.music.ref.seekTo(this.music.startTime)
         }
         this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         cancelAnimationFrame(this.drawId)

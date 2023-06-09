@@ -6,7 +6,8 @@ export interface Rating {
     score: number,
     difficulty: Difficulty
     combo: number,
-    order? : number
+    order? : number,
+    updatedAt? : string
 }
 
 export type Difficulty = 'ultima' | 'master' | 'expert'

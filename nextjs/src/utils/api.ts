@@ -1,4 +1,5 @@
 import axios from "axios";
+import Songs from "db/model/songs";
 import { Rating } from "types";
 
 
@@ -29,4 +30,8 @@ export function signUp(username: string, password: string) {
 
 export function getRatingList() {
     return instance.get<Rating[]>(`/record/rating`)
+}
+
+export function getRecommandList(lower: number, upper: number) {
+    return instance.get<Songs[]>(`/songs/recommand?lower=${lower}&upper=${upper}`)
 }

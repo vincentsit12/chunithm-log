@@ -23,13 +23,14 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
 
             {_.map(recentRatingList, (k, i) => {
                 return <div key={k.song + i} className={classNames("rating-table-row")} >
-                    <span className="px-2 w-[3rem]">{k.order ?? '-'}</span>
+                    <span className="w-[3rem]">{k.order ?? '-'}</span>
                     <span className='flex-1 px-2'>{k.song}</span>
-                    <span className="px-2">{toFixedTrunc(k.internalRate, 1)}</span>
-                    <span className="px-2 w-[5.5rem]">{k.score}</span>
-                    <div onClick={() => {
+                    <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
+                    <span className="w-[5.5rem]">{k.score}</span>
+
+                    <span onClick={() => {
                         router.push(`/song/${k.song}`)
-                    }} className='px-2 txt-white '><span className={classNames(`bg-${k.difficulty}`, 'rounded cursor-pointer')}>{k.truncatedRating}</span></div>
+                    }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer w-full')}>{k.truncatedRating} </span>
                 </div >
             })}
 
@@ -59,6 +60,13 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         else return (_.orderBy(ratingList, ['rating'], ['desc']))
     }, [searchText])
 
+    const updatedIdSet = useMemo(() => {
+        let set = new Set<number>()
+        let grp = _.groupBy(ratingList, o => { return o.updatedAt })
+        if (!grp || Object.keys(grp).length <= 1 ) return set
+        grp[Object.keys(grp).at(-1) ?? 0].forEach(k => { if (k.order) set.add(k.order) })
+        return set
+    }, [ratingList])
 
     const _renderTableRow = useCallback(() => {
         const tableRowsNum = tableRowsNumber < 0 ? sortedRatingList.length : tableRowsNumber
@@ -67,11 +75,12 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 <span className="w-[3rem]">{k.order ?? '-'}</span>
                 <span className='flex-1 px-2'>{k.song}</span>
                 <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
-                <span className="w-[5.5rem]">{k.score}</span>
+                <span className="w-[5.5rem]">{`${k.score}`}</span>
 
                 <span onClick={() => {
                     router.push(`/song/${k.song}`)
                 }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer w-full')}>{k.truncatedRating} </span>
+                {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>}
             </div >
         })
     }, [sortedRatingList, tableRowsNumber])

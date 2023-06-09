@@ -692,6 +692,12 @@ button {
   min-width: 100px
 }
 
+.btn:disabled {
+  cursor: not-allowed;
+}
+.btn:hover:disabled {
+  cursor: not-allowed;
+}
 .btn-primary {
   background-color: white;
   color: black;

@@ -6,10 +6,10 @@ type Props = {}
 
 export default function LoadingView({ }: Props) {
     return (
-        <div className='absolute_center  w-32	'>
+        <div className='absolute_center  w-16	'>
             <div className='animate-spin'>
 
-                <Image alt='loading' className="w-full" src={loadingPic} height={100} width={60} objectFit='contain' />
+                <Image alt='loading' className="w-full" src={loadingPic}  style={{objectFit :'contain'}} />
             </div>
 
         </div>

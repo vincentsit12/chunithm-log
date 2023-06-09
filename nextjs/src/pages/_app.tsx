@@ -40,6 +40,10 @@ export default function App({
       NProgress.done(false)
     });
   }, [])
+
+
+
+
   return (
     <main className={myFont.className}>
       <SessionProvider session={session}>

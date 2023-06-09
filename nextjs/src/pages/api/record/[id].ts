@@ -26,7 +26,7 @@ type RequestBody = {
     name: string,
     difficulty: Difficulty,
     score: number
-    type : RecordType
+    type: RecordType
 }
 async function handler(
     req: NextApiRequest,
@@ -35,7 +35,7 @@ async function handler(
     await runMiddleware(req, res, cors)
     if (req.method === 'PUT') {
         const userId = parseInt(decrypt(req.query.id as string))
-  
+
         if (!userId)
             throw new BadRequestError('no user provided')
         if (!req.body.data || req.body.data.length <= 0) throw new BadRequestError('no data provided')
@@ -44,7 +44,7 @@ async function handler(
             return o.name;
         });
         const validSongsData = _.filter<RequestBody>(req.body.data, k => songsObj[reEscape(k.name)] !== undefined)
-        let data = _.map<RequestBody, any>(validSongsData, ((k) => {
+        let newRecords = _.map(validSongsData, ((k) => {
 
             return {
                 // name: k.name,
@@ -53,13 +53,47 @@ async function handler(
                 // rate: songsObj[reEscape(k.name)][k.difficulty],
                 difficulty: k.difficulty,
                 score: k.score,
-                type : k.type
-            }
+                type: k.type
+            } as Records
         }))
 
+        let records = await Records.findAll({ where: { user_id: userId } })
+        let recordsGrp = _.groupBy<Records>(records, 'type')
 
-        await Records.destroy({ where: { user_id: userId }, force: true })
-        await Records.bulkCreate(data)
+        let updatedRecords: Records[] = []
+        let recentCount = 0
+
+        for (let i = 0; i < newRecords.length; i++) {
+            if (newRecords[i].type === 'best') {
+                let index = _.findIndex(recordsGrp['best'], k => k.song_id === newRecords[i].song_id && k.difficulty === newRecords[i].difficulty)
+                if (index >= 0) {
+                    newRecords[i].id = recordsGrp['best'][index].id
+                    if (newRecords[i].score > recordsGrp['best'][index].score) {
+                        updatedRecords.push(newRecords[i])
+                    }
+                }
+                else {
+                    updatedRecords.push(newRecords[i])
+                }
+               
+            }
+            else {
+                if (recordsGrp['recent'] && (recordsGrp['recent'].length > recentCount)) {
+                    newRecords[i].id = recordsGrp['recent'][recentCount].id
+                }
+                updatedRecords.push(newRecords[i])
+                recentCount++
+            }
+        }
+        console.table(updatedRecords)
+
+        await Records.bulkCreate(updatedRecords,
+            {
+                updateOnDuplicate: ['score', 'song_id', 'difficulty', "updatedAt"],
+            });
+
+        // await Records.destroy({ where: { user_id: userId }, force: true })
+        // await Records.bulkCreate(data)
 
 
         res.status(200).send('update success')
