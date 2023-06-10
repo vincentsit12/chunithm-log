@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Op } from 'sequelize'
 import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
+import { getRatingList } from 'utils/getRatingList'
 
 type Props = {
     bestRatingList: Rating[],
@@ -115,24 +116,11 @@ export async function getServerSideProps(context: NextPageContext) {
         if (!data) return {
             notFound: true,
         }
-        const bestRatingList =
-            _.map(_.filter(data?.records, k => k.type === 'best'), function (o) {
-                let song: Song = o.song[o.difficulty]
-                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
-                let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
-                return result
-            });
-        const recentRatingList =
-            _.map(_.filter(data?.records, k => k.type === 'recent'), function (o) {
-                let song: Song = o.song[o.difficulty]
-                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
-                let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
-                return result
-            });
-        // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
+        const [bestRatingList, recentRatingList] = await getRatingList( data)
+
         return {
             props: {
-                bestRatingList: _.map(_.orderBy(bestRatingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
+                bestRatingList,
                 recentRatingList,
                 // average                // average
                 userName: data.username,
