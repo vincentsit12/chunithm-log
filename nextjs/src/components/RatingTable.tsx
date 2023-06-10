@@ -61,10 +61,27 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     }, [searchText])
 
     const updatedIdSet = useMemo(() => {
-        let set = new Set<number>()
-        let grp = _.groupBy(ratingList, o => { return o.updatedAt })
-        if (!grp || Object.keys(grp).length <= 1 ) return set
-        grp[Object.keys(grp).at(-1) ?? 0].forEach(k => { if (k.order) set.add(k.order) })
+        const set = new Set<number>()
+        const grp = _.groupBy(ratingList, o => { return o.updatedAt })
+        const keyGrp = Object.keys(grp)
+        if (keyGrp.length <= 1 ) return set
+        const orderedKey = _.tail(_.sortBy(keyGrp))
+
+        let count = 0
+        const max = 10
+        for (let i=orderedKey.length-1; i >= 0; i--) {
+            if (count < max) {
+                for (let j = 0; j < grp[orderedKey[i]].length; j++) {
+                    let id = grp[orderedKey[i]][j].order ?? -1
+                    if (id > 0) {
+                        set.add(id)
+                    }
+                    count++
+                }
+            }
+            else break
+        }
+        console.log(set)
         return set
     }, [ratingList])
 
