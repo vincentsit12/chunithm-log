@@ -90,7 +90,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
                         <div >{`Rate : ${songData.rate}`}</div>
                         <div className='mb20'>{`Combo :  ${songData.combo}`}</div>
                         {session && recordData &&
-                            <div className=''>
+                            <div className='mb-2'>
                                 <div>
                                     {`Your score : ${recordData?.score}`}
                                 </div>
@@ -98,6 +98,19 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
                             </div>
 
                         }
+                        <div className="flex flex-wrap justify-center w-full">
+                            <div className='m-2'>
+                                <button disabled={song[difficulty].scriptUrl == undefined} onClick={() => {
+                                    window.open(song[difficulty].scriptUrl)
+                                }} className={`btn btn-secondary p-2`}>譜面</button>
+                            </div>
+
+                            <div className='m-2'>
+                                <button onClick={() => {
+                                     window.open(`https://www.youtube.com/results?search_query=${song.display_name}+${difficulty}+譜面確認+chunithm`)
+                                }} className={`btn btn-secondary p-2`}>譜面確認</button>
+                            </div>
+                        </div>
                         <div className='divide-solid w-full  my-8 bg-slate-300 h-0.5'></div>
                         <ScoreCalculator rate={songData.rate} score={recordData?.score ?? 1010000} combo={songData.combo} haveScore={recordData?.score !== undefined} />
                     </div>
