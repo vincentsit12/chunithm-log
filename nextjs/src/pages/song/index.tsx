@@ -4,6 +4,7 @@ import { Session } from 'next-auth'
 import { getSession, signOut, useSession } from 'next-auth/react'
 
 import _, { isInteger, isString } from 'lodash'
+import { CiCircleMore } from "react-icons/ci";
 
 import Songs from 'db/model/songs'
 
@@ -35,26 +36,19 @@ const SongPage: NextPage<Props> = ({ songList }) => {
   }, [searchText, songList])
 
 
-  const renderRatingColor = (d: string) => {
-    switch (d) {
-      case 'master':
-        return 'bg-master'
-      default:
-        break;
-    }
-  }
   const _renderTableRow = () => {
 
     return _.map(sortedRatingList, (k, i) => {
 
       return <tr key={i} className=' even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' >
         {/* <td className='w-10'>{k.id}</td> */}
-        <td className='cursor-pointer ' onClick={() => {
-          router.push(`/song/${k.display_name}`)
-        }}>{k.display_name}</td>
+        <td className='p-2' >{k.display_name}</td>
         <td className='w-20'>{k.ultima?.rate ?? '-'}</td>
         <td className='w-20'>{k.master?.rate ?? '-'}</td>
         <td className='w-20'>{k.expert?.rate ?? '-'}</td>
+        <td className='px-4 cursor-pointer' onClick={() => {
+          router.push(`/song/${k.display_name}`)
+        }}><CiCircleMore size={"1.5rem"}/></td>
       </tr>
     })
   }
@@ -80,6 +74,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
                   <th >Ultima</th>
                   <th >Master</th>
                   <th >Expert</th>
+                  <th ></th>
                 </tr>
               </thead>
               <tbody>

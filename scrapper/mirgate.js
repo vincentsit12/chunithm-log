@@ -1,6 +1,4 @@
-const Songs = require('./Songs')
-const Users = require('./Users')
-const Records = require('./Records');
+
 const sequelize = require('./db')
 
 

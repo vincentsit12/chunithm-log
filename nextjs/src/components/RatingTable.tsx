@@ -7,6 +7,7 @@ import { Rating } from "types"
 import { AutoSizer, CellMeasurer, CellMeasurerCache, Column, List, Table, WindowScroller } from 'react-virtualized';
 import { toFixedTrunc } from "utils/calculateRating"
 import { useWindowResize } from "utils/hooks/useWindowResize"
+import { GiMusicalScore } from "react-icons/gi";
 
 export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rating[] }) => {
     const [showTable, setShowTable] = useState(false)
@@ -25,9 +26,11 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
                 return <div key={k.song + i} className={classNames("rating-table-row")} >
                     <span className="w-[3rem]">{k.order ?? '-'}</span>
                     <span className='flex-1 px-2'>{k.song}</span>
+                    {k.scriptUrl && <span className='cursor-pointer w-[1.25rem]' onClick={() => {
+                       window.open(k.scriptUrl)
+                    }}><GiMusicalScore size={"1.25rem"}/></span>}
                     <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
                     <span className="w-[5.5rem]">{k.score}</span>
-
                     <span onClick={() => {
                         router.push(`/song/${k.song}`)
                     }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer w-full')}>{k.truncatedRating} </span>
@@ -64,12 +67,12 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         const set = new Set<number>()
         const grp = _.groupBy(ratingList, o => { return o.updatedAt })
         const keyGrp = Object.keys(grp)
-        if (keyGrp.length <= 1 ) return set
+        if (keyGrp.length <= 1) return set
         const orderedKey = _.tail(_.sortBy(keyGrp))
 
         let count = 0
         const max = 10
-        for (let i=orderedKey.length-1; i >= 0; i--) {
+        for (let i = orderedKey.length - 1; i >= 0; i--) {
             if (count < max) {
                 for (let j = 0; j < grp[orderedKey[i]].length; j++) {
                     let id = grp[orderedKey[i]][j].order ?? -1
@@ -91,6 +94,9 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
             return <div key={k.song + i} className={classNames("rating-table-row", { 'border-b': i === 29 && !searchText && (tableRowsNumber > 30 || tableRowsNumber < 0), 'border-b-red-700': i === 29 && !searchText })} >
                 <span className="w-[3rem]">{k.order ?? '-'}</span>
                 <span className='flex-1 px-2'>{k.song}</span>
+                {k.scriptUrl && <span className='cursor-pointer w-[1.25rem]' onClick={() => {
+                       window.open(k.scriptUrl)
+                    }}><GiMusicalScore size={"1.25rem"}/></span>}
                 <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
                 <span className="w-[5.5rem]">{`${k.score}`}</span>
 

@@ -6,6 +6,7 @@ export interface Rating {
     score: number,
     difficulty: Difficulty
     combo: number,
+    scriptUrl? : string,
     order? : number,
     updatedAt? : string
 }
@@ -17,7 +18,7 @@ export interface Song {
 
     rate: number,
     combo: number,
-
+    scriptUrl? : string
 }
 
 
