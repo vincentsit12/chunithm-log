@@ -3,11 +3,12 @@ import _ from "lodash"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Rating } from "types"
+import { Rating, SortingKeys } from "types"
 import { AutoSizer, CellMeasurer, CellMeasurerCache, Column, List, Table, WindowScroller } from 'react-virtualized';
 import { toFixedTrunc } from "utils/calculateRating"
 import { useWindowResize } from "utils/hooks/useWindowResize"
 import { GiMusicalScore } from "react-icons/gi";
+import { BiSolidUpArrow, BiLogoYoutube } from "react-icons/bi";
 
 export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rating[] }) => {
     const [showTable, setShowTable] = useState(false)
@@ -26,9 +27,10 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
                 return <div key={k.song + i} className={classNames("rating-table-row")} >
                     <span className="w-[3rem]">{k.order ?? '-'}</span>
                     <span className='flex-1 px-2'>{k.song}</span>
-                    {k.scriptUrl && <span className='cursor-pointer w-[1.25rem]' onClick={() => {
-                       window.open(k.scriptUrl)
-                    }}><GiMusicalScore size={"1.25rem"}/></span>}
+                    {/* <span className='cursor-pointer w-[1.75rem] px-1'><BiLogoYoutube size={"100%"} /></span> */}
+                    {k.scriptUrl && <span className='cursor-pointer w-[1.75rem] px-1' onClick={() => {
+                        window.open(k.scriptUrl)
+                    }}><GiMusicalScore size={"100%"} /></span>}
                     <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
                     <span className="w-[5.5rem]">{k.score}</span>
                     <span onClick={() => {
@@ -48,20 +50,26 @@ const cache = new CellMeasurerCache({
 export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     const [searchText, setSearchText] = useState('')
     const router = useRouter()
-
     const [tableRowsNumber, setTableRowsNumber] = useState(100)
-
+    const [sortingPref, setSortingPref] = useState<[SortingKeys, "asc" | "desc"]>(['rating', "desc"])
     const sortedRatingList = useMemo(() => {
+        let orderedList: Rating[]
+        if (sortingPref[0] === 'rating') {
+            orderedList = _.orderBy(ratingList, ["rating"], [sortingPref[1]])
+        }
+        else {
+            orderedList = _.orderBy(ratingList, [sortingPref[0], "rating"], [sortingPref[1], "desc"])
+        }
         if (searchText)
-            return _.filter(_.orderBy(ratingList, ['master.rate'], ['desc']), k => {
+            return _.filter(orderedList, k => {
                 if (parseFloat(searchText) > 0.0) {
                     let searchRate = parseFloat(searchText)
                     return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
                 }
                 else return k.song.toUpperCase().includes(searchText.toUpperCase())
             })
-        else return (_.orderBy(ratingList, ['rating'], ['desc']))
-    }, [searchText])
+        else return orderedList
+    }, [searchText, sortingPref])
 
     const updatedIdSet = useMemo(() => {
         const set = new Set<number>()
@@ -89,24 +97,57 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     }, [ratingList])
 
     const _renderTableRow = useCallback(() => {
+        const _renderArrow = (key: SortingKeys) => {
+            return key === sortingPref[0] ? <span className={classNames("ml-1 rotate", { "rotate-0": sortingPref[1] == 'asc', "rotate-180": sortingPref[1] == 'desc' })}><BiSolidUpArrow size={".75rem"} /></span> : null
+        }
+        const changeSortingPref = (key: SortingKeys) => {
+            let opposite: "desc" | "asc" = sortingPref[1] === "asc" ? "desc" : "asc"
+            if (key == sortingPref[0]) {
+                setSortingPref([key, opposite])
+            }
+            else {
+                setSortingPref([key, "desc"])
+            }
+        }
         const tableRowsNum = tableRowsNumber < 0 ? sortedRatingList.length : tableRowsNumber
-        return _.map(_.take(sortedRatingList, tableRowsNum), (k, i) => {
-            return <div key={k.song + i} className={classNames("rating-table-row", { 'border-b': i === 29 && !searchText && (tableRowsNumber > 30 || tableRowsNumber < 0), 'border-b-red-700': i === 29 && !searchText })} >
-                <span className="w-[3rem]">{k.order ?? '-'}</span>
-                <span className='flex-1 px-2'>{k.song}</span>
-                {k.scriptUrl && <span className='cursor-pointer w-[1.25rem]' onClick={() => {
-                       window.open(k.scriptUrl)
-                    }}><GiMusicalScore size={"1.25rem"}/></span>}
-                <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
-                <span className="w-[5.5rem]">{`${k.score}`}</span>
-
-                <span onClick={() => {
-                    router.push(`/song/${k.song}`)
-                }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer w-full')}>{k.truncatedRating} </span>
-                {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>}
+        return <>
+            <div className={classNames("rating-table-header")}>
+                <div onClick={() => {
+                    changeSortingPref("order")
+                }} className="w-[3rem]">{"Rank"}{_renderArrow('order')}</div>
+                <div onClick={() => {
+                    changeSortingPref("song")
+                }} className='flex-1 px-2'>{"Name"}{_renderArrow('song')}</div>
+                <div onClick={() => {
+                    changeSortingPref("internalRate")
+                }} className="w-[3.5rem]">{"Base"}{_renderArrow('internalRate')}</div>
+                <div onClick={() => {
+                    changeSortingPref("score")
+                }} className="w-[5.5rem]">{"Score"}{_renderArrow('score')}</div>
+                <div onClick={() => {
+                    changeSortingPref("rating")
+                }} className={classNames(`w-[3.5rem]`)}>{"Rate"}{_renderArrow('rating')}</div>
+                {/* {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>} */}
             </div >
-        })
-    }, [sortedRatingList, tableRowsNumber])
+            {_.map(_.take(sortedRatingList, tableRowsNum), (k, i) => {
+                const showTop30Border = i === 29 && !searchText && (tableRowsNumber > 30 || tableRowsNumber < 0) && _.isEqual(sortingPref, ['rating', "desc"])
+                return <div key={k.song + i} className={classNames("rating-table-row", { 'border-b border-b-red-700': showTop30Border })} >
+                    <span className="w-[3rem]">{k.order ?? '-'}</span>
+                    <span className='flex-1 px-2'>{k.song}</span>
+                    {k.scriptUrl && <span className='cursor-pointer w-[1.25rem]' onClick={() => {
+                        window.open(k.scriptUrl)
+                    }}><GiMusicalScore size={"1.25rem"} /></span>}
+                    <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
+                    <span className="w-[5.5rem]">{`${k.score}`}</span>
+
+                    <span onClick={() => {
+                        router.push(`/song/${k.song}`)
+                    }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer w-full')}>{k.truncatedRating} </span>
+                    {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>}
+                </div >
+            })}
+        </>
+    }, [sortedRatingList, tableRowsNumber, sortingPref])
 
 
     return <><div className='inner inner-720'  >
@@ -135,7 +176,6 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         <div className='rating-table box box-shadow'>
             {ratingList.length > 0 ?
                 _renderTableRow()
-
                 : <div className='inner-p20 w-full h-full text-left'>
                     <p className='mb10'>
                         {`
@@ -166,7 +206,7 @@ export const RatingTable = ({ ratingList, recentRatingList }: { ratingList: Rati
         const tableRowsNum = tableRowsNumber < 0 ? ratingList.length : tableRowsNumber
         const filteredList = _.take(ratingList, tableRowsNum)
         if (searchText)
-            return _.filter(_.orderBy(filteredList, ['master.rate'], ['desc']), k => {
+            return _.filter(_.orderBy(filteredList, ['rate'], ['desc']), k => {
                 if (parseFloat(searchText) > 0.0) {
                     let searchRate = parseFloat(searchText)
                     return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
@@ -175,7 +215,6 @@ export const RatingTable = ({ ratingList, recentRatingList }: { ratingList: Rati
             })
         else return (_.orderBy(filteredList, ['rating'], ['desc']))
     }, [searchText, tableRowsNumber])
-
 
     useEffect(() => {
         return () => {

@@ -24,15 +24,16 @@ const SongPage: NextPage<Props> = ({ songList }) => {
   const router = useRouter()
 
   const sortedRatingList = useMemo(() => {
+    let orderedList = _.orderBy(songList, ({ master, ultima, expert }) => master?.rate || ultima?.rate || expert?.rate || 0, ['desc'])
     if (searchText)
-      return _.filter(_.orderBy(songList, ['master.rate'], ['desc']), k => {
+      return _.filter(orderedList, k => {
         if (parseFloat(searchText) > 0.0) {
           let searchRate = parseFloat(searchText)
           return k.display_name.toUpperCase().includes(searchText.toUpperCase()) || (k.master?.rate === searchRate) || (k.expert?.rate === searchRate) || (k.ultima?.rate === searchRate)
         }
         else return k.display_name.toUpperCase().includes(searchText.toUpperCase())
       })
-    else return (_.orderBy(songList, ['master.rate'], ['desc']))
+    else return orderedList
   }, [searchText, songList])
 
 

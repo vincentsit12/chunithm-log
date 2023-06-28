@@ -30,7 +30,7 @@ async function createSchedule() {
                     newData[i].id = songs[index].id
                 }
             }
-     
+            console.table(newData)
             await Songs.bulkCreate(newData,
                 {
                     updateOnDuplicate: ['display_name', 'master', 'expert', 'ultima', 'updatedAt'],
@@ -66,7 +66,7 @@ async function updateGameScript() {
                 let obj = gameScriptList[key[i]]
                 let index = _.findIndex(songs, k => k.name === obj.name)
                 if (index >= 0) {
-                    let song = { ...songs[index].dataValues, }
+                    let song = _.omit({ ...songs[index].dataValues,}, "updatedAt")
                     let count = 0
                     diffculty.forEach(k => {
                         if (song[k] && obj[k] && !song[k].scriptUrl) {
@@ -86,18 +86,17 @@ async function updateGameScript() {
                 }
             }
 
-
             await Songs.bulkCreate(newData,
                 {
                     updateOnDuplicate: ['master', 'expert', 'ultima', 'updatedAt'],
                 });
         }
         await updateDB()
-        console.log('--------- scheduler start ----------')
-        cron.schedule('0 3 1 * *', async () => {
-            console.log('scheduled task');
-            await updateDB()
-        });
+        // console.log('--------- scheduler start ----------')
+        // cron.schedule('0 3 1 * *', async () => {
+        //     console.log('scheduled task');
+        //     await updateDB()
+        // });
     } catch (e) {
         console.log(e);
     }

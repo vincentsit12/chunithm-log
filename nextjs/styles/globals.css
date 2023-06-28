@@ -27,6 +27,15 @@
     .rating-table-row {
         @apply even:bg-gray-300/[.6] hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
     }
+
+    .rating-table-header {
+        @apply text-sm flex justify-center items-center p-2
+    }
+
+    .rating-table-header div{
+        @apply cursor-pointer flex items-center justify-center 
+    }
+
     .rating-table-row-2 {
         @apply hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
     }

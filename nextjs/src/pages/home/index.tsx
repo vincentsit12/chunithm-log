@@ -57,7 +57,6 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
   const router = useRouter()
   const ref = useRef(null)
   const [isModalOpen, setIsModalOpen] = useState(true)
-
   const [average, max, recentAverage, recent] = useMemo(() => {
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)

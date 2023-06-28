@@ -12,8 +12,9 @@ export async function getRatingList(data: Users | null) {
     let group = _.groupBy(data?.records, k => k.type)
 
     const bestRatingList =
-        _.map<Rating, Rating>(_.orderBy(_.map(group['best'], function (o) {
-            let song: Song = o.song[o.difficulty]
+        _.map<Rating, Rating>(_.orderBy(_.flatMap(group['best'], function (o) {
+            let song = o.song[o.difficulty]
+            if (!song?.rate) return []
             let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
             let result: Rating = {
                 song: o.song.display_name,
@@ -29,8 +30,9 @@ export async function getRatingList(data: Users | null) {
             return result
         }), ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } })
     const recentRatingList =
-        _.map(group['recent'], function (o) {
-            let song: Song = o.song[o.difficulty]
+        _.flatMap(group['recent'], function (o) {
+            let song  = o.song[o.difficulty]
+            if (!song?.rate) return []
             let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
             let result: Rating = {
                 song: o.song.display_name,
@@ -44,6 +46,6 @@ export async function getRatingList(data: Users | null) {
             }
             return result
         });
-
+    
     return [bestRatingList, recentRatingList]
 }

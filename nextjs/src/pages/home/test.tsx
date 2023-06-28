@@ -138,15 +138,15 @@ export async function getServerSideProps(context: NextPageContext) {
 
         const bestRatingList =
             _.map(_.filter(data?.records, k => k.type === 'best'), function (o) {
-                let song: Song = o.song[o.difficulty]
-                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
+                let song = o.song[o.difficulty]
+                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate ?? 0, o.score), 2))
                 let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
                 return result
             });
         const recentRatingList =
             _.map(_.filter(data?.records, k => k.type === 'recent'), function (o) {
-                let song: Song = o.song[o.difficulty]
-                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate, o.score), 2))
+                let song = o.song[o.difficulty]
+                let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(song?.rate ?? 0, o.score), 2))
                 let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
                 return result
             });
