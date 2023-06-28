@@ -956,7 +956,7 @@ animation
   }
 }
 
-.collapse {
+.collapsable {
   transition: max-height ease-in-out .3s
 }
 

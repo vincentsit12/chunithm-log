@@ -21,7 +21,7 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
             }} checked={showTable} id="recent" className="checkbox" type="checkbox" />
             <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Recent Songs</label>
         </div>
-        <div className={'rating-table mb-5 box box-shadow !min-h-0 collapse scrollbar-hide'} style={{ 'maxHeight': !showTable ? 0 : `${height}px` }}>
+        <div className={'rating-table mb-5 box box-shadow !min-h-0 collapsable scrollbar-hide'} style={{ 'maxHeight': !showTable ? 0 : `${height}px` }}>
 
             {_.map(recentRatingList, (k, i) => {
                 return <div key={k.song + i} className={classNames("rating-table-row")} >
@@ -35,7 +35,7 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
                     <span className="w-[5.5rem]">{k.score}</span>
                     <span onClick={() => {
                         router.push(`/song/${k.song}`)
-                    }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer w-full')}>{k.truncatedRating} </span>
+                    }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer')}>{k.truncatedRating} </span>
                 </div >
             })}
 
@@ -142,7 +142,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
 
                     <span onClick={() => {
                         router.push(`/song/${k.song}`)
-                    }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer w-full')}>{k.truncatedRating} </span>
+                    }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer')}>{k.truncatedRating} </span>
                     {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>}
                 </div >
             })}
