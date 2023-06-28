@@ -172,9 +172,7 @@ export const ScoreCalculator: React.FC<Props> = ({ rate, score, combo, haveScore
     return (
         <div className=''>
             <h5 className='mb-5'>Score calculator</h5>
-            <div></div>
-            <div></div>
-            <div></div>
+
             <div className='flex items-center justify-center mb-5'>
                 {session && haveScore && <span onClick={() => {
                     // setBaseScore(baseScore)

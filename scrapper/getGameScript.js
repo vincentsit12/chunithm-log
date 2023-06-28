@@ -134,7 +134,7 @@ const getGameScript = async () => {
 
 
         await browser.close();
-        console.log(_.merge(...scriptsUrls))
+        // console.log(_.merge(...scriptsUrls))
         return _.merge(...scriptsUrls)
         
     }

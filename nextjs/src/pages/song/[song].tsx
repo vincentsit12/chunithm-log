@@ -16,6 +16,7 @@ import { log } from 'console'
 import Slider from 'rc-slider';
 import { ScoreCalculator } from 'components/ScoreCalculator'
 import { decrypt } from 'utils/encrypt'
+import { BiLogoYoutube } from "react-icons/bi";
 
 type SongProps = {
     record: Records[] | null
@@ -30,7 +31,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
     const [difficulty, setDifficulty] = useState<Difficulty>("master")
 
-    const songData = song[difficulty] ?? {}
+    const songData = song[difficulty]
 
     const recordData = useMemo(() => {
         return _.find(record, (k) => k.difficulty === difficulty)
@@ -86,7 +87,7 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
                             }
                         </div>
                     </div>
-                    <div className='tc'>
+                    {songData && <div className='tc'>
                         <div >{`Rate : ${songData.rate}`}</div>
                         <div className='mb20'>{`Combo :  ${songData.combo}`}</div>
                         {session && recordData &&
@@ -100,20 +101,20 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
                         }
                         <div className="flex flex-wrap justify-center w-full">
                             <div className='m-2'>
-                                <button disabled={song[difficulty].scriptUrl == undefined} onClick={() => {
-                                    window.open(song[difficulty].scriptUrl)
+                                <button disabled={song[difficulty]?.scriptUrl == undefined} onClick={() => {
+                                    window.open(song[difficulty]?.scriptUrl)
                                 }} className={`btn btn-secondary p-2`}>譜面</button>
                             </div>
 
                             <div className='m-2'>
                                 <button onClick={() => {
-                                     window.open(`https://www.youtube.com/results?search_query=${song.display_name}+${difficulty}+譜面確認+chunithm`)
-                                }} className={`btn btn-secondary p-2`}>譜面確認</button>
+                                    window.open(`https://www.youtube.com/results?search_query=${song.display_name}+${difficulty}+chunithm`)
+                                }} className={`btn btn-secondary p-2 flex items-center justify-center`}><BiLogoYoutube className='mx-2' size={"1.25rem"} />YouTube</button>
                             </div>
                         </div>
                         <div className='divide-solid w-full  my-8 bg-slate-300 h-0.5'></div>
                         <ScoreCalculator rate={songData.rate} score={recordData?.score ?? 1010000} combo={songData.combo} haveScore={recordData?.score !== undefined} />
-                    </div>
+                    </div>}
                 </div>
             </div>
 

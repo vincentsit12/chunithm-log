@@ -32,10 +32,12 @@ async function handler(
     let data : Users | null = (await Users.findOne({ where: { id: req.query.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
     if (!data) throw new BadRequestError(`no data`);
     res.status(200).json(data)
-    const ratingList = _.map(data.records, function (o) {
-        let song: Song = o.song[o.difficulty]
-        let rating = calculateSingleSongRating(song?.rate, o.score)
-        let result: Rating = { song: o.song.display_name, combo: song?.combo, internalRate : song?.rate, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+    const ratingList = _.flatMap(data.records, function (o) {
+
+        let song = o.song[o.difficulty]
+        if (!song) return []
+        let rating = calculateSingleSongRating(song.rate, o.score)
+        let result: Rating = { song: o.song.display_name, combo: song.combo, internalRate : song.rate, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
         return result
     });
 

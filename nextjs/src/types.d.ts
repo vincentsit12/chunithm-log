@@ -13,7 +13,7 @@ export interface Rating {
 
 export type Difficulty = 'ultima' | 'master' | 'expert'
 export type RecordType = "best" | "recent"
-
+export type SortingKeys = keyof Rating
 export interface Song {
 
     rate: number,

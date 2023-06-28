@@ -18,9 +18,9 @@ export default class Songs extends Model<SongAttributes, SongCreationAttributes>
     declare id: number;
     declare name: string;
     declare display_name: string;
-    declare master: Song;
-    declare expert: Song;
-    declare ultima: Song;
+    declare master?: Song;
+    declare expert?: Song;
+    declare ultima?: Song;
 }
 
 Songs.init({
