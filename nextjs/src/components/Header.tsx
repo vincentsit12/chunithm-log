@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 type Props = {}
 
@@ -30,6 +30,10 @@ const Header = (props: Props) => {
                     <li><Link href={'/song'} onClick={(e) => {
                         setActive(false)
                     }}>Song List</Link></li>
+                    <li><Link href={'https://chuni-rt.io.kookiym.com/'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Stats</Link></li>
                     <li><Link href={'/playground'}
                         onClick={(e) => {
                             setActive(false)

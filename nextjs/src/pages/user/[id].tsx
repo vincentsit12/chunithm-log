@@ -1,7 +1,5 @@
 import axios from 'axios'
 import type { NextPage, NextPageContext } from 'next'
-import { Session } from 'next-auth'
-import { getSession, signOut, useSession } from 'next-auth/react'
 import Head from 'next/head'
 import Image from 'next/image'
 import { Rating, Song } from 'types'

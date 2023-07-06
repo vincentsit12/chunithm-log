@@ -1,5 +1,5 @@
 import type { NextPage, NextPageContext } from 'next'
-import { getSession, signOut, useSession } from 'next-auth/react'
+import { getSession } from 'next-auth/react'
 import { Rating, Song } from 'types'
 import _, { isString } from 'lodash'
 import Users from 'db/model/users'

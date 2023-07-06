@@ -1,8 +1,5 @@
 import axios from 'axios'
 import type { NextPage, NextPageContext } from 'next'
-import { Session } from 'next-auth'
-import { getSession, signOut, useSession } from 'next-auth/react'
-
 import _, { isInteger, isString } from 'lodash'
 import { CiCircleMore } from "react-icons/ci";
 
@@ -54,7 +51,6 @@ const SongPage: NextPage<Props> = ({ songList }) => {
     })
   }
 
-  const { data: session, status } = useSession()
   return (
     <LayoutWrapper>
       <div className='inner inner-720 tc' >
