@@ -24,7 +24,7 @@ NProgress.configure({ showSpinner: false });
 //   display: 'swap',
 //   fallback: ['Arial'],
 // })
-const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.ttf' });
+const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.ttf', display: "swap" });
 
 export default function App({
   Component,
@@ -45,14 +45,11 @@ export default function App({
 
 
   return (
-    <main className={myFont.className}>
-      <SessionProvider session={session}>
-        <Head><title>Chuni-Log</title></Head>
+    <SessionProvider session={session}>
+      <main className={myFont.className}>
         <Header />
         <Component  {...pageProps} />
-      </SessionProvider>
-
-    </main>
-
+      </main>
+    </SessionProvider>
   )
 }

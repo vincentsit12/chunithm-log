@@ -17,7 +17,7 @@ const LayoutWrapper: React.FC<Props> = ({ children }) => {
                 <div className='mb-2 w-fit mx-auto'>
                     <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
                         <div className='relative mx-auto  max-w-[400px] overflow-hidden'>
-                            <Image priority className='w-full' style={{ objectFit: 'contain' }} alt='chunithm-2' src={logo2}  ></Image>
+                            <Image className='w-full' style={{ objectFit: 'contain' }} alt='chunithm-2' src={logo2}  ></Image>
                             <div className='cursor-pointer absolute absolute_center bottom-10'>
                                 <Image className='w-full' style={{ objectFit: 'contain' }} alt='chunithm' src={logo} ></Image>
                             </div>

@@ -1,5 +1,5 @@
 import type { NextPage, NextPageContext } from 'next'
-import { getSession, signOut, useSession } from 'next-auth/react'
+import { getSession } from 'next-auth/react'
 import { Rating, Song } from 'types'
 import _, { isString } from 'lodash'
 import Users from 'db/model/users'
@@ -10,15 +10,13 @@ import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/c
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
 import { SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/router'
 import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
 import 'rc-tooltip/assets/bootstrap_white.css';
 import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
-import Modal from 'components/Modal'
-import axios from 'axios'
 import { getRecommandList } from 'utils/api'
 import { getRatingList } from 'utils/getRatingList'
+
 
 type Props = {
   bestRatingList: Rating[],
@@ -54,9 +52,6 @@ const RecommadSongs = ({ avg }: { avg: number }) => {
 const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
-  const router = useRouter()
-  const ref = useRef(null)
-  const [isModalOpen, setIsModalOpen] = useState(true)
   const [average, max, recentAverage, recent] = useMemo(() => {
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
@@ -124,9 +119,6 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
         <RecentRatingTable recentRatingList={recentRatingList} />
         <BestRatingTable ratingList={bestRatingList} />
       </div>
-      {/* <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
-        <RecommadSongs avg={average} />
-      </Modal> */}
     </LayoutWrapper >
   )
 }

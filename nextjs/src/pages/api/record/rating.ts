@@ -10,7 +10,7 @@ import { getToken } from 'next-auth/jwt'
 import _ from 'lodash'
 import { Difficulty, Rating, Song } from 'types'
 import Records from 'db/model/records'
-import { calculateSingleSongRating, toFixedTrunc } from 'utils/calculateRating'
+import { calculateSingleSongRating, getGradeOfScore, toFixedTrunc } from 'utils/calculateRating'
 import { UnauthenticatedError } from 'errors/UnauthenticatedError'
 import { getSession } from 'next-auth/react'
 // var corsOptions = {
@@ -26,10 +26,10 @@ async function handler(
 
     if (req.method !== 'GET') throw new BadRequestError(`do not accept ${req.method} `)
     const session = await getSession({ req })
-   
+
     if (!session) throw new UnauthenticatedError('please login first')
 
-    let data : Users | null = (await Users.findOne({ where: { id: req.query.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
+    let data: Users | null = (await Users.findOne({ where: { id: req.query.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
     if (!data) throw new BadRequestError(`no data`);
     res.status(200).json(data)
     const ratingList = _.flatMap(data.records, function (o) {
@@ -37,7 +37,7 @@ async function handler(
         let song = o.song[o.difficulty]
         if (!song) return []
         let rating = calculateSingleSongRating(song.rate, o.score)
-        let result: Rating = { song: o.song.display_name, combo: song.combo, internalRate : song.rate, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
+        let result: Rating = { song: o.song.display_name, combo: song.combo, internalRate: song.rate, grade: getGradeOfScore(o.score), rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
         return result
     });
 

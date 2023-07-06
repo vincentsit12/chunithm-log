@@ -4,8 +4,11 @@ import { Dialog, Transition } from '@headlessui/react'
 type Props = {
     isOpen: boolean,
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
+    closeModal?: () => void
+    save?: () => void
     title?: string,
     children: React.ReactNode
+    closeWhenClickBackDrop?: boolean
 }
 
 export default function Modal(props: Props) {
@@ -21,7 +24,9 @@ export default function Modal(props: Props) {
     return (
         <>
             <Transition appear show={isOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-10" onClose={closeModal}>
+                <Dialog as="div" className="relative z-10" onClose={() => {
+                    if (props.closeWhenClickBackDrop) setIsOpen(false)
+                }}>
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -45,25 +50,35 @@ export default function Modal(props: Props) {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-center align-middle shadow-xl transition-all">
+                                <Dialog.Panel className="w-full max-w-full md:max-w-xl transform overflow-hidden rounded-2xl bg-white py-6 text-center align-middle shadow-xl transition-all">
                                     {title && <Dialog.Title
                                         as="h3"
                                         className="text-lg font-medium leading-6 text-gray-900"
                                     >
                                         {title}
                                     </Dialog.Title>}
-                                    <div className="mt-2">
+                                    <div className="mt-2 relative">
                                         {children}
                                     </div>
-
-                                    <div className="mt-4">
-                                        <button
-                                            type="button"
-                                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                            onClick={closeModal}
-                                        >
-                                            Got it, thanks!
-                                        </button>
+                                    <div className='w-full flex justify-around items-center'>
+                                        <div className="mt-10">
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary"
+                                                onClick={props.closeModal ?? closeModal}
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                        <div className="mt-10">
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary"
+                                                onClick={props.save ?? closeModal}
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
                                     </div>
                                 </Dialog.Panel>
                             </Transition.Child>

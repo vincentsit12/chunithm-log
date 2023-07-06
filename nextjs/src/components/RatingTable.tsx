@@ -1,14 +1,30 @@
 import classNames from "classnames"
-import _ from "lodash"
+import _, { isNumber } from "lodash"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Rating, SortingKeys } from "types"
+import { Fragment, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Rating, SortingKeys, TableHeader } from "types"
 import { AutoSizer, CellMeasurer, CellMeasurerCache, Column, List, Table, WindowScroller } from 'react-virtualized';
 import { toFixedTrunc } from "utils/calculateRating"
 import { useWindowResize } from "utils/hooks/useWindowResize"
 import { GiMusicalScore } from "react-icons/gi";
-import { BiSolidUpArrow, BiLogoYoutube } from "react-icons/bi";
+import { BiSolidUpArrow, BiLogoYoutube, BiSolidDownArrow, BiListCheck, BiUpsideDown, BiCheck } from "react-icons/bi";
+import { Listbox, Transition } from '@headlessui/react'
+import ListBox from "./ListBox"
+import DraggableList, { DropList } from "./DraggableList"
+import Modal from "./Modal"
+import { AiTwotoneSetting } from "react-icons/ai"
+import { Divider } from "./Divider"
+import { useLocalStorage } from "utils/hooks/useLocalStorage"
+
+const levels = [{ "name": "All", "value": 0 }, { "name": "15", "value": 15 }, { "name": "14+", "value": 14.5 }, { "name": "14", "value": 14 }, { "name": "13+", "value": 13.5 }, { "name": "13", "value": 13 }, { "name": "12+", "value": 12.5 }, { "name": "12", "value": 12 }, { "name": "11+", "value": 11.5 }, { "name": "11", "value": 11 }, { "name": "10+", "value": 10.5 }, { "name": "10", "value": 10 },]
+const tableRowsNumbers = [
+    { name: "All", value: -1 }, { name: "30", value: 30 }, { name: "100", value: 100 }, { name: "200", value: 100 }, { name: "500", value: 500 },
+]
+const cache = new CellMeasurerCache({
+    fixedWidth: true,
+    defaultHeight: 42
+});
 
 export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rating[] }) => {
     const [showTable, setShowTable] = useState(false)
@@ -42,23 +58,55 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
         </div>
     </div >
 }
-const cache = new CellMeasurerCache({
-    fixedWidth: true,
-    defaultHeight: 42
-});
 
+
+
+const item: TableHeader[] = ["Youtube", "Grade"];
+const selected: TableHeader[] = ["Rank", "Name", "Script", "Base", "Score", "Rate"];
 export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
+    const [itemList, setItemList] = useLocalStorage<DropList>({
+        "notSelected": item,
+        "selected": selected,
+    }, "headerPref");
+    const [tempItemList, setTempItemList] = useState<DropList>({
+        "notSelected": itemList["notSelected"],
+        "selected": itemList["selected"],
+    });
+
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const [scoreRange, setScoreRange] = useState<[number, number]>([0, 1010000])
+    const [tempScoreRange, setTempScoreRange] = useState<[number, number]>(scoreRange)
+
+    useEffect(() => {
+        setTempItemList(itemList)
+        setTempScoreRange(scoreRange)
+    }, [itemList, scoreRange])
+
+    const [selectedLevel, setSelectedLevel] = useState(levels[0])
     const [searchText, setSearchText] = useState('')
     const router = useRouter()
-    const [tableRowsNumber, setTableRowsNumber] = useState(100)
+    const [selectedTableRowsNumber, setSelectedTableRowsNumber] = useState(tableRowsNumbers[2])
+    const tableRowsNumber = selectedTableRowsNumber.value
     const [sortingPref, setSortingPref] = useState<[SortingKeys, "asc" | "desc"]>(['rating', "desc"])
     const sortedRatingList = useMemo(() => {
         let orderedList: Rating[]
-        if (sortingPref[0] === 'rating') {
-            orderedList = _.orderBy(ratingList, ["rating"], [sortingPref[1]])
+        const scoreRule = (score: number) => {
+            return score >= scoreRange[0] && score <= scoreRange[1]
+        }
+
+        if (selectedLevel.value > 0) {
+            orderedList = ratingList.filter(k => scoreRule(k.score) && k.internalRate >= selectedLevel.value && k.internalRate < selectedLevel.value + 0.5)
         }
         else {
-            orderedList = _.orderBy(ratingList, [sortingPref[0], "rating"], [sortingPref[1], "desc"])
+            orderedList = ratingList.filter(k => scoreRule(k.score))
+        }
+
+        if (sortingPref[0] === 'rating') {
+            orderedList = _.orderBy(orderedList, ["rating"], [sortingPref[1]])
+        }
+        else {
+            orderedList = _.orderBy(orderedList, [sortingPref[0], "rating"], [sortingPref[1], "desc"])
         }
         if (searchText)
             return _.filter(orderedList, k => {
@@ -69,7 +117,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 else return k.song.toUpperCase().includes(searchText.toUpperCase())
             })
         else return orderedList
-    }, [searchText, sortingPref])
+    }, [searchText, sortingPref, selectedLevel, scoreRange])
 
     const updatedIdSet = useMemo(() => {
         const set = new Set<number>()
@@ -96,7 +144,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         return set
     }, [ratingList])
 
-    const _renderTableRow = useCallback(() => {
+    const Table = useCallback(() => {
         const _renderArrow = (key: SortingKeys) => {
             return key === sortingPref[0] ? <span className={classNames("ml-1 rotate", { "rotate-0": sortingPref[1] == 'asc', "rotate-180": sortingPref[1] == 'desc' })}><BiSolidUpArrow size={".75rem"} /></span> : null
         }
@@ -110,72 +158,115 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
             }
         }
         const tableRowsNum = tableRowsNumber < 0 ? sortedRatingList.length : tableRowsNumber
+        const renderHeader = (key: TableHeader, index: number) => {
+            switch (key) {
+                case "Base":
+                    return <div key={index} onClick={() => {
+                        changeSortingPref("internalRate")
+                    }} className="w-[3.25rem]">{"Base"}{_renderArrow('internalRate')}</div>
+                case "Youtube":
+                    return <div key={index} className="w-[1.5rem]"></div>
+                case "Script":
+                    return <div key={index} className="w-[1.5rem]"></div>
+                case "Name":
+                    return <div key={index} onClick={() => {
+                        changeSortingPref("song")
+                    }} className='flex-1 px-2'>{"Name"}{_renderArrow('song')}</div>
+                case "Rank":
+                    return <div key={index} onClick={() => {
+                        changeSortingPref("order")
+                    }} className='w-[3.25rem]'>{"Rank"}{_renderArrow('order')}</div>
+                case "Rate":
+                    return <div key={index} onClick={() => {
+                        changeSortingPref("rating")
+                    }} className={classNames(`w-[3.25rem]`)}>{"Rate"}{_renderArrow('rating')}</div>
+
+                case "Grade":
+                    return <div key={index} onClick={() => {
+                        changeSortingPref("grade")
+                    }} className={classNames(`w-[4rem]`)}>{"Grade"}{_renderArrow('grade')}</div>
+                case "Score":
+                    return <div key={index} onClick={() => {
+                        changeSortingPref("score")
+                    }} className="w-[5.5rem]">{"Score"}{_renderArrow('score')}</div>
+            }
+        }
+        const renderContent = (key: TableHeader, data: Rating, index: number) => {
+            switch (key) {
+                case "Base":
+                    return <span key={index} className="w-[3.25rem]">{toFixedTrunc(data.internalRate, 1)}</span>
+
+                case "Youtube":
+                    return <span key={index} className='cursor-pointer w-[1.5rem] center' onClick={() => {
+                        window.open(`https://www.youtube.com/results?search_query=${data.song}+${data.difficulty}+chunithm`)
+                    }}><BiLogoYoutube className="mx-auto" size={"1.25rem"} /></span>
+                case "Script":
+                    return data.scriptUrl ? <span key={index} className='cursor-pointer w-[1.5rem]' onClick={() => {
+                        window.open(data.scriptUrl)
+                    }}><GiMusicalScore className="mx-auto" size={"1.25rem"} /></span> : <></>
+                case "Name":
+                    return <span key={index} className='flex-1 px-2'>{data.song}</span>
+
+                case "Rank":
+                    return <span key={index} className="w-[3.25rem]">{data.order ?? '-'}</span>
+
+
+                case "Rate":
+                    return <span key={index} onClick={() => {
+                        router.push(`/song/${data.song}`)
+                    }} className={classNames(`txt-white  w-[3.25rem] bg-${data.difficulty}`, 'rounded cursor-pointer')}>{data.truncatedRating} </span>
+
+                case "Grade":
+                    return <span key={index} className="w-[4rem]">{data.grade}</span>
+                case "Score":
+                    return <span key={index} className="w-[5.5rem]">{`${data.score}`}</span>
+
+            }
+        }
         return <>
             <div className={classNames("rating-table-header")}>
-                <div onClick={() => {
-                    changeSortingPref("order")
-                }} className="w-[3rem]">{"Rank"}{_renderArrow('order')}</div>
-                <div onClick={() => {
-                    changeSortingPref("song")
-                }} className='flex-1 px-2'>{"Name"}{_renderArrow('song')}</div>
-                <div onClick={() => {
-                    changeSortingPref("internalRate")
-                }} className="w-[3.5rem]">{"Base"}{_renderArrow('internalRate')}</div>
-                <div onClick={() => {
-                    changeSortingPref("score")
-                }} className="w-[5.5rem]">{"Score"}{_renderArrow('score')}</div>
-                <div onClick={() => {
-                    changeSortingPref("rating")
-                }} className={classNames(`w-[3.5rem]`)}>{"Rate"}{_renderArrow('rating')}</div>
+                {itemList.selected.map((k, i) => {
+                    return renderHeader(k, i)
+                })}
                 {/* {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>} */}
             </div >
             {_.map(_.take(sortedRatingList, tableRowsNum), (k, i) => {
                 const showTop30Border = i === 29 && !searchText && (tableRowsNumber > 30 || tableRowsNumber < 0) && _.isEqual(sortingPref, ['rating', "desc"])
-                return <div key={k.song + i} className={classNames("rating-table-row", { 'border-b border-b-red-700': showTop30Border })} >
-                    <span className="w-[3rem]">{k.order ?? '-'}</span>
-                    <span className='flex-1 px-2'>{k.song}</span>
-                    {k.scriptUrl && <span className='cursor-pointer w-[1.25rem]' onClick={() => {
-                        window.open(k.scriptUrl)
-                    }}><GiMusicalScore size={"1.25rem"} /></span>}
-                    <span className="w-[3.5rem]">{toFixedTrunc(k.internalRate, 1)}</span>
-                    <span className="w-[5.5rem]">{`${k.score}`}</span>
-
-                    <span onClick={() => {
-                        router.push(`/song/${k.song}`)
-                    }} className={classNames(`txt-white  w-[3.5rem] bg-${k.difficulty}`, 'rounded cursor-pointer')}>{k.truncatedRating} </span>
+                return <div key={k.song + k.order} className={classNames("rating-table-row", { 'border-b border-b-red-700': showTop30Border })} >
+                    {itemList.selected.map((key, index) => renderContent(key, k, index))}
                     {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>}
                 </div >
             })}
         </>
-    }, [sortedRatingList, tableRowsNumber, sortingPref])
+    }, [sortedRatingList, tableRowsNumber, sortingPref, itemList])
 
 
-    return <><div className='inner inner-720'  >
-        <input value={searchText} onChange={(e) => {
-            setSearchText(e.target.value)
-        }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
-    </div>
-        <div className='flex justify-center items-center mb-4 form-check'>
-            <input onChange={(e) => {
-                setTableRowsNumber(30)
-            }} checked={tableRowsNumber == 30} id="record-30" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-30" >Top 30</label>
-            <input onChange={(e) => {
-                setTableRowsNumber(100)
-            }} checked={tableRowsNumber == 100} id="record-100" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-100" >Top 100</label>
-            <input onChange={(e) => {
-                setTableRowsNumber(500)
-            }} checked={tableRowsNumber == 500} id="record-500" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-500" >Top 500</label>
-            <input onChange={(e) => {
-                setTableRowsNumber(-1)
-            }} checked={tableRowsNumber == -1} id="record-all" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="record-all" >All</label>
+
+    return <>
+        <div className='inner inner-720'  >
+            <input value={searchText} onChange={(e) => {
+                setSearchText(e.target.value)
+            }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Base Rate'></input>
         </div>
+        <div className='flex justify-around items-center mb-4 form-check'>
+            <div className="flex items-center">
+                <span>No. of rows: </span>
+                <ListBox className="w-[5rem] ml-2" source={tableRowsNumbers} selected={selectedTableRowsNumber} setSelected={setSelectedTableRowsNumber} />
+            </div>
+            <div className="flex items-center">
+                <span>Levels: </span>
+                <ListBox className="w-[5rem] ml-2" source={levels} selected={selectedLevel} setSelected={setSelectedLevel} />
+            </div>
+            <button onClick={() => {
+                setIsModalOpen(true)
+            }}
+                className='btn btn-secondary grid-center btn-icon'>
+                <AiTwotoneSetting size={"1.25rem"} /></button>
+        </div >
+
         <div className='rating-table box box-shadow'>
             {ratingList.length > 0 ?
-                _renderTableRow()
+                <Table />
                 : <div className='inner-p20 w-full h-full text-left'>
                     <p className='mb10'>
                         {`
@@ -191,6 +282,69 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                         }
                     </p>
                 </div>}
+            <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen} save={() => {
+                setItemList(tempItemList)
+                let scoreRange: any = [...tempScoreRange]
+                if (isNaN(parseInt(scoreRange[0]))) {
+                    scoreRange[0] = 0
+                }
+                else if (parseInt(scoreRange[0]) > parseInt(scoreRange[1])) {
+                    scoreRange[0] = parseInt(scoreRange[1])
+                }
+                if (isNaN(parseInt(scoreRange[1]))) {
+                    scoreRange[1] = 1010000
+                }
+                else if (parseInt(scoreRange[0]) > parseInt(scoreRange[1])) {
+                    scoreRange[1] = parseInt(scoreRange[0])
+                }
+                setScoreRange(scoreRange)
+                setIsModalOpen(false)
+            }}
+                closeModal={() => {
+                    setTempItemList(itemList)
+                    setTempScoreRange(scoreRange)
+                    setIsModalOpen(false)
+                }}
+            >
+                <section className="p-5">
+                    <h4 className="text-left ml-1 bold">Score Range</h4>
+                    <Divider />
+                    <div className="flex justify-between items-center p-2">
+                        <div>
+                            <input value={tempScoreRange[0]} onChange={(e) => {
+                                let number = parseInt(e.target.value)
+                                if (!isNaN(number)) {
+                                    // if (number > scoreRange[1]) number = scoreRange[1]
+                                    setTempScoreRange((p) => [number, p[1]])
+                                }
+                                else {
+                                    setTempScoreRange((p) => [e.target.value as any, p[1]])
+                                }
+
+                            }} className='p-6 box box-shado w-full h-10' inputMode="numeric" placeholder='0'></input>
+                        </div>
+                        <span className="text-lg mx-2 bold"> ー </span>
+                        <div>
+                            <input value={tempScoreRange[1]} inputMode="numeric" onChange={(e) => {
+                                let number = parseInt(e.target.value)
+                                if (!isNaN(number)) {
+                                    // if (number < scoreRange[0]) number = scoreRange[0]
+                                    setTempScoreRange((p) => [p[0], number])
+                                }
+                                else {
+                                    setTempScoreRange((p) => [p[0], e.target.value as any])
+                                }
+
+                            }} className='p-6 box w-full h-10' placeholder='1010000'></input>
+                        </div>
+                    </div>
+                </section>
+                <section className="p-5">
+                    <h4 className="text-left ml-1 bold">Header</h4>
+                    <Divider />
+                    <DraggableList setItemList={setTempItemList} itemList={tempItemList} />
+                </section>
+            </Modal>
         </div>
     </>
 }
