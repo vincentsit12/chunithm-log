@@ -23,7 +23,7 @@ export default function ListBox({ className, source, selected, setSelected }: Pr
         <div className={className ?? "w-24"}>
             <Listbox value={selected} onChange={setSelected}>
                 <div className="relative">
-                    <Listbox.Button className="relative cursor-default rounded-lg bg-white w-full py-2 pl-3 pr-8 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                    <Listbox.Button className="relative cursor-default rounded-lg bg-white w-full py-2 p-3 pr-8 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
                         <span className="block truncate">{selected.name}</span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                             <BiSolidDownArrow
@@ -44,7 +44,7 @@ export default function ListBox({ className, source, selected, setSelected }: Pr
                                 <Listbox.Option
                                     key={i}
                                     className={({ active }) =>
-                                        `relative cursor-default select-none py-2  ${active ? 'bg-amber-100 text-amber-900' : 'text-gray-900'
+                                        `relative cursor-default select-none flex justify-between items-center py-2 px-2  ${active ? 'bg-amber-100 text-amber-900' : 'text-gray-900'
                                         }`
                                     }
                                     value={k}
@@ -52,13 +52,13 @@ export default function ListBox({ className, source, selected, setSelected }: Pr
                                     {({ selected }) => (
                                         <>
                                             <span
-                                                className={`tc block truncate ${selected ? 'font-medium' : 'font-normal'
+                                                className={`text-left block truncate ${selected ? 'font-medium' : 'font-normal'
                                                     }`}
                                             >
                                                 {k.name}
                                             </span>
                                             {selected ? (
-                                                <span className="absolute inset-y-0 left-0 flex items-center pl-1 text-amber-600">
+                                                <span className=" inset-y-0 text-amber-600">
                                                     <BiCheck className="h-5 w-5" aria-hidden="true" />
                                                 </span>
                                             ) : null}

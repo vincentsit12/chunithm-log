@@ -13,13 +13,13 @@ import { Listbox, Transition } from '@headlessui/react'
 import ListBox from "./ListBox"
 import DraggableList, { DropList } from "./DraggableList"
 import Modal from "./Modal"
-import { AiTwotoneSetting } from "react-icons/ai"
+import { IoMdSettings } from "react-icons/io"
 import { Divider } from "./Divider"
 import { useLocalStorage } from "utils/hooks/useLocalStorage"
 
 const levels = [{ "name": "All", "value": 0 }, { "name": "15", "value": 15 }, { "name": "14+", "value": 14.5 }, { "name": "14", "value": 14 }, { "name": "13+", "value": 13.5 }, { "name": "13", "value": 13 }, { "name": "12+", "value": 12.5 }, { "name": "12", "value": 12 }, { "name": "11+", "value": 11.5 }, { "name": "11", "value": 11 }, { "name": "10+", "value": 10.5 }, { "name": "10", "value": 10 },]
 const tableRowsNumbers = [
-    { name: "All", value: -1 }, { name: "30", value: 30 }, { name: "100", value: 100 }, { name: "200", value: 100 }, { name: "500", value: 500 },
+    { name: "All", value: -1 }, { name: "30", value: 30 }, { name: "100", value: 100 }, { name: "200", value: 200 }, { name: "500", value: 500 },
 ]
 const cache = new CellMeasurerCache({
     fixedWidth: true,
@@ -74,6 +74,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     });
 
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const ref = useRef<HTMLInputElement | null>(null);
 
     const [scoreRange, setScoreRange] = useState<[number, number]>([0, 1010000])
     const [tempScoreRange, setTempScoreRange] = useState<[number, number]>(scoreRange)
@@ -82,13 +83,13 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         setTempItemList(itemList)
         setTempScoreRange(scoreRange)
     }, [itemList, scoreRange])
-
     const [selectedLevel, setSelectedLevel] = useState(levels[0])
     const [searchText, setSearchText] = useState('')
     const router = useRouter()
-    const [selectedTableRowsNumber, setSelectedTableRowsNumber] = useState(tableRowsNumbers[2])
+    const [selectedTableRowsNumber, setSelectedTableRowsNumber] = useState(tableRowsNumbers[3])
     const tableRowsNumber = selectedTableRowsNumber.value
     const [sortingPref, setSortingPref] = useState<[SortingKeys, "asc" | "desc"]>(['rating', "desc"])
+
     const sortedRatingList = useMemo(() => {
         let orderedList: Rating[]
         const scoreRule = (score: number) => {
@@ -124,10 +125,11 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         const grp = _.groupBy(ratingList, o => { return o.updatedAt })
         const keyGrp = Object.keys(grp)
         if (keyGrp.length <= 1) return set
+        //filter out the first update
         const orderedKey = _.tail(_.sortBy(keyGrp))
 
         let count = 0
-        const max = 10
+        const max = 15
         for (let i = orderedKey.length - 1; i >= 0; i--) {
             if (count < max) {
                 for (let j = 0; j < grp[orderedKey[i]].length; j++) {
@@ -140,11 +142,11 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
             }
             else break
         }
-        console.log(set)
+
         return set
     }, [ratingList])
 
-    const Table = useCallback(() => {
+    const Table = () => {
         const _renderArrow = (key: SortingKeys) => {
             return key === sortingPref[0] ? <span className={classNames("ml-1 rotate", { "rotate-0": sortingPref[1] == 'asc', "rotate-180": sortingPref[1] == 'desc' })}><BiSolidUpArrow size={".75rem"} /></span> : null
         }
@@ -158,89 +160,93 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
             }
         }
         const tableRowsNum = tableRowsNumber < 0 ? sortedRatingList.length : tableRowsNumber
-        const renderHeader = (key: TableHeader, index: number) => {
+        const _renderHeader = (key: TableHeader, index: number) => {
             switch (key) {
                 case "Base":
-                    return <div key={index} onClick={() => {
+                    return <div key={key + index} onClick={() => {
                         changeSortingPref("internalRate")
                     }} className="w-[3.25rem]">{"Base"}{_renderArrow('internalRate')}</div>
                 case "Youtube":
-                    return <div key={index} className="w-[1.5rem]"></div>
+                    return <div key={key + index} className="w-[1.5rem]"></div>
                 case "Script":
-                    return <div key={index} className="w-[1.5rem]"></div>
+                    return <div key={key + index} className="w-[1.5rem]"></div>
                 case "Name":
-                    return <div key={index} onClick={() => {
+                    return <div key={key + index} onClick={() => {
                         changeSortingPref("song")
                     }} className='flex-1 px-2'>{"Name"}{_renderArrow('song')}</div>
                 case "Rank":
-                    return <div key={index} onClick={() => {
+                    return <div key={key + index} onClick={() => {
                         changeSortingPref("order")
                     }} className='w-[3.25rem]'>{"Rank"}{_renderArrow('order')}</div>
                 case "Rate":
-                    return <div key={index} onClick={() => {
+                    return <div key={key + index} onClick={() => {
                         changeSortingPref("rating")
                     }} className={classNames(`w-[3.25rem]`)}>{"Rate"}{_renderArrow('rating')}</div>
 
                 case "Grade":
-                    return <div key={index} onClick={() => {
+                    return <div key={key + index} onClick={() => {
                         changeSortingPref("grade")
                     }} className={classNames(`w-[4rem]`)}>{"Grade"}{_renderArrow('grade')}</div>
                 case "Score":
-                    return <div key={index} onClick={() => {
+                    return <div key={key + index} onClick={() => {
                         changeSortingPref("score")
                     }} className="w-[5.5rem]">{"Score"}{_renderArrow('score')}</div>
             }
         }
-        const renderContent = (key: TableHeader, data: Rating, index: number) => {
+        const _renderContent = (key: TableHeader, data: Rating, index: number) => {
             switch (key) {
                 case "Base":
-                    return <span key={index} className="w-[3.25rem]">{toFixedTrunc(data.internalRate, 1)}</span>
+                    return <span key={key + index} className="w-[3.25rem]">{toFixedTrunc(data.internalRate, 1)}</span>
 
                 case "Youtube":
-                    return <span key={index} className='cursor-pointer w-[1.5rem] center' onClick={() => {
+                    return <span key={key + index} className='cursor-pointer w-[1.5rem] center' onClick={() => {
                         window.open(`https://www.youtube.com/results?search_query=${data.song}+${data.difficulty}+chunithm`)
                     }}><BiLogoYoutube className="mx-auto" size={"1.25rem"} /></span>
                 case "Script":
-                    return data.scriptUrl ? <span key={index} className='cursor-pointer w-[1.5rem]' onClick={() => {
+                    return data.scriptUrl ? <span key={key + index} className='cursor-pointer w-[1.5rem]' onClick={() => {
                         window.open(data.scriptUrl)
-                    }}><GiMusicalScore className="mx-auto" size={"1.25rem"} /></span> : <></>
+                    }}><GiMusicalScore className="mx-auto" size={"1.25rem"} /></span> : null
                 case "Name":
-                    return <span key={index} className='flex-1 px-2'>{data.song}</span>
+                    return <span key={key + index} className='flex-1 px-2'>{data.song}</span>
 
                 case "Rank":
-                    return <span key={index} className="w-[3.25rem]">{data.order ?? '-'}</span>
+                    return <span key={key + index} className="w-[3.25rem]">{data.order ?? '-'}</span>
 
 
                 case "Rate":
-                    return <span key={index} onClick={() => {
+                    return <span key={key + index} onClick={() => {
                         router.push(`/song/${data.song}`)
                     }} className={classNames(`txt-white  w-[3.25rem] bg-${data.difficulty}`, 'rounded cursor-pointer')}>{data.truncatedRating} </span>
 
                 case "Grade":
-                    return <span key={index} className="w-[4rem]">{data.grade}</span>
+                    return <span key={key + index} className="w-[4rem]">{data.grade}</span>
                 case "Score":
-                    return <span key={index} className="w-[5.5rem]">{`${data.score}`}</span>
+                    return <span key={key + index} className="w-[5.5rem]">{`${data.score}`}</span>
 
             }
         }
         return <>
             <div className={classNames("rating-table-header")}>
                 {itemList.selected.map((k, i) => {
-                    return renderHeader(k, i)
+                    return _renderHeader(k, i)
                 })}
                 {/* {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>} */}
             </div >
             {_.map(_.take(sortedRatingList, tableRowsNum), (k, i) => {
-                const showTop30Border = i === 29 && !searchText && (tableRowsNumber > 30 || tableRowsNumber < 0) && _.isEqual(sortingPref, ['rating', "desc"])
+                const showTop30Border =
+                    i === 29
+                    && !searchText
+                    && (tableRowsNumber > 30 || tableRowsNumber < 0)
+                    && _.isEqual(sortingPref, ['rating', "desc"])
+                    && _.isEqual(scoreRange, [0, 1010000])
+                    && selectedLevel.name == "All"
                 return <div key={k.song + k.order} className={classNames("rating-table-row", { 'border-b border-b-red-700': showTop30Border })} >
-                    {itemList.selected.map((key, index) => renderContent(key, k, index))}
+                    {itemList.selected.map((key, index) => _renderContent(key, k, index))}
                     {updatedIdSet.has(k.order ?? -1) && <span className="ml-2 txt-red">▲</span>}
                 </div >
             })}
         </>
-    }, [sortedRatingList, tableRowsNumber, sortingPref, itemList])
-
-
+    }
 
     return <>
         <div className='inner inner-720'  >
@@ -261,7 +267,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 setIsModalOpen(true)
             }}
                 className='btn btn-secondary grid-center btn-icon'>
-                <AiTwotoneSetting size={"1.25rem"} /></button>
+                <IoMdSettings size={"1.25rem"} /></button>
         </div >
 
         <div className='rating-table box box-shadow'>
@@ -269,17 +275,13 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 <Table />
                 : <div className='inner-p20 w-full h-full text-left'>
                     <p className='mb10'>
-                        {`
-            1. Save the above script into a browser bookmark
-          `}
+                        {`1. Save the above script into a browser bookmark`}
                     </p>
                     <p className='mb10'>
                         {`2. Open this page (required login) `}<Link href={"https://chunithm-net-eng.com/mobile/home/"}>https://chunithm-net-eng.com/mobile/home/</Link>
                     </p>
                     <p className='mb10'>
-                        {`
-            3. click the bookmark and wait for redirecting to this page`
-                        }
+                        {`3. click the bookmark and wait for redirecting to this page`}
                     </p>
                 </div>}
             <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen} save={() => {
@@ -310,33 +312,33 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                     <h4 className="text-left ml-1 bold">Score Range</h4>
                     <Divider />
                     <div className="flex justify-between items-center p-2">
-                        <div>
-                            <input value={tempScoreRange[0]} onChange={(e) => {
-                                let number = parseInt(e.target.value)
-                                if (!isNaN(number)) {
-                                    // if (number > scoreRange[1]) number = scoreRange[1]
-                                    setTempScoreRange((p) => [number, p[1]])
-                                }
-                                else {
-                                    setTempScoreRange((p) => [e.target.value as any, p[1]])
-                                }
 
-                            }} className='p-6 box box-shado w-full h-10' inputMode="numeric" placeholder='0'></input>
-                        </div>
+                        <input autoFocus={false} value={tempScoreRange[0]} onChange={(e) => {
+                            let number = parseInt(e.target.value)
+                            if (!isNaN(number)) {
+                                // if (number > scoreRange[1]) number = scoreRange[1]
+                                setTempScoreRange((p) => [number, p[1]])
+                            }
+                            else {
+                                setTempScoreRange((p) => [e.target.value as any, p[1]])
+                            }
+
+                        }} className='p-6 box box-shado w-full h-10' inputMode="numeric" placeholder='0'></input>
+
                         <span className="text-lg mx-2 bold"> ー </span>
-                        <div>
-                            <input value={tempScoreRange[1]} inputMode="numeric" onChange={(e) => {
-                                let number = parseInt(e.target.value)
-                                if (!isNaN(number)) {
-                                    // if (number < scoreRange[0]) number = scoreRange[0]
-                                    setTempScoreRange((p) => [p[0], number])
-                                }
-                                else {
-                                    setTempScoreRange((p) => [p[0], e.target.value as any])
-                                }
 
-                            }} className='p-6 box w-full h-10' placeholder='1010000'></input>
-                        </div>
+                        <input autoFocus={false} value={tempScoreRange[1]} inputMode="numeric" onChange={(e) => {
+                            let number = parseInt(e.target.value)
+                            if (!isNaN(number)) {
+                                // if (number < scoreRange[0]) number = scoreRange[0]
+                                setTempScoreRange((p) => [p[0], number])
+                            }
+                            else {
+                                setTempScoreRange((p) => [p[0], e.target.value as any])
+                            }
+
+                        }} className='p-6 box w-full h-10' placeholder='1010000'></input>
+
                     </div>
                 </section>
                 <section className="p-5">

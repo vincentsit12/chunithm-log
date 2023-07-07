@@ -48,10 +48,34 @@ const RecommadSongs = ({ avg }: { avg: number }) => {
     })}
   </ul>
 }
-
-const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
+const UserScript = ({ userId }: { userId: string }) => {
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
+  return <CopyToClipboard text={generateScript(userId)}>
+    <Tooltip onVisibleChange={(visible) => {
+      if (visible) {
+        timer.current = setTimeout(() => {
+          setCopied(false)
+        }, 3000)
+      }
+    }} visible={copied} overlayClassName={'fadeIn'} showArrow={false} overlayStyle={{ width: '6rem', textAlign: "center", }} placement='top' trigger={['click']} overlay={<span>Copied</span>}>
+      <button onClick={() => {
+        if (copied && timer.current) {
+          clearTimeout(timer.current)
+          timer.current = setTimeout(() => {
+            setCopied(false)
+          }, 3000)
+        }
+        else setCopied(true)
+      }}
+        className='btn btn-secondary icon grid-center'>
+        <MdOutlineContentCopy></MdOutlineContentCopy></button>
+    </Tooltip>
+
+  </CopyToClipboard>
+}
+const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
+
   const [average, max, recentAverage, recent] = useMemo(() => {
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
@@ -63,7 +87,6 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
 
   return (
     <LayoutWrapper>
-
       <div className='inner inner-720 tc' >
         {userName && <h1 className='mb-2'>{`User: ${userName}`}</h1>}
         <div className='flex box box-shadow mb20' >
@@ -71,30 +94,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
           <div id='script' >
             <p> {generateScript(userId)}</p>
           </div>
-          <CopyToClipboard text={generateScript(userId)}>
-            <Tooltip onVisibleChange={(visible) => {
-              if (visible) {
-                timer.current = setTimeout(() => {
-                  setCopied(false)
-                }, 3000)
-              }
-            }} visible={copied} overlayClassName={'fadeIn'} showArrow={false} overlayStyle={{ width: '6rem', textAlign: "center", }} placement='top' trigger={['click']} overlay={<span>Copied</span>}>
-              <button onClick={() => {
-                if (copied && timer.current) {
-                  clearTimeout(timer.current)
-                  timer.current = setTimeout(() => {
-                    setCopied(false)
-                  }, 3000)
-                }
-                else setCopied(true)
-              }}
-                className='btn btn-secondary icon grid-center'>
-                <MdOutlineContentCopy></MdOutlineContentCopy></button>
-            </Tooltip>
-
-          </CopyToClipboard>
-
-
+          <UserScript userId={userId} />
         </div>
 
         <div className='mb20  items-center'>

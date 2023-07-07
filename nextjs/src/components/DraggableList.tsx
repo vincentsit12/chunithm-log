@@ -118,7 +118,7 @@ export default function DraggableList({ itemList, setItemList }: Props) {
             >
                 {(provided) => (
                     <div>
-                    <h5 className="text-left ml-2">Hide</h5>
+                        <h5 className="text-left ml-2">Hide</h5>
                         <div
                             className="list-container  mb-2"
                             ref={provided.innerRef}

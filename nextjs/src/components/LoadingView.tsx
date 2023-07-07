@@ -9,7 +9,7 @@ export default function LoadingView({ }: Props) {
         <div className='absolute_center  w-16	'>
             <div className='animate-spin'>
 
-                <Image alt='loading' className="w-full" src={loadingPic}  style={{objectFit :'contain'}} />
+                <Image alt='loading' priority className="w-full" src={loadingPic} style={{ objectFit: 'contain' }} />
             </div>
 
         </div>

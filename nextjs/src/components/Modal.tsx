@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 
 type Props = {
@@ -13,18 +13,14 @@ type Props = {
 
 export default function Modal(props: Props) {
     const { isOpen, setIsOpen, title, children } = props
-    useEffect(() => {
-
-    }, [])
-
+    const ref = useRef(null)
     function closeModal() {
         setIsOpen(false)
     }
-
     return (
         <>
             <Transition appear show={isOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-10" onClose={() => {
+                <Dialog as="div" initialFocus={ref} className="relative z-10" onClose={() => {
                     if (props.closeWhenClickBackDrop) setIsOpen(false)
                 }}>
                     <Transition.Child
@@ -57,7 +53,7 @@ export default function Modal(props: Props) {
                                     >
                                         {title}
                                     </Dialog.Title>}
-                                    <div className="mt-2 relative">
+                                    <div ref={ref} className="mt-2 relative">
                                         {children}
                                     </div>
                                     <div className='w-full flex justify-around items-center'>
