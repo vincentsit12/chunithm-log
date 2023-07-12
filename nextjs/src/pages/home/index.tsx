@@ -68,8 +68,8 @@ const UserScript = ({ userId }: { userId: string }) => {
         }
         else setCopied(true)
       }}
-        className='btn btn-secondary icon grid-center'>
-        <MdOutlineContentCopy></MdOutlineContentCopy></button>
+        className='btn btn-secondary grid-center btn-icon'>
+        <MdOutlineContentCopy size={"1.25rem"} /></button>
     </Tooltip>
 
   </CopyToClipboard>
@@ -95,7 +95,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
             <p> {generateScript(userId)}</p>
           </div>
           <UserScript userId={userId} />
-        </div>
+        </div >
 
         <div className='mb20  items-center'>
           <div className="space-x-5">
@@ -118,7 +118,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
         </div>
         <RecentRatingTable recentRatingList={recentRatingList} />
         <BestRatingTable ratingList={bestRatingList} />
-      </div>
+      </div >
     </LayoutWrapper >
   )
 }

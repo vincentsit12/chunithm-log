@@ -138,7 +138,7 @@ export default function DraggableList({ itemList, setItemList }: Props) {
                                     )}
                                 </Draggable>
                             ))}
-                            {/* {provided.placeholder} */}
+                            <>{provided.placeholder}</>
                         </div>
                     </div>
                 )}
@@ -176,7 +176,7 @@ export default function DraggableList({ itemList, setItemList }: Props) {
                                     )}
                                 </Draggable>
                             ))}
-                            {/* {provided.placeholder} */}
+                            <>{provided.placeholder}</>
                         </div>
                     </div>
                 )}
