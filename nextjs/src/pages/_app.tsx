@@ -15,6 +15,7 @@ import { Router } from "next/router"
 import NProgress from 'nprogress'
 import { useEffect } from "react"
 import { Session } from "next-auth"
+import classNames from "classnames";
 NProgress.configure({ showSpinner: false });
 
 
@@ -24,7 +25,7 @@ NProgress.configure({ showSpinner: false });
 //   display: 'swap',
 //   fallback: ['Arial'],
 // })
-const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.ttf', display: "swap" });
+const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.woff2', display: "swap" });
 
 export default function App({
   Component,
@@ -46,7 +47,7 @@ export default function App({
 
   return (
     <SessionProvider session={session}>
-      <main className={myFont.className}>
+      <main className={classNames(myFont.className)}>
         <Header />
         <Component  {...pageProps} />
       </main>

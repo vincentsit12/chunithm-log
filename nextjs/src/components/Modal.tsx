@@ -20,7 +20,7 @@ export default function Modal(props: Props) {
     return (
         <>
             <Transition appear show={isOpen} as={Fragment}>
-                <Dialog as="div" initialFocus={ref} className="relative z-10" onClose={() => {
+                <Dialog as="div" initialFocus={ref} className="relative z-[999]" onClose={() => {
                     if (props.closeWhenClickBackDrop) setIsOpen(false)
                 }}>
                     <Transition.Child

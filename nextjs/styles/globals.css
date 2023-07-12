@@ -49,7 +49,7 @@
     }
 
     .item-container {
-        @apply p-1.5 mx-1 bg-[#d9e9ee] rounded-md text-[0.75rem]
+        @apply p-1.5 mx-1 bg-[#d9e9ee] rounded-md text-[0.75rem] select-none 
     }
 
     .btn-icon {

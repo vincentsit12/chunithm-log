@@ -17,6 +17,9 @@ import { IoMdSettings } from "react-icons/io"
 import { Divider } from "./Divider"
 import { useLocalStorage } from "utils/hooks/useLocalStorage"
 
+
+const defaultHideHeader: TableHeader[] = ["Youtube", "Grade"];
+const defaultDisplayHeader: TableHeader[] = ["Rank", "Name", "Script", "Base", "Score", "Rate"];
 const levels = [{ "name": "All", "value": 0 }, { "name": "15", "value": 15 }, { "name": "14+", "value": 14.5 }, { "name": "14", "value": 14 }, { "name": "13+", "value": 13.5 }, { "name": "13", "value": 13 }, { "name": "12+", "value": 12.5 }, { "name": "12", "value": 12 }, { "name": "11+", "value": 11.5 }, { "name": "11", "value": 11 }, { "name": "10+", "value": 10.5 }, { "name": "10", "value": 10 },]
 const tableRowsNumbers = [
     { name: "All", value: -1 }, { name: "30", value: 30 }, { name: "100", value: 100 }, { name: "200", value: 200 }, { name: "500", value: 500 },
@@ -59,14 +62,10 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
     </div >
 }
 
-
-
-const item: TableHeader[] = ["Youtube", "Grade"];
-const selected: TableHeader[] = ["Rank", "Name", "Script", "Base", "Score", "Rate"];
 export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     const [itemList, setItemList] = useLocalStorage<DropList>({
-        "notSelected": item,
-        "selected": selected,
+        "notSelected": defaultHideHeader,
+        "selected": defaultDisplayHeader,
     }, "headerPref");
     const [tempItemList, setTempItemList] = useState<DropList>({
         "notSelected": itemList["notSelected"],
