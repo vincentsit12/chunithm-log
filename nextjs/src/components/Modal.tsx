@@ -1,5 +1,6 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react'
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
+import classNames from 'classnames'
 
 type Props = {
     isOpen: boolean,
@@ -17,6 +18,10 @@ export default function Modal(props: Props) {
     function closeModal() {
         setIsOpen(false)
     }
+
+    // const isIos = Boolean(window?.navigator.userAgent.match(/iPhone|iPad|iPod/i))
+
+
     return (
         <>
             <Transition appear show={isOpen} as={Fragment}>
@@ -32,10 +37,10 @@ export default function Modal(props: Props) {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="fixed inset-0 bg-black bg-opacity-25" />
+                        <div className="fixed top-0 left-0 w-full h-full inset-0 bg-black bg-opacity-25" />
                     </Transition.Child>
 
-                    <div className="fixed inset-0 overflow-y-auto">
+                    <div className={classNames("fixed overflow-y-auto inset-0", { "absolute-center w-full h-full": true })}>
                         <div className="flex min-h-full items-center justify-center p-4 text-center">
                             <Transition.Child
                                 as={Fragment}
@@ -83,5 +88,6 @@ export default function Modal(props: Props) {
                 </Dialog>
             </Transition>
         </>
+        // <div className="fixed top-8 left-8 w-96 h-96 bg-red-400"> 12312312323</div>
     )
 }

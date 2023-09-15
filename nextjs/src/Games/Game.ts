@@ -695,7 +695,7 @@ export class Game {
         }
         else {
             this.music.ref.playVideo()
-            // this.scheuleMusicNote()
+            // scheule music note on youtube player listener
         }
 
 
@@ -780,9 +780,10 @@ export class Game {
         this.totalScore = 0;
 
         this.isStarted = false
-        if (this.music instanceof HTMLAudioElement) {
-            this.music.pause()
-            this.music.currentTime = 0;
+
+        if (this.music.ref instanceof HTMLAudioElement) {
+            this.music.ref.pause()
+            this.music.ref.currentTime = 0;
         }
         else {
             this.music.ref.pauseVideo()

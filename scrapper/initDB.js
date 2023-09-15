@@ -39,8 +39,8 @@ async function initDB() {
         console.log("🚀 ~ file: init.js ~ line 40 ~ initDB ~ count", count.length)
         // let z = await Songs.destroy({where : {display_name : ['1', `WORLD'S END`, `無印`, 'NEW', "マップボーナス・限界突破", 'スキル比較', '称号', "マップ一覧" ]}})
 
-        let x = (await Users.findOne({ where: { id: 5 }, include: { model: Records, where: { type: 'recent' }, include: { model: Songs, } } }))
-        console.log("🚀 ~ file: initDB.js:43 ~ initDB ~ x:", x.records)
+        // let x = (await Users.findOne({ where: { id: 5 }, include: { model: Records, where: { type: 'recent' }, include: { model: Songs, } } }))
+        // console.log("🚀 ~ file: initDB.js:43 ~ initDB ~ x:", x.records)
 
         await db.close()
     } catch (error) {

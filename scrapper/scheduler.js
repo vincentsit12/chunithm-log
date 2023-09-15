@@ -106,4 +106,4 @@ async function updateGameScript() {
 
 
 // createSchedule()
-updateGameScript()
+// updateGameScript()

@@ -255,7 +255,7 @@ const Playground = (props: Props) => {
             <div className="flex justify-center items-center mb-4">
                 <input onChange={(e) => {
                     setEnalbleFullScreen(e.target.checked)
-                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="checkbox" type="checkbox" />
                 <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
             </div>
             <div className="flex justify-center items-center mb-4 form-check">
@@ -263,13 +263,13 @@ const Playground = (props: Props) => {
                     if (e.target.checked) {
                         setGameType("maimai")
                     }
-                }} checked={gameType === 'maimai'} id="game-jsmai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="checkbox" type="checkbox" />
                 <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
                 <input onChange={(e) => {
                     if (e.target.checked) {
                         setGameType("djmania")
                     }
-                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
+                }} checked={gameType === 'djmania'} id="game-4k" className="checkbox" type="checkbox" />
                 <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
             </div>
             <div className='inner inner-720'>
@@ -286,7 +286,7 @@ const Playground = (props: Props) => {
                     }} />
                 <textarea value={timelineString} onChange={(e) => {
                     setTimelineString(e.target.value)
-                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                }} className='px-4 py-2 box box-shadow appearance-none mb20 w-full h-40'
                     placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
                 <div className='flex w-full justify-center mb20 flex-wrap' >
                     <button onClick={() => {

@@ -19,6 +19,12 @@
     border: none !important;
 }
 
+.absolute-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 @layer components {
     #__next {
         @apply h-full;

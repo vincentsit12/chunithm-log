@@ -8,7 +8,8 @@ html {
   /* -webkit-tap-highlight-color: rgba(0, 0, 0, 0); */
   overflow-y: scroll;
   /* overscroll-behavior-y: none; */
-  -webkit-tap-highlight-color: transparent;;
+  -webkit-tap-highlight-color: transparent;
+  ;
 }
 
 body {
@@ -696,9 +697,11 @@ button {
   cursor: not-allowed;
   opacity: .5;
 }
+
 .btn:hover:disabled {
   cursor: not-allowed;
 }
+
 .btn-primary {
   background-color: white;
   color: black;
@@ -790,12 +793,6 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* Firefox */
-
-input[type=number] {
-  -moz-appearance: textfield;
-}
-
 .form-control {
   margin-bottom: 5px;
   padding: 4px 6px;
@@ -808,6 +805,7 @@ input[type=number] {
   display: block;
   width: 100%;
   -webkit-box-shadow: none;
+  appearance: none;
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
@@ -991,9 +989,10 @@ animation
   }
 }
 
-.rotate { 
+.rotate {
   transition: transform .2s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
+
 /*------------------------------------------------------- 
 custom
 --------------------------------------------------------*/
@@ -1006,6 +1005,7 @@ custom
   /* border : 0 */
 
 }
+
 input.box {
   background-color: #d9e9ee;
   /* border: 4px rgba(0, 0, 0, 1) solid; */
@@ -1016,8 +1016,8 @@ input.box {
 }
 
 .chuni-log-bg {
-  background-image: linear-gradient(.25turn, #24baff90, #d9ebee, #24baff90); 
-  background-attachment: fixed;
+  background-image: linear-gradient(.25turn, #24baff90, #d9ebee, #24baff90);
+  /* background-attachment:fixed */
   /* background-size: cover; */
   /* background-repeat: no-repeat; */
   /* background-position: center; */
@@ -1113,7 +1113,8 @@ input.box {
   }
 }
 
-.rating-table-row ,.rating-table-row-2 {
+.rating-table-row,
+.rating-table-row-2 {
   display: flex;
   justify-content: center;
   align-items: center;

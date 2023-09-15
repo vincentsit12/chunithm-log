@@ -9,6 +9,7 @@ import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
+import { sequelize } from 'db';
 
 type Props = {
   songList: Songs[];
@@ -92,7 +93,6 @@ export default SongPage
 export async function getServerSideProps(context: NextPageContext) {
   context.res?.setHeader('Cache-Control', 'public, s-maxage=600')
   try {
-
     let data = await Songs.findAll({ attributes: { exclude: ['user_id'] } })
     // let x = await sequelize.query(`delete from songs WHERE not master::jsonb ? 'rate'`)
     // console.log("🚀 ~ file: song.tsx ~ line 116 ~ getServerSideProps ~ data", x)

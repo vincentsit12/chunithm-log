@@ -30,7 +30,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18.2.0",
-    "react-hook-form": "^7.31.1",
+    "react-hook-form": "^7.45.1",
     "react-icons": "^4.10.1",
     "react-modal": "^3.15.1",
     "react-tooltip": "^5.15.0",
