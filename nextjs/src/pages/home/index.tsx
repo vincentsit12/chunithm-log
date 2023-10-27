@@ -100,7 +100,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
         <div className='mb20  items-center'>
           <div className="space-x-5">
             <span >
-              {`Top 30 Average : ${toFixedTrunc(average, 2)}`}
+              {`Top 30 Average : ${toFixedTrunc(average, 4)}`}
             </span>
             <span>
               {`Max : ${toFixedTrunc(max, 2)}`}

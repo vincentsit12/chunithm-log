@@ -38,6 +38,11 @@ const Header = (props: Props) => {
                         onClick={(e) => {
                             setActive(false)
                         }}>Playground</Link></li>
+
+                    {session?.user.isAdmin && <li><Link href={'/song/manage'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Song Management</Link></li>}   
                     {haveSession && <li><Link href={'/'} onClick={(e) => {
                         e.preventDefault()
                         setActive(false)

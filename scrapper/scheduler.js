@@ -28,6 +28,16 @@ async function createSchedule() {
                 let index = _.findIndex(songs, k => k.name === newData[i].name)
                 if (index >= 0) {
                     newData[i].id = songs[index].id
+                    if (songs[index].master && newData[i].master) {
+                        newData[i].master.scriptUrl = songs[index].master.scriptUrl
+                    }
+                    if (songs[index].expert && newData[i].expert) {
+                        newData[i].expert.scriptUrl = songs[index].expert.scriptUrl
+                    }
+                    if (songs[index].ultima && newData[i].ultima) {
+                        newData[i].ultima.scriptUrl = songs[index].ultima.scriptUrl
+                    } 
+                    
                 }
             }
             console.table(newData)
@@ -106,4 +116,4 @@ async function updateGameScript() {
 
 
 // createSchedule()
-// updateGameScript()
+updateGameScript()

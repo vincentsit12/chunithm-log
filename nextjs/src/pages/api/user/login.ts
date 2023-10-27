@@ -26,7 +26,8 @@ async function login(
         // const user = await Users.create({ username: req.body.username, password: hash })
         res.status(200).send({
           id: encrypt(user.id.toString()),
-          username: user.username
+          username: user.username,
+          isAdmin : user.isAdmin
         });
       }
       else {
