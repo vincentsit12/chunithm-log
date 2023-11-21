@@ -7,21 +7,20 @@
 # ENV NODE_ENV=development
 # EXPOSE 3000
 # CMD [ "yarn", "dev" ]
-
-FROM node:16.15.0-alpine3.14 AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:18-alpine as deps
+RUN apk add --no-cache g++ make py3-pip libc6-compat
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci 
 
-FROM node:16.15.0-alpine3.14 AS builder
+FROM node:18-alpine as builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 COPY .env.production .env.production
-RUN yarn build
+RUN npm run build
 
-FROM node:16.15.0-alpine3.14 AS runner
+FROM node:18-alpine as runner
 WORKDIR /app
 ENV HOST=0.0.0.0
 ENV PORT=3000
@@ -41,4 +40,4 @@ COPY --chown=nextjs:nodejs --from=builder /app/.next ./.next
 
 USER nextjs
 EXPOSE 3000
-CMD [ "yarn", "start" ]
+CMD [ "npm", "start" ]

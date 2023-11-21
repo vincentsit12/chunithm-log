@@ -11,9 +11,9 @@ const withErrorHandler = (handler: any) => {
         catch (e) {
             console.log("🚀 ~ file: errorHandler.ts ~ line 12 ~ return ~ e", e)
             if (e instanceof CustomAPIError) {
-                res.status(e.statusCode).send(e.message)
+                res.status(e.statusCode).send({ message: e.message, errorCode: e.errorCode })
             }
-            else res.status(StatusCodes.INTERNAL_SERVER_ERROR).send('something went wrong')
+            else res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'something went wrong' })
         }
     }
 }

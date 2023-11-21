@@ -1,3 +1,4 @@
+import { AnnouncementView } from 'components/AnnouncementView';
 import LayoutWrapper from 'components/LayoutWrapper'
 import { Game } from 'Games/Game'
 import { isArray } from 'lodash'

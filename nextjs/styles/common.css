@@ -989,6 +989,50 @@ animation
   }
 }
 
+@keyframes spin {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes breaking {
+  0% {
+    transform: translate(-50%, -100px) scale(0)
+  }
+
+  10% {}
+
+  20% {}
+
+  30% {}
+
+  40% {}
+
+  50% {}
+
+  60% {
+    transform: translate(-50%, -50%) scale(1) rotate(360deg);
+    top: 50%;
+    opacity: 1;
+  }
+
+  70% {}
+
+  80% {}
+
+  90% {}
+
+  100% {
+    transform: translate(-50%, -50%) scale(8) rotate(-360deg);
+    top: 50%;
+    opacity: 0;
+  }
+}
+
+.breaking {
+  animation: breaking cubic-bezier(0.075, 0.82, 0.165, 1) 2s
+}
+
 .rotate {
   transition: transform .2s cubic-bezier(0.075, 0.82, 0.165, 1);
 }

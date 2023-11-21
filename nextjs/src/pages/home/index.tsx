@@ -16,6 +16,8 @@ import 'rc-tooltip/assets/bootstrap_white.css';
 import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
 import { getRecommandList } from 'utils/api'
 import { getRatingList } from 'utils/getRatingList'
+import LoadingView from 'components/LoadingView'
+import { AnnouncementView } from 'components/AnnouncementView'
 
 
 type Props = {
@@ -84,9 +86,15 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
     if (top30.length < 1) return [0, 0, 0, 0]
     return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40, recentRatingList.length > 0 ? recentTotal / recentRatingList.length : 0, recent]
   }, [bestRatingList, recentRatingList])
+  const [loading, setLoading] = useState(false)
 
   return (
     <LayoutWrapper>
+      {loading &&
+        <div className='bg-black/40 z-[9999] fixed h-full w-full top-0 left-0 fadeIn'>
+          <LoadingView />
+        </div>
+      }
       <div className='inner inner-720 tc' >
         {userName && <h1 className='mb-2'>{`User: ${userName}`}</h1>}
         <div className='flex box box-shadow mb20' >
@@ -113,10 +121,14 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
             <span>
               {`Now : ${toFixedTrunc(recent, 2)}`}
             </span>
+
           </div>
+
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
-        <RecentRatingTable recentRatingList={recentRatingList} />
+
+        <RecentRatingTable recentRatingList={recentRatingList} setLoading={setLoading} />
+
         <BestRatingTable ratingList={bestRatingList} />
       </div >
     </LayoutWrapper >

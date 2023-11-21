@@ -57,7 +57,7 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
                 <div className='mb20  items-center'>
                     <div className="space-x-5">
                         <span >
-                            {`Top 30 Average : ${toFixedTrunc(average, 2)}`}
+                            {`Top 30 Average : ${toFixedTrunc(average, 4)}`}
                         </span>
                         <span>
                             {`Max : ${toFixedTrunc(max, 2)}`}
@@ -73,7 +73,7 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
                     </div>
                     {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
                 </div>
-                <RecentRatingTable recentRatingList={recentRatingList} />
+                <RecentRatingTable recentRatingList={recentRatingList} isOtherUser/>
                 <BestRatingTable ratingList={bestRatingList} />
             </div>
         </LayoutWrapper >

@@ -6,14 +6,16 @@ type Props = {
     isOpen: boolean,
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
     closeModal?: () => void
-    save?: () => void
+    rightBtnCallBack?: () => void
+    showButton?: boolean
     title?: string,
+    positiveBtnText?: string,
     children: React.ReactNode
     closeWhenClickBackDrop?: boolean
 }
 
 export default function Modal(props: Props) {
-    const { isOpen, setIsOpen, title, children } = props
+    const { isOpen, setIsOpen, title, children, positiveBtnText, showButton = true } = props
     const ref = useRef(null)
     function closeModal() {
         setIsOpen(false)
@@ -61,7 +63,7 @@ export default function Modal(props: Props) {
                                     <div ref={ref} className="mt-2 relative">
                                         {children}
                                     </div>
-                                    <div className='w-full flex justify-around items-center'>
+                                    {showButton && <div className='w-full flex justify-around items-center'>
                                         <div className="mt-10">
                                             <button
                                                 type="button"
@@ -75,12 +77,12 @@ export default function Modal(props: Props) {
                                             <button
                                                 type="button"
                                                 className="btn btn-secondary"
-                                                onClick={props.save ?? closeModal}
+                                                onClick={props.rightBtnCallBack ?? closeModal}
                                             >
-                                                Save
+                                                {positiveBtnText ?? "Save"}
                                             </button>
                                         </div>
-                                    </div>
+                                    </div>}
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>

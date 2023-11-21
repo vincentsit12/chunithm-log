@@ -129,7 +129,7 @@
                                     score: parseInt(score),
                                     type: "recent"
                                 })
-                                
+
                             }
 
                         }

@@ -7,6 +7,7 @@ type UserAttributes = {
     username: string
     password: string,
     isAdmin?: boolean,
+    cookies? : string,
     // other attributes...
 };
 type UserCreationAttributes = Optional<UserAttributes, 'id'>;
@@ -17,6 +18,7 @@ export default class Users extends Model<UserAttributes, UserCreationAttributes>
     declare username: string;
     declare password: string;
     declare isAdmin: boolean;
+    declare cookies? : string;
     declare static associations: {
         records: Association<Users, Records>;
     };
@@ -49,6 +51,10 @@ Users.init({
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+    },
+
+    cookies: {
+        type: DataTypes.STRING,
     },
 
 }, {

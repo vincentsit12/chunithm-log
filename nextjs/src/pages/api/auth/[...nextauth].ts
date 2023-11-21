@@ -129,7 +129,6 @@ export default NextAuth({
         //     return token
         // },
         async jwt({ token, user, account, profile }) {
-
             user && (token.user = user)
             return token
         },

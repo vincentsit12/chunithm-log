@@ -37,6 +37,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
       allowNull: false,
     },
+
+    cookies: {
+      type: DataTypes.STRING,
+    },
+    
   }, {
     sequelize,
     modelName: 'users',

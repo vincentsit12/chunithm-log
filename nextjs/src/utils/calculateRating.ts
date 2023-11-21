@@ -53,7 +53,19 @@ export function reEscape(chars: string) {
 
     return ascii.replace(/[\n\s'’]/g, '').replace(/[”“]/g, '\"')
 }
-
+export function htmlDecodeByRegExp(str: string) {
+    var s = '';
+    if (str.length === 0) {
+        return '';
+    }
+    s = str.replace(/&amp;/g, '&');
+    s = s.replace(/&lt;/g, '<');
+    s = s.replace(/&gt;/g, '>');
+    s = s.replace(/&nbsp;/g, ' ');
+    s = s.replace(/&#039;/g, '\'');
+    s = s.replace(/&quot;/g, '\"');
+    return s;
+}
 export function getGradeOfScore(score: number): Grade {
     if (score >= 1009000) return "SSS+"
     if (score >= 1007500) return "SSS"

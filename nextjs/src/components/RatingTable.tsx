@@ -3,7 +3,7 @@ import _, { isNumber } from "lodash"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { Fragment, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Rating, SortingKeys, TableHeader } from "types"
+import { ChunithmNetLogin, Rating, SortingKeys, TableHeader } from "types"
 import { AutoSizer, CellMeasurer, CellMeasurerCache, Column, List, Table, WindowScroller } from 'react-virtualized';
 import { toFixedTrunc } from "utils/calculateRating"
 import { useWindowResize } from "utils/hooks/useWindowResize"
@@ -13,9 +13,13 @@ import { Listbox, Transition } from '@headlessui/react'
 import ListBox from "./ListBox"
 import DraggableList, { DropList } from "./DraggableList"
 import Modal from "./Modal"
-import { IoMdSettings } from "react-icons/io"
+import { IoMdSettings, IoMdRefresh } from "react-icons/io"
 import { Divider } from "./Divider"
 import { useLocalStorage } from "utils/hooks/useLocalStorage"
+import { useSession } from "next-auth/react"
+import axios from "axios"
+import { useForm } from "react-hook-form"
+import LoadingView from "./LoadingView"
 
 
 const defaultHideHeader: TableHeader[] = ["Youtube", "Grade"];
@@ -29,16 +33,50 @@ const cache = new CellMeasurerCache({
     defaultHeight: 42
 });
 
-export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rating[] }) => {
+export const RecentRatingTable = ({ recentRatingList, setLoading = () => { }, isOtherUser = false }:
+    { recentRatingList: Rating[], setLoading?: React.Dispatch<React.SetStateAction<boolean>>, isOtherUser?: boolean }) => {
     const [showTable, setShowTable] = useState(false)
+    const { data: session, status } = useSession()
+    const { register, handleSubmit, formState: { errors }, } = useForm<ChunithmNetLogin>()
+    const [isModalOpen, setIsModalOpen] = useState(false)
     const router = useRouter()
+
     const height = recentRatingList.length * 42
-    return <div>
+    const updateRecord = async (chunithmNetLogin?: ChunithmNetLogin) => {
+        setLoading(true)
+        let body: ChunithmNetLogin | undefined = chunithmNetLogin
+        let url = "/api/record/remoteUpdate/" + session?.user.id
+        return axios.post(url, body).then(res => {
+            router.reload()
+        }).catch(e => {
+            console.log(e)
+            setLoading(false)
+            if (e.response.data.errorCode == 999) {
+                setIsModalOpen(true)
+            }
+        })
+    }
+    const handleSubmitForm = handleSubmit(async (values) => {
+        console.log(values)
+        // setLoading(true)
+        await updateRecord(values)
+        setIsModalOpen(false)
+    })
+
+    const error: boolean = errors?.password?.type === 'required' || errors?.sid?.type === 'required'
+    return <div className="relative">
         <div className='flex justify-center items-center mb-4 form-check'>
-            <input onChange={(e) => {
-                setShowTable(e.target.checked)
-            }} checked={showTable} id="recent" className="checkbox" type="checkbox" />
-            <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Recent Songs</label>
+            <div className='flex flex-1 justify-center items-center form-check'>
+                <input onChange={(e) => {
+                    setShowTable(e.target.checked)
+                }} checked={showTable} id="recent" className="checkbox" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Recent Songs</label>
+            </div>
+            {!isOtherUser && <button onClick={async () => {
+                await updateRecord()
+            }}
+                className='btn btn-secondary grid-center btn-icon absolute right-8'>
+                <IoMdRefresh size={"1.25rem"} /></button>}
         </div>
         <div className={'rating-table mb-5 box box-shadow !min-h-0 collapsable scrollbar-hide'} style={{ 'maxHeight': !showTable ? 0 : `${height}px` }}>
 
@@ -59,7 +97,35 @@ export const RecentRatingTable = ({ recentRatingList }: { recentRatingList: Rati
             })}
 
         </div>
+        {!isOtherUser && <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen} positiveBtnText={'Send'} showButton={false}
+            closeModal={() => {
+                setIsModalOpen(false)
+            }}
+        >
+            <section className="px-5">
+                <h4 className="text-left ml-1 bold">Chunithm Net Login</h4>
+                <div className="tl my-2 ml-1 text-[0.75rem] text-gray-500">{"*We will not save your id/password, once the login session is expired, you may need to provide the login again for updating new record from our site."}</div>
+                <Divider />
+                <form onSubmit={handleSubmitForm} className="pt-4 pb-4" >
+                    {error && <div className="bold txt-secondary tl  font14">Please check your username/password is input correctly.</div>}
+                    <input  {...register('sid', { required: true })} autoComplete="chu2-id" className="form-control !mb-4" type="text" placeholder={"Username"}></input>
+                    <input  {...register('password', { required: true })} autoComplete="chu2-password" className="form-control !mb-4" type="password" placeholder={"Password"}></input>
+                    <button type='button' className="btn btn-secondary sm:m-3 m-1" onClick={(e) => {
+                        // e.preventDefault();
+                        setIsModalOpen(false)
+                    }}>Cancel</button>
+                    <button type="submit" className=" btn btn-secondary sm:m-3 m-1" onClick={(e) => { }}>Submit</button>
+
+                    {/* {loading &&
+                        <div className='bg-black/40	 absolute h-full w-full top-0 left-0 fadeIn'>
+                            <LoadingView />
+                        </div>
+                    } */}
+                </form>
+            </section>
+        </Modal>}
     </div >
+
 }
 
 export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
@@ -283,7 +349,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                         {`3. click the bookmark and wait for redirecting to this page`}
                     </p>
                 </div>}
-            <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen} save={() => {
+            <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen} rightBtnCallBack={() => {
                 setItemList(tempItemList)
                 let scoreRange: any = [...tempScoreRange]
                 if (isNaN(parseInt(scoreRange[0]))) {

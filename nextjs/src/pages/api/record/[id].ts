@@ -13,7 +13,7 @@ import e from 'cors'
 import { reEscape } from 'utils/calculateRating'
 import CryptoJS from 'crypto-js'
 import { decrypt } from 'utils/encrypt'
-import { Difficulty, RecordType } from 'types'
+import { ChunithmNetRecord, Difficulty, RecordType } from 'types'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -22,12 +22,7 @@ const cors = Cors({
     methods: ['PUT'],
     origin: 'https://chunithm-net-eng.com',
 })
-type RequestBody = {
-    name: string,
-    difficulty: Difficulty,
-    score: number
-    type: RecordType
-}
+
 async function handler(
     req: NextApiRequest,
     res: NextApiResponse<string>
@@ -43,7 +38,7 @@ async function handler(
         let songsObj = _.keyBy(songs, function (o) {
             return o.name;
         });
-        const validSongsData = _.filter<RequestBody>(req.body.data, k => songsObj[reEscape(k.name)] !== undefined)
+        const validSongsData = _.filter<ChunithmNetRecord>(req.body.data, k => songsObj[reEscape(k.name)] !== undefined)
         let newRecords = _.map(validSongsData, ((k) => {
 
             return {
