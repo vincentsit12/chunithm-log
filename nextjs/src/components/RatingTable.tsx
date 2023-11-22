@@ -33,8 +33,8 @@ const cache = new CellMeasurerCache({
     defaultHeight: 42
 });
 
-export const RecentRatingTable = ({ recentRatingList, setLoading = () => { }, isOtherUser = false }:
-    { recentRatingList: Rating[], setLoading?: React.Dispatch<React.SetStateAction<boolean>>, isOtherUser?: boolean }) => {
+export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoading = () => { }, isOtherUser = false }:
+    { recentRatingList: Rating[], isLoading?: boolean, setLoading?: React.Dispatch<React.SetStateAction<boolean>>, isOtherUser?: boolean }) => {
     const [showTable, setShowTable] = useState(false)
     const { data: session, status } = useSession()
     const { register, handleSubmit, formState: { errors }, } = useForm<ChunithmNetLogin>()
@@ -49,10 +49,13 @@ export const RecentRatingTable = ({ recentRatingList, setLoading = () => { }, is
         return axios.post(url, body).then(res => {
             router.reload()
         }).catch(e => {
-            console.log(e)
+            
             setLoading(false)
             if (e.response.data.errorCode == 999) {
                 setIsModalOpen(true)
+            }
+            else {
+                alert(e.response.data.message)
             }
         })
     }
@@ -103,6 +106,7 @@ export const RecentRatingTable = ({ recentRatingList, setLoading = () => { }, is
             }}
         >
             <section className="px-5">
+                {isLoading && <div className="w-full h-full absolute"></div> }
                 <h4 className="text-left ml-1 bold">Chunithm Net Login</h4>
                 <div className="tl my-2 ml-1 text-[0.75rem] text-gray-500">{"*We will not save your id/password, once the login session is expired, you may need to provide the login again for updating new record from our site."}</div>
                 <Divider />

@@ -65,50 +65,49 @@ async function handler(
     formData.append('sid', aimeUserID)
     formData.append('password', aimeUserPassword);
 
-   
-    fetch('https://lng-tgk-aime-gw.am-all.net/common_auth/login?site_id=chuniex&redirect_url=https://chunithm-net-eng.com/mobile/&back_url=https://chunithm.sega.com/')
-        .then(async function (response) {
-            let cookies = response.headers.getSetCookie()
-            console.log(cookies[0].split(";")[0])
-            fetch("https://lng-tgk-aime-gw.am-all.net/common_auth/login/sid/", {
-                headers: {
-                    "Cookie": cookies[0],
-                },
-                method: "POST",
-                credentials: "include",
-                body: formData,
-                redirect: 'manual'
-            }).then(function (response) {
-                let cookies = response.headers.getSetCookie()
-                let location = response.headers.get("location") ?? ""
-                console.log("location 1", location, cookies)
-                fetch(location, {
-                    headers: {
-                        "Cookie": cookies.join(";")
-                    },
-                    redirect: 'manual',
-                    credentials: "include",
-                }).then(async function (response) {
-                    let cookies = response.headers.getSetCookie()
-                    let location = response.headers.get("location") ?? ""
 
-                    chunithmNetCookies = cookies.join(";")
-                    try {
-                        let res = await user?.update({ cookies: chunithmNetCookies })
-                        console.log(res)
-                    }
-                    catch (e) {
-                        console.log(e)
-                    }
+    let r1Response = await fetch('https://lng-tgk-aime-gw.am-all.net/common_auth/login?site_id=chuniex&redirect_url=https://chunithm-net-eng.com/mobile/&back_url=https://chunithm.sega.com/')
+    let cookies = r1Response.headers.getSetCookie()
+    console.log(cookies[0].split(";")[0])
+    let r2Response = await fetch("https://lng-tgk-aime-gw.am-all.net/common_auth/login/sid/", {
+        headers: {
+            "Cookie": cookies[0],
+        },
+        method: "POST",
+        credentials: "include",
+        body: formData,
+        redirect: 'manual'
+    })
 
-                    console.log("location 2", location, chunithmNetCookies)
+    let cookies1 = r2Response.headers.getSetCookie()
+    let location1 = r2Response.headers.get("location")
+    if (!location1) throw new BadRequestError("invalid login")
+    console.log("location 1", location1, cookies1)
+    let r3Response = await fetch(location1, {
+        headers: {
+            "Cookie": cookies1.join(";")
+        },
+        redirect: 'manual',
+        credentials: "include",
+    })
 
-                    await getRating(location, chunithmNetCookies)
-                })
-            })
-        }).catch(e => {
-            throw new BadRequestError(e.toString())
-        })
+    let cookies2 = r3Response.headers.getSetCookie()
+    let location2 = r3Response.headers.get("location")
+    if (!location2) throw new BadRequestError("invalid login")
+    chunithmNetCookies = cookies2.join(";")
+    try {
+        let res = await user?.update({ cookies: chunithmNetCookies })
+        console.log(res)
+    }
+    catch (e) {
+        console.log(e)
+    }
+
+    console.log("location 2", location2, chunithmNetCookies)
+
+    await getRating(location2, chunithmNetCookies)
+
+
     async function getRating(location: string, cookies: string) {
         // chunithm-net
         let response = await fetch(location, {
