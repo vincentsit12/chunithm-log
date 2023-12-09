@@ -79,12 +79,16 @@ const UserScript = ({ userId }: { userId: string }) => {
 const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
 
   const [average, max, recentAverage, recent] = useMemo(() => {
+    const additons = 0.00000001
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
-    const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
-    const recent = (top30Total + recentTotal) / (30 + recentRatingList.length)
+    const top30Avg = top30Total / 30 + additons
+    const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0) 
+    const recentAvg =  recentRatingList.length > 0 ? (recentTotal / recentRatingList.length) + additons : 0
+    const maxRate =  (top30Total + top30[0].rating * 10) / 40 + additons
+    const recent = (top30Total + recentTotal) / (30 + recentRatingList.length) + additons
     if (top30.length < 1) return [0, 0, 0, 0]
-    return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40, recentRatingList.length > 0 ? recentTotal / recentRatingList.length : 0, recent]
+    return [top30Avg, maxRate,recentAvg, recent]
   }, [bestRatingList, recentRatingList])
   const [loading, setLoading] = useState(false)
 
