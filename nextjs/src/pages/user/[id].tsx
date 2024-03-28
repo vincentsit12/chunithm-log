@@ -44,9 +44,8 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
         const top30Avg = top30Total / 30 + additons
         const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0) 
         const recentAvg =  recentRatingList.length > 0 ? (recentTotal / recentRatingList.length) + additons : 0
-        const maxRate =  (top30Total + top30[0].rating * 10) / 40 + additons
+        const maxRate = top30.length < 1 ? (top30Total + top30[0].rating * 10) / 40 + additons : 0
         const recent = (top30Total + recentTotal) / (30 + recentRatingList.length) + additons
-        if (top30.length < 1) return [0, 0, 0, 0]
         return [top30Avg, maxRate,recentAvg, recent]
       }, [bestRatingList, recentRatingList])
 
