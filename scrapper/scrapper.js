@@ -6,9 +6,9 @@ const fs = require('fs')
 
 const getRating = async () => {
     try {
-        const links = ['https://wikiwiki.jp/chunithmwiki/CHUNITHM%20SUN%20PLUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%28%E5%AE%9A%E6%95%B0%E9%A0%863%29',
-            "https://wikiwiki.jp/chunithmwiki/CHUNITHM%20SUN%20PLUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%28%E5%AE%9A%E6%95%B0%E9%A0%862%29",
-            "https://wikiwiki.jp/chunithmwiki/CHUNITHM%20SUN%20PLUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%28%E5%AE%9A%E6%95%B0%E9%A0%861%29"]
+        const links = ['https://wikiwiki.jp/chunithmwiki/CHUNITHM%20LUMINOUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%28%E5%AE%9A%E6%95%B0%E9%A0%861%29',
+            "https://wikiwiki.jp/chunithmwiki/CHUNITHM%20LUMINOUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%28%E5%AE%9A%E6%95%B0%E9%A0%862%29",
+            "https://wikiwiki.jp/chunithmwiki/CHUNITHM%20LUMINOUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%28%E5%AE%9A%E6%95%B0%E9%A0%863%29"]
         // "https://chunithm.gamerch.com/CHUNITHM%20NEW%20PLUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%EF%BC%88%E5%AE%9A%E6%95%B0%E9%A0%86%EF%BC%892"]
         // const wsChromeEndpointurl = 'ws://127.0.0.1:9222/devtools/browser/58b05181-1096-470c-b9b9-a8e27578a62c';
         // const browser = await puppeteer.connect({

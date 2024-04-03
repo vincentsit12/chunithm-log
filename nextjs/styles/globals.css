@@ -19,6 +19,16 @@
     border: none !important;
 }
 
+.absolute-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.auto-search .wrapper {
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3)
+}
+
 @layer components {
     #__next {
         @apply h-full;
@@ -49,10 +59,18 @@
     }
 
     .item-container {
-        @apply p-1.5 mx-1 bg-[#d9e9ee] rounded-md text-[0.75rem] select-none 
+        @apply p-1.5 mx-1 bg-[#d9e9ee] rounded-md text-[0.75rem] select-none
     }
 
     .btn-icon {
         @apply !min-w-[1rem] min-h-[1rem]
+    }
+
+    .auto-search {
+        @apply !h-full
+    }
+
+    .auto-search input {
+        @apply !py-2 !px-4 h-[2.8rem]
     }
 }
