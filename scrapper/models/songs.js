@@ -29,7 +29,8 @@ module.exports = (sequelize, DataTypes) => {
     expert: {
       type: DataTypes.JSONB,
     },
-
+    youtube_link: { type: DataTypes.TEXT, },
+    
   }, {
     sequelize,
     modelName: 'songs',

@@ -27,10 +27,10 @@ async function handler(
     let song_id = Number(req.query.id)
     let song = await Songs.findOne({ where: { id: song_id } })
     if (song) {
-        let url = encodeURI(`https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&q=${song.display_name} chunithm 譜面確認`)
+        let url = encodeURI(`https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&q="${song.display_name}" chunithm 譜面確認`)
         console.log(encodeURI(url))
         let youtubeAPIResult = await axios.get(url)
-        console.log(youtubeAPIResult)
+        
         res.status(200).json(youtubeAPIResult.data.items[0].id.videoId)
     }
     else throw new BadRequestError("cannot find song")

@@ -30,7 +30,9 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     return
   }
 
-  const io = new Server(res.socket.server)
+  const io = new Server(res.socket.server, {
+    addTrailingSlash: false
+  })
 
   io.on("connection", socket => {
     console.log(socket.id, ": socket connect", socket.handshake.query.roomID)
@@ -95,6 +97,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let room = new GuessSongGameRoom(roomID)
       room.players.set(socket.id, player)
       rooms.set(roomID, room)
+      io.in(socket.id).emit("message", "You are the host")
       callBack(true)
       console.log("create ", rooms)
     })
@@ -113,13 +116,16 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       callBack()
     })
 
-    socket.on("load-music", async (data: RoomEvent, gameOption: GuessSongGameOption) => {
+    socket.on("load-music", async (data: RoomEvent, gameOption: GuessSongGameOption, currentSongID: string) => {
+      console.log("load music", data, gameOption, currentSongID)
       let roomID = data.roomID
       let gameOptions = gameOption
       let room = rooms.get(roomID)
-      room?.reset()
-      io.in(roomID).emit("message", "start get music")
-      io.in(roomID).emit("buffer-music", gameOptions)
+      if (room) {
+        room.currentSongID = currentSongID
+        io.in(roomID).emit("message", "start get music")
+        io.in(roomID).emit("buffer-music", gameOptions)
+      }
     })
 
     socket.on("start-music", async (data: RoomEvent) => {
@@ -132,15 +138,17 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     socket.on("finish-buffer-music", async (data: RoomEvent) => {
       let roomID = data.roomID
       let room = rooms.get(roomID)
-
+    
       let player = room?.players.get(data.playerID ?? "")
       if (room && player) {
         player.isReady = true
         if (room.checkAllPlayersIsReady()) {
-          console.log(room.players)
+          console.log("------------------------- all finish-buffer-music")
           io.in(roomID).emit("play-music")
+          room.reset()
         }
       }
+      console.log("finish-buffer-music", room)
     })
 
     socket.on("replay-music", async (data: RoomEvent) => {
@@ -159,6 +167,7 @@ let rooms: Map<string, GuessSongGameRoom> = new Map()
 class GuessSongGameRoom {
   roomID: string
   players: Map<string, Player>
+  currentSongID?: string
 
   constructor(roomID: string) {
     this.roomID = roomID
@@ -175,7 +184,7 @@ class GuessSongGameRoom {
 
   reset = () => {
     this.players.forEach((k) => {
-      k.isReady = false
+        k.isReady = false
     })
   }
 
@@ -188,6 +197,9 @@ class GuessSongGameRoom {
 
   checkAllPlayersIsReady = () => {
     let isAllReady = true
+    if (this.players.size == 1) {
+      return false
+    }
     this.players.forEach((values, keys) => {
       if (!values.isReady)
         isAllReady = false
