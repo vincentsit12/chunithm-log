@@ -374,7 +374,7 @@ const GuessSongGame = () => {
                                 className='px-4 py-2 box box-shadow w-full' placeholder='Answer'></input>
                             <button className='btn btn-secondary ml-2' onClick={() => {
 
-                                if (customYoutubeLink && answer) {
+                                if (!customYoutubeLink || !answer) {
                                     setShouldSendBufferedSignal(false)
                                     setGameOption((gameOption) => {
                                         return {
