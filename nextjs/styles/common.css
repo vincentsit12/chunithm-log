@@ -1122,6 +1122,8 @@ input.box {
 
 .rating-table td {
   padding: 8px;
+  min-height: 10px;
+  height: 40px;
 }
 
 @media screen and (max-width: 576px) {

@@ -1,8 +1,8 @@
-import type { Server as HTTPServer } from "http"
-import type { Socket as NetSocket } from "net"
 import type { NextApiRequest, NextApiResponse } from "next"
-import type { Server as IOServer } from "socket.io"
 import { Server } from "socket.io"
+import { NextApiResponseWithSocket } from "./type"
+import shared from "./shared"
+import e from "cors"
 
 const PORT = 3000
 export const config = {
@@ -11,19 +11,7 @@ export const config = {
   },
 }
 
-interface SocketServer extends HTTPServer {
-  io?: IOServer | undefined
-}
-
-interface SocketWithIO extends NetSocket {
-  server: SocketServer
-}
-
-interface NextApiResponseWithSocket extends NextApiResponse {
-  socket: SocketWithIO
-}
-
-export default function SocketHandler(_req: NextApiRequest, res: NextApiResponseWithSocket) {
+export default function SocketHandler(_req: NextApiRequest, res: NextApiResponseWithSocket<any>) {
   if (res.socket.server.io) {
     console.log("Socket is already running")
     res.status(200).json({ success: true, message: "Socket is already running", socket: `:${PORT + 1}` })
@@ -35,33 +23,38 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   })
 
   io.on("connection", socket => {
-    console.log(socket.id, ": socket connect", socket.handshake.query.roomID)
+    console.log(socket.id, ": socket connect")
 
     socket.on("disconnecting", async () => {
       console.log(socket.id, ": socket disconnect")
 
       let x = io.of('/').adapter.sids.get(socket.id)
       x?.forEach((k) => {
-        if (rooms.has(k)) {
-          let room = rooms.get(k)
+        if (shared.rooms.has(k)) {
+          let room = shared.rooms.get(k)
           let player = room?.players.get(socket.id)
           if (room && player) {
             room.removePlayer(socket.id)
             if (player.isHost) {
               // todo
-              rooms.delete(k)
+              shared.rooms.delete(k)
               io.in(room.roomID).emit("delete-room")
+            } else {
+              io.in(room.roomID).emit("message", player.name + " leaved room")
             }
           }
         }
       })
-      console.log("delete ", rooms)
+      console.log("delete ", shared.rooms)
     })
 
     socket.on("message", async (data: RoomEvent, message) => {
       let roomID = data.roomID
-      console.log(socket.id, ": socket message", message)
-      io.in(roomID).emit("message", socket.id + " say: " + message)
+      let room = shared.rooms.get(roomID)
+      let player = room?.players.get(socket.id)
+      if (player) {
+        io.in(roomID).emit("message", player.name + " say: " + message)
+      }
     })
 
     socket.on("create-room", async (data: RoomEvent, callBack: (isHost: boolean) => void) => {
@@ -69,61 +62,63 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       socket.join(roomID)
       // io.in(roomID).emit("message", socket.id + "joined")
 
-      if (rooms.has(roomID)) {
+      if (shared.rooms.has(roomID)) {
 
-        let room = rooms.get(roomID)!
+        let room = shared.rooms.get(roomID)!
         let player: Player = {
           id: socket.id, //use socket id first
-          name: "player",
+          name: data.playerName ?? "Guest - " + socket.id,
           isHost: false,
           isJoined: true,
           isReady: false,
+          score: 0
         }
         room.players.set(socket.id, player)
 
-        console.log("joins ", rooms)
+        console.log("joins ", shared.rooms)
         callBack(false)
         return
       }
 
       let player: Player = {
         id: socket.id, //use socket id first
-        name: "host",
+        name: data.playerName ?? "Host - " + socket.id,
         isHost: true,
         isReady: false,
-        isJoined: false
+        isJoined: false,
+        score: 0
       }
 
       let room = new GuessSongGameRoom(roomID)
       room.players.set(socket.id, player)
-      rooms.set(roomID, room)
+      shared.rooms.set(roomID, room)
       io.in(socket.id).emit("message", "You are the host")
       callBack(true)
-      console.log("create ", rooms)
+      console.log("create ", shared.rooms)
     })
 
     socket.on("join-game", async (data: RoomEvent, callBack: () => void) => {
 
       let roomID = data.roomID
-      let room = rooms.get(roomID)
+      let room = shared.rooms.get(roomID)
 
-      let player = room?.players.get(data.playerID ?? "")
-      console.log("join", player)
+      let player = room?.players.get(data.playerID)
       if (room && player) {
         player.isJoined = true
+        io.in(roomID).emit("message", player.name + ": join game")
+        console.log("join", player)
       }
-      io.in(roomID).emit("message", socket.id + ": join game")
       callBack()
     })
 
-    socket.on("load-music", async (data: RoomEvent, gameOption: GuessSongGameOption, currentSongID: string) => {
-      console.log("load music", data, gameOption, currentSongID)
+    socket.on("load-music", async (data: RoomEvent, gameOption: GuessSongGameOption, currentSongName: string) => {
+      console.log("load music", data, gameOption, currentSongName)
       let roomID = data.roomID
       let gameOptions = gameOption
-      let room = rooms.get(roomID)
+      let room = shared.rooms.get(roomID)
       if (room) {
-        room.currentSongID = currentSongID
-        io.in(roomID).emit("message", "start get music")
+        room.currentSongName = currentSongName
+        io.in(roomID).emit("message", "Music will start to play")
         io.in(roomID).emit("buffer-music", gameOptions)
       }
     })
@@ -137,9 +132,9 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
     socket.on("finish-buffer-music", async (data: RoomEvent) => {
       let roomID = data.roomID
-      let room = rooms.get(roomID)
-    
-      let player = room?.players.get(data.playerID ?? "")
+      let room = shared.rooms.get(roomID)
+      let player = room?.players.get(data.playerID)
+
       if (room && player) {
         player.isReady = true
         if (room.checkAllPlayersIsReady()) {
@@ -153,8 +148,22 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
     socket.on("replay-music", async (data: RoomEvent) => {
       let roomID = data.roomID
-      io.in(roomID).emit("message", "replay-music")
+      io.in(roomID).emit("message", "Replay music")
       io.in(roomID).emit("replay-music")
+    })
+
+    socket.on("send-anwser", (data: RoomEvent, answer: string) => {
+      let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
+      let player = room?.players.get(data.playerID)
+      if (room && player) {
+        io.in(roomID).emit("message", player.name + " answer: " + answer)
+        if (room.currentSongName && answer && room.currentSongName == answer) {
+          player.score += 1
+          io.in(roomID).emit("message", `${player.name} is correct`)
+          room.currentSongName = undefined
+        }
+      }
     })
   })
 
@@ -162,12 +171,11 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
 }
 
-let rooms: Map<string, GuessSongGameRoom> = new Map()
 
-class GuessSongGameRoom {
+export class GuessSongGameRoom {
   roomID: string
   players: Map<string, Player>
-  currentSongID?: string
+  currentSongName?: string
 
   constructor(roomID: string) {
     this.roomID = roomID
@@ -184,14 +192,14 @@ class GuessSongGameRoom {
 
   reset = () => {
     this.players.forEach((k) => {
-        k.isReady = false
+      k.isReady = false
     })
   }
 
   removePlayer = (id: string) => {
     this.players.delete(id)
     if (this.players.size === 0) {
-      rooms.delete(this.roomID)
+      shared.rooms.delete(this.roomID)
     }
   }
 
@@ -214,15 +222,18 @@ interface Player {
   isReady: boolean,
   isHost: boolean,
   isJoined: boolean,
+  score: number
 }
 
 export interface RoomEvent {
   roomID: string,
-  playerID?: string,
+  playerID: string,
+  playerName: string
 }
 
 export interface GuessSongGameOption {
   youtubeID: string,
   startTime: number,
   duration: number,
+  isCustom : boolean
 }

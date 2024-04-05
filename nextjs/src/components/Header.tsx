@@ -38,7 +38,7 @@ const Header = (props: Props) => {
                         onClick={(e) => {
                             setActive(false)
                         }}>Playground</Link></li>
-                    <li><Link href={'/playground/guess_song_game?room=test'}
+                    <li><Link href={'/playground/guess_song_game/rooms'}
                         onClick={(e) => {
                             setActive(false)
                         }}>Guess Song Game</Link></li>
