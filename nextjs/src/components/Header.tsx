@@ -38,11 +38,15 @@ const Header = (props: Props) => {
                         onClick={(e) => {
                             setActive(false)
                         }}>Playground</Link></li>
+                    <li><Link href={'/playground/guess_song_game/rooms'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Guess Song Game</Link></li>
 
                     {session?.user.isAdmin && <li><Link href={'/song/manage'}
                         onClick={(e) => {
                             setActive(false)
-                        }}>Song Management</Link></li>}   
+                        }}>Song Management</Link></li>}
                     {haveSession && <li><Link href={'/'} onClick={(e) => {
                         e.preventDefault()
                         setActive(false)

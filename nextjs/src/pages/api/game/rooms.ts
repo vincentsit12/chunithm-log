@@ -7,8 +7,12 @@ import withErrorHandler from 'utils/errorHandler'
 import Cors from 'cors'
 import { runMiddleware } from 'utils/runMiddleware'
 import { getToken } from 'next-auth/jwt'
-import _ from 'lodash'
+import _, { values } from 'lodash'
 import { Op } from 'sequelize'
+import axios from 'axios'
+import { GuessSongGameRoom } from '../socket'
+import { NextApiResponseWithSocket } from '../type'
+import shared from '../shared'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -18,30 +22,24 @@ const cors = Cors({
     origin: 'https://chunithm-net-eng.com',
 })
 
+interface GuessSongGameRoomRes extends GuessSongGameRoom {
+    playerCount: number
+}
+
 async function handler(
     req: NextApiRequest,
-    res: NextApiResponse<Songs[] | null>
+    res: NextApiResponseWithSocket<GuessSongGameRoomRes[]>
 ) {
     await runMiddleware(req, res, cors)
-
-    let data = await Songs.findAll({
-        attributes: ['id', 'display_name'],
-        where: {
-            [Op.or]: [{
-                "master.rate": { [Op.gte]: 14 },
-            }, {
-                "ultima.rate": { [Op.gte]: 14 },
-            }, {
-                "expert.rate": { [Op.gte]: 14 },
-            }]
-        },
+    const rooms = Array.from(shared.rooms.values())
+    let response: GuessSongGameRoomRes[] = rooms.map(k => {
+        return {
+            ...k,
+            playerCount: k.players.size
+        }
     })
-    let obj = _.keyBy(data, function (o) {
-        return o.display_name;
-    });
-    // console.log("🚀 ~ file: hello.ts ~ line 25 ~ data", data)
+    res.status(200).json(response)
 
-    res.status(200).json(data)
 }
 
 export default withErrorHandler(handler)

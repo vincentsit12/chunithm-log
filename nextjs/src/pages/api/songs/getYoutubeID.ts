@@ -9,6 +9,7 @@ import { runMiddleware } from 'utils/runMiddleware'
 import { getToken } from 'next-auth/jwt'
 import _ from 'lodash'
 import { Op } from 'sequelize'
+import axios from 'axios'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -20,28 +21,21 @@ const cors = Cors({
 
 async function handler(
     req: NextApiRequest,
-    res: NextApiResponse<Songs[] | null>
+    res: NextApiResponse<string | null>
 ) {
     await runMiddleware(req, res, cors)
+    let song_id = Number(req.query.id)
+    let song = await Songs.findOne({ where: { id: song_id } })
+    if (song) {
+        let url = encodeURI(`https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&q="${song.display_name}" chunithm 譜面確認`)
+        console.log(encodeURI(url))
+        let youtubeAPIResult = await axios.get(url)
+        
+        res.status(200).json(youtubeAPIResult.data.items[0].id.videoId)
+    }
+    else throw new BadRequestError("cannot find song")
 
-    let data = await Songs.findAll({
-        attributes: ['id', 'display_name'],
-        where: {
-            [Op.or]: [{
-                "master.rate": { [Op.gte]: 14 },
-            }, {
-                "ultima.rate": { [Op.gte]: 14 },
-            }, {
-                "expert.rate": { [Op.gte]: 14 },
-            }]
-        },
-    })
-    let obj = _.keyBy(data, function (o) {
-        return o.display_name;
-    });
-    // console.log("🚀 ~ file: hello.ts ~ line 25 ~ data", data)
 
-    res.status(200).json(data)
 }
 
 export default withErrorHandler(handler)
