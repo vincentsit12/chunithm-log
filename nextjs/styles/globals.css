@@ -32,6 +32,10 @@
     color: #999!important
  }
 
+ :root {
+    --toastify-color-info: #eab058!important
+ }
+
 @layer components {
     #__next {
         @apply h-full;

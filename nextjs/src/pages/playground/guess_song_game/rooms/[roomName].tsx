@@ -10,7 +10,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import LayoutWrapper from 'components/LayoutWrapper';
 import { useRouter } from 'next/router';
-
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function useSocketClient() {
     const [state, setState] = useState(false)
@@ -93,8 +94,21 @@ const GuessSongGame = () => {
 
     useEffect(() => {
         // Listen for incoming messages
-        socket?.on('message', (message) => {
+        socket?.on('message', (message, withNotification: boolean) => {
             setMessages((prevMessages) => [...prevMessages, message]);
+            if (withNotification) {
+                toast.info(message, {
+                    position: "top-center",
+                    autoClose: 1000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    progress: undefined,
+                    theme: 'colored',
+                    className : "",
+                })
+            }
         });
 
 
@@ -290,7 +304,7 @@ const GuessSongGame = () => {
         setGameOption((gameOption) => {
             return {
                 ...gameOption,
-                startTime: Math.max(0, _.random(Number(youtubeRef.current?.target.getDuration())) - gameOption.duration)
+                startTime: Math.max(0, _.random(parseInt(youtubeRef.current?.target.getDuration())) - gameOption.duration)
             }
         })
         // socket?.emit('send-anwser', { roomID, playerID: socket.id }, () => { });
@@ -374,7 +388,7 @@ const GuessSongGame = () => {
                                 className='px-4 py-2 box box-shadow w-full' placeholder='Answer'></input>
                             <button className='btn btn-secondary ml-2' onClick={() => {
 
-                                if (!customYoutubeLink || !answer) {
+                                if (customYoutubeLink && customAnswer) {
                                     setShouldSendBufferedSignal(false)
                                     setGameOption((gameOption) => {
                                         return {
@@ -450,6 +464,8 @@ const GuessSongGame = () => {
                         }
                     }} />
             </div>
+            <ToastContainer
+            />
         </LayoutWrapper >
     );
 };

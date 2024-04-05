@@ -118,7 +118,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let room = shared.rooms.get(roomID)
       if (room) {
         room.currentSongName = currentSongName
-        io.in(roomID).emit("message", "Music will start to play")
+        io.in(roomID).emit("message", "Music will start to play", true)
         io.in(roomID).emit("buffer-music", gameOptions)
       }
     })
