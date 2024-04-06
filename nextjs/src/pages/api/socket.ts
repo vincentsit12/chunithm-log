@@ -2,7 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { Server } from "socket.io"
 import { NextApiResponseWithSocket } from "./type"
 import shared from "./shared"
-import e from "cors"
+import Fuse from 'fuse.js'
+
 
 const PORT = 3000
 export const config = {
@@ -39,7 +40,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
               // todo
               shared.rooms.delete(k)
               io.in(room.roomID).emit("delete-room")
-            } else {
+            } else if (player.isJoined) {
               io.in(room.roomID).emit("message", player.name + " leaved room")
             }
           }
@@ -158,12 +159,29 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let player = room?.players.get(data.playerID)
       if (room && player) {
         io.in(roomID).emit("message", player.name + " answer: " + answer)
-        if (room.currentSongName && answer && room.currentSongName == answer) {
-          player.score += 1
-          io.in(roomID).emit("message", `${player.name} is correct`)
-          room.currentSongName = undefined
+
+        if (room.currentSongName && answer) {
+          let fuse = new Fuse([room.currentSongName], { includeScore: true })
+          let answerMatchingResult = fuse.search(answer)
+          if (answer == room.currentSongName || (answerMatchingResult.length > 0 && answerMatchingResult[0].score && answerMatchingResult[0].score <= 0.3)) {
+            player.score += 1
+            io.in(roomID).emit("message", `${player.name} is correct`, true)
+            io.in(roomID).emit("message", `${player.name} score : ${player.score}`)
+            room.currentSongName = undefined
+          }
         }
       }
+    })
+
+    socket.on("get-player-count", (data: RoomEvent, callBack: (playerCount: number) => void) => {
+      let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
+      if (room) {
+        callBack(room.joinedPlayer().size)
+      } else {
+        callBack(0)
+      }
+
     })
   })
 
@@ -182,10 +200,13 @@ export class GuessSongGameRoom {
     this.players = new Map()
   }
 
+  // Return player that is host or is joined to the game
+  // *host is always inside the game, but can choose to not join to the game
   joinedPlayer = () => {
     let map = new Map<string, Player>()
     this.players.forEach((value, key) => {
-      map.set(key, value)
+      if (value.isJoined || value.isHost)
+        map.set(key, value)
     })
     return map
   }
@@ -205,9 +226,7 @@ export class GuessSongGameRoom {
 
   checkAllPlayersIsReady = () => {
     let isAllReady = true
-    if (this.players.size == 1) {
-      return false
-    }
+
     this.players.forEach((values, keys) => {
       if (!values.isReady)
         isAllReady = false
@@ -235,5 +254,5 @@ export interface GuessSongGameOption {
   youtubeID: string,
   startTime: number,
   duration: number,
-  isCustom : boolean
+  isCustom: boolean
 }

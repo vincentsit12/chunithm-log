@@ -8,7 +8,7 @@
     "lodash": "^4.17.21",
     "node-cron": "^3.0.1",
     "node-fetch": "^2.7.0",
-    "node-html-parser": "^6.1.11",
+    "node-html-parser": "^6.1.13",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "puppeteer": "^14.2.1",

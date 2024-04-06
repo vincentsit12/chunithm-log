@@ -10,6 +10,7 @@ type SongAttributes = {
     master?: Song,
     expert?: Song,
     ultima?: Song,
+    youtube_link?: string
     // other attributes...
 };
 type SongCreationAttributes = Optional<SongAttributes, 'id'>;
@@ -21,6 +22,7 @@ export default class Songs extends Model<SongAttributes, SongCreationAttributes>
     declare master?: Song;
     declare expert?: Song;
     declare ultima?: Song;
+    declare youtube_link? : string;
 }
 
 Songs.init({
@@ -45,6 +47,9 @@ Songs.init({
         type: DataTypes.JSONB,
     },
 
+    youtube_link: {
+        type: DataTypes.TEXT,
+    }
 
 
 }, {
