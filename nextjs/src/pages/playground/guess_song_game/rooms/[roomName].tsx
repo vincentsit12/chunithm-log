@@ -61,18 +61,11 @@ const generateLevel = () => {
     }
     return x
 }
-const getIndexLevel = () => {
-    let x = []
-    for (let i = 15.4; i >= 13.0; i -= 0.1) {
-        let key = (i + 0.00001).toFixed(1)
-        x.push({ "name": `${key}`, "value": parseFloat(key) })
-    }
-    return x
-}
+
 const guessSongGameType: {
     name: string,
     value: GuessSongGameType
-}[] = [{ "name": "chunithm", "value": GuessSongGameType.chunithm }, { "name": "maimai", "value": GuessSongGameType.maimai }]
+}[] = [{ "name": "chunithm", "value": GuessSongGameType.chunithm }, { "name": "maimai", "value": GuessSongGameType.maimai }, { "name": "playlist", "value": GuessSongGameType.playlist }]
 
 const level = generateLevel()
 const chunithmDefaulLevelRange: [number, number] = [14.0, 15.4]
@@ -104,7 +97,7 @@ const GuessSongGame = () => {
 
     const [gameOption, setGameOption] = useState<GuessSongGameOption>({
         youtubeID: "Mru-JAtqagE",
-        startTime: 90,
+        startTime: 10,
         duration: 2,
         isCustom: false
     })
@@ -123,12 +116,12 @@ const GuessSongGame = () => {
 
     const chatBoxRef = useRef<HTMLDivElement>(null)
 
-    const answerBoxRef = useRef<HTMLInputElement>(null)
-
     const [selectedGameType, setSelectedGameType] = useState(guessSongGameType[0])
 
     const [lowerLevelRange, setLowerLevelRange] = useState<{ name: string; value: number }>(level.find(k => k.value == chunithmDefaulLevelRange[0])!)
     const [upperLevelRange, setUpperLevelRange] = useState<{ name: string; value: number }>(level.find(k => k.value == chunithmDefaulLevelRange[1])!)
+
+    const [playlist, setPlaylist] = useState<string>("")
 
     useEffect(() => {
         // Listen for incoming messages
@@ -164,10 +157,12 @@ const GuessSongGame = () => {
     useEffect(() => {
         setSongList([])
         if (selectedGameType.value == GuessSongGameType.chunithm) {
+            setPlaylist("")
             setLowerLevelRange(level.find(k => k.value == chunithmDefaulLevelRange[0])!)
             setUpperLevelRange(level.find(k => k.value == chunithmDefaulLevelRange[1])!)
             getSongList()
         } else if (selectedGameType.value == GuessSongGameType.maimai) {
+            setPlaylist("")
             setLowerLevelRange(level.find(k => k.value == maimaiDefaulLevelRange[0])!)
             setUpperLevelRange(level.find(k => k.value == maimaiDefaulLevelRange[1])!)
             getMaimaiSongList()
@@ -175,6 +170,10 @@ const GuessSongGame = () => {
     }, [selectedGameType])
 
     useEffect(() => {
+        if ((selectedGameType.value == GuessSongGameType.playlist)) {
+            setFilteredSongList(songList)
+            return
+        }
         const isMaimaiSongs = (x: any): x is MaimaiSongs => true;
         let filteredSongList = songList.filter(k => {
             let isValid = false
@@ -286,7 +285,14 @@ const GuessSongGame = () => {
 
     const getMaimaiSongList = async () => {
         // Send the message to the server
-        let result = await axios.get<MaimaiSongs[]>("/api/songs/getMaimaiSongList")
+        let result = await axios.get<MaimaiSongs[]>("/api/songs/maimaiSongList")
+        setSongList(result.data)
+        console.log(result)
+    };
+
+    const getPlaylist = async () => {
+        // Send the message to the server
+        let result = await axios.get<Songs[]>(`/api/songs/playlist?id=${playlist}`)
         setSongList(result.data)
         console.log(result)
     };
@@ -300,29 +306,53 @@ const GuessSongGame = () => {
         setGameOption(k => {
             return { ...k, isCustom: false, }
         })
-        let url = selectedGameType.value == GuessSongGameType.chunithm ? `/api/songs/getYoutubeID?type=chunithm&id=${song.id}` : `/api/songs/getYoutubeID?type=maimai&id=${song.display_name}`
-        let youtubeAPIResult = await axios.get(url)
-        console.log(youtubeAPIResult)
-        if (isHost) {
-            socket?.emit("get-player-count", { roomID }, (playerCount: number) => {
-                console.log("total player", playerCount)
-                if (playerCount <= 1) {
-                    setShouldSendBufferedSignal(false)
-                }
-                youtubeRef.current?.target.cueVideoById({
-                    'videoId': youtubeAPIResult.data,
-                    'startSeconds': gameOption.startTime,
-                    'endSeconds': gameOption.startTime + gameOption.duration
+        if (selectedGameType.value == GuessSongGameType.playlist && song.youtube_link) {
+            if (isHost) {
+                socket?.emit("get-player-count", { roomID }, (playerCount: number) => {
+                    console.log("total player", playerCount)
+                    if (playerCount <= 1) {
+                        setShouldSendBufferedSignal(false)
+                    }
+                    youtubeRef.current?.target.cueVideoById({
+                        'videoId': song.youtube_link,
+                        'startSeconds': gameOption.startTime,
+                        'endSeconds': gameOption.startTime + gameOption.duration
+                    })
+                    showMessage("Changed to next song")
                 })
-                showMessage("Changed to next song")
+            }
+            setGameOption((gameOption) => {
+                return {
+                    ...gameOption,
+                    youtubeID: song.youtube_link ?? gameOption.youtubeID
+                }
             })
         }
-        setGameOption((gameOption) => {
-            return {
-                ...gameOption,
-                youtubeID: youtubeAPIResult.data
+        else {
+            let url = selectedGameType.value == GuessSongGameType.chunithm ? `/api/songs/youtubeID?type=chunithm&id=${song.id}` : `/api/songs/youtubeID?type=maimai&id=${song.display_name}`
+            let youtubeAPIResult = await axios.get(url)
+            console.log(youtubeAPIResult)
+            if (isHost) {
+                socket?.emit("get-player-count", { roomID }, (playerCount: number) => {
+                    console.log("total player", playerCount)
+                    if (playerCount <= 1) {
+                        setShouldSendBufferedSignal(false)
+                    }
+                    youtubeRef.current?.target.cueVideoById({
+                        'videoId': youtubeAPIResult.data,
+                        'startSeconds': gameOption.startTime,
+                        'endSeconds': gameOption.startTime + gameOption.duration
+                    })
+                    showMessage("Changed to next song")
+                })
             }
-        })
+            setGameOption((gameOption) => {
+                return {
+                    ...gameOption,
+                    youtubeID: youtubeAPIResult.data
+                }
+            })
+        }
     }
 
     const youtubeVideoOnReady: YouTubeProps['onReady'] = (e) => {
@@ -474,19 +504,39 @@ const GuessSongGame = () => {
                                 <div className='ml-2 mb-2'>Game Type: </div>
                                 <ListBox className="w-[7rem]" source={guessSongGameType} selected={selectedGameType} setSelected={setSelectedGameType} />
                             </div>
-                            <div className=''>
-                                <div className='ml-2 mb-2'>Level: </div>
-                                <div className="flex justify-between items-center">
-                                    <ListBox className="w-[5.5rem]" source={level.filter(k => {
-                                        return k.value <= upperLevelRange.value
-                                    })} selected={lowerLevelRange} setSelected={setLowerLevelRange} />
-                                    <span className="text-lg mx-2 bold"> ー </span>
-                                    <ListBox className="w-[5.5rem]" source={level.filter(k => {
-                                        return k.value >= lowerLevelRange.value
-                                    })} selected={upperLevelRange} setSelected={setUpperLevelRange} />
-                                </div>
-                            </div>
+                            {selectedGameType.value != GuessSongGameType.playlist &&
+                                <div className=''>
+                                    <div className='ml-2 mb-2'>Level: </div>
+                                    <div className="flex justify-between items-center">
+                                        <ListBox className="w-[5.5rem]" source={level.filter(k => {
+                                            return k.value <= upperLevelRange.value
+                                        })} selected={lowerLevelRange} setSelected={setLowerLevelRange} />
+                                        <span className="text-lg mx-2 bold"> ー </span>
+                                        <ListBox className="w-[5.5rem]" source={level.filter(k => {
+                                            return k.value >= lowerLevelRange.value
+                                        })} selected={upperLevelRange} setSelected={setUpperLevelRange} />
+                                    </div>
+                                </div>}
                         </div>
+
+                        {selectedGameType.value == GuessSongGameType.playlist && <div className='flex my-5'>
+                            <input value={playlist} onChange={(e) => {
+                                try {
+                                    let url = new URL(e.target.value)
+                                    let id: string
+                                    id = url.searchParams.get('list') ?? ""
+                                    setPlaylist(id)
+                                } catch (error) {
+                                    setPlaylist(e.target.value)
+                                }
+
+                            }}
+                                className='px-4 py-2 mr-2 box box-shadow w-full' placeholder='Youtube link'></input>
+                            <button disabled={(playlist.length <= 0)} className='btn btn-secondary ml-2' onClick={() => {
+                                getPlaylist()
+                            }
+                            }>Load</button>
+                        </div>}
                         <div className='flex my-5'>
                             <input value={customYoutubeLink} onChange={(e) => {
                                 try {
@@ -571,7 +621,7 @@ const GuessSongGame = () => {
                         </div>
                     </div>
                 }
-                <YouTube videoId="Mru-JAtqagE" opts={{
+                <YouTube videoId="fR7e0N1UkRI" opts={{
                     height: '320',
                     width: '320',
                     playerVars: {

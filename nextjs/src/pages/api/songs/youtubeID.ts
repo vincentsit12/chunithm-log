@@ -40,8 +40,8 @@ async function handler(
     }
     const query = song ? song.display_name : song_id
     try {
-        const searchKey = `${process.env.YOUTUBE_API_KEY}&q="${query}" ${gameType} 譜面確認`
-        let url = encodeURI(`https://www.googleapis.com/youtube/v3/search?key=${searchKey}`)
+        const searchKey = `?key=${process.env.YOUTUBE_API_KEY}&q="${query}" ${gameType} 譜面確認`
+        let url = encodeURI(`https://www.googleapis.com/youtube/v3/search${searchKey}`)
         let youtubeAPIResult = await axios.get(url)
         result = youtubeAPIResult.data.items[0].id.videoId
         // save to db
