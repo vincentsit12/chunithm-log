@@ -2,9 +2,9 @@ import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { Socket, io } from "socket.io-client"
-import _, { uniqBy } from 'lodash'
+import _, { uniqBy, values } from 'lodash'
 import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
-import Songs from 'db/model/songs';
+import Songs, { MaimaiSongs } from 'db/model/songs';
 import { GuessSongGameOption } from '../../../api/socket';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
@@ -12,6 +12,13 @@ import LayoutWrapper from 'components/LayoutWrapper';
 import { useRouter } from 'next/router';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import ListBox from 'components/ListBox';
+const enum GuessSongGameType {
+    chunithm = 1,
+    maimai,
+    playlist,
+}
 
 function useSocketClient() {
     const [state, setState] = useState(false)
@@ -45,6 +52,32 @@ function useSocketClient() {
     return { socket: socket.current, state }
 }
 
+type GuessGameSong = Songs | MaimaiSongs
+const generateLevel = () => {
+    let x = []
+    for (let i = 15.4; i >= 13.0; i -= 0.1) {
+        let key = (i + 0.00001).toFixed(1)
+        x.push({ "name": `${key}`, "value": parseFloat(key) })
+    }
+    return x
+}
+const getIndexLevel = () => {
+    let x = []
+    for (let i = 15.4; i >= 13.0; i -= 0.1) {
+        let key = (i + 0.00001).toFixed(1)
+        x.push({ "name": `${key}`, "value": parseFloat(key) })
+    }
+    return x
+}
+const guessSongGameType: {
+    name: string,
+    value: GuessSongGameType
+}[] = [{ "name": "chunithm", "value": GuessSongGameType.chunithm }, { "name": "maimai", "value": GuessSongGameType.maimai }]
+
+const level = generateLevel()
+const chunithmDefaulLevelRange: [number, number] = [14.0, 15.4]
+const maimaiDefaulLevelRange: [number, number] = [14.0, 15]
+
 const GuessSongGame = () => {
 
     // State to store the messages
@@ -58,9 +91,10 @@ const GuessSongGame = () => {
 
     const [answer, setAnswer] = useState<string>();
 
-    const [currentSong, setCurrentSong] = useState<Songs>()
+    const [currentSong, setCurrentSong] = useState<GuessGameSong>()
 
-    const [songList, setSongList] = useState<Songs[]>([])
+    const [songList, setSongList] = useState<GuessGameSong[]>([])
+    const [filteredSongList, setFilteredSongList] = useState<GuessGameSong[]>(songList)
 
     const youtubeRef = useRef<YouTubeEvent>()
 
@@ -91,6 +125,11 @@ const GuessSongGame = () => {
 
     const answerBoxRef = useRef<HTMLInputElement>(null)
 
+    const [selectedGameType, setSelectedGameType] = useState(guessSongGameType[0])
+
+    const [lowerLevelRange, setLowerLevelRange] = useState<{ name: string; value: number }>(level.find(k => k.value == chunithmDefaulLevelRange[0])!)
+    const [upperLevelRange, setUpperLevelRange] = useState<{ name: string; value: number }>(level.find(k => k.value == chunithmDefaulLevelRange[1])!)
+
     useEffect(() => {
         // Listen for incoming messages
         socket?.on('message', (message, withNotification: boolean) => {
@@ -103,7 +142,6 @@ const GuessSongGame = () => {
 
         if (socket) {
             socket.emit('create-room', { roomID, playerName: session?.user.username }, (isHost: boolean) => {
-                getSongList()
                 if (isHost) {
                     setIsHost(true)
                 }
@@ -122,6 +160,45 @@ const GuessSongGame = () => {
             socket?.disconnect();
         };
     }, [state]);
+
+    useEffect(() => {
+        setSongList([])
+        if (selectedGameType.value == GuessSongGameType.chunithm) {
+            setLowerLevelRange(level.find(k => k.value == chunithmDefaulLevelRange[0])!)
+            setUpperLevelRange(level.find(k => k.value == chunithmDefaulLevelRange[1])!)
+            getSongList()
+        } else if (selectedGameType.value == GuessSongGameType.maimai) {
+            setLowerLevelRange(level.find(k => k.value == maimaiDefaulLevelRange[0])!)
+            setUpperLevelRange(level.find(k => k.value == maimaiDefaulLevelRange[1])!)
+            getMaimaiSongList()
+        }
+    }, [selectedGameType])
+
+    useEffect(() => {
+        const isMaimaiSongs = (x: any): x is MaimaiSongs => true;
+        let filteredSongList = songList.filter(k => {
+            let isValid = false
+            if (isMaimaiSongs(k)) {
+                if (k.remaster?.rate && k.remaster.rate <= upperLevelRange.value && k.remaster.rate >= lowerLevelRange.value) {
+                    return true
+                }
+            } else {
+                if (k.ultima?.rate && k.ultima.rate <= upperLevelRange.value && k.ultima.rate >= lowerLevelRange.value) {
+                    return true
+                }
+            }
+            if (k.master?.rate && k.master.rate <= upperLevelRange.value && k.master.rate >= lowerLevelRange.value) {
+                return true
+            }
+
+            if (k.expert?.rate && k.expert.rate <= upperLevelRange.value && k.expert.rate >= lowerLevelRange.value) {
+                return true
+            }
+            return isValid
+        })
+
+        setFilteredSongList(filteredSongList)
+    }, [songList, upperLevelRange, lowerLevelRange])
 
     useEffect(() => {
         socket?.on('replay-music', (message) => {
@@ -207,8 +284,15 @@ const GuessSongGame = () => {
         console.log(result)
     };
 
+    const getMaimaiSongList = async () => {
+        // Send the message to the server
+        let result = await axios.get<MaimaiSongs[]>("/api/songs/getMaimaiSongList")
+        setSongList(result.data)
+        console.log(result)
+    };
+
     const getNextSong = async () => {
-        let song = _.sampleSize<Songs>(songList, 1)[0]
+        let song = _.sampleSize<GuessGameSong>(filteredSongList, 1)[0]
         console.log(song)
         setCurrentSong(song)
         setCustomAnswer("")
@@ -216,7 +300,7 @@ const GuessSongGame = () => {
         setGameOption(k => {
             return { ...k, isCustom: false, }
         })
-        let url = `/api/songs/getYoutubeID?id=${song.id}`
+        let url = selectedGameType.value == GuessSongGameType.chunithm ? `/api/songs/getYoutubeID?type=chunithm&id=${song.id}` : `/api/songs/getYoutubeID?type=maimai&id=${song.display_name}`
         let youtubeAPIResult = await axios.get(url)
         console.log(youtubeAPIResult)
         if (isHost) {
@@ -267,7 +351,6 @@ const GuessSongGame = () => {
         } else {
             socket?.emit('load-music', { roomID }, gameOption, currentSong?.display_name);
         }
-
     }
 
     const testSong = () => {
@@ -304,11 +387,11 @@ const GuessSongGame = () => {
         setIsJoined(true)
     }
 
-    const handleOnSelect = (result: Songs) => {
+    const handleOnSelect = (result: GuessGameSong) => {
         setAnswer(result.display_name)
     }
 
-    const handleOnSearch = (string: string, results: Songs[]) => {
+    const handleOnSearch = (string: string, results: GuessGameSong[]) => {
         // onSearch will have as the first callback parameter
         // the string searched and for the second the results.
         setAnswer(string)
@@ -349,9 +432,9 @@ const GuessSongGame = () => {
                     <button disabled={currentMessage.length == 0} className='btn btn-secondary ml-2' onClick={sendMessage}>Send</button>
                 </div>
                     <div className='flex my-5'>
-                        <ReactSearchAutocomplete
+                        <ReactSearchAutocomplete<GuessGameSong>
                             inputSearchString={answer}
-                            items={songList}
+                            items={filteredSongList}
                             onSearch={handleOnSearch}
                             onClear={() => { setAnswer(undefined) }}
                             // onHover={handleOnHover}
@@ -385,7 +468,25 @@ const GuessSongGame = () => {
                 {!isJoined && <button className='btn btn-secondary my-5' onClick={joinGame}>Join</button>}
                 {isHost &&
                     <div>
-                        <h1 className='tc'>Host</h1>
+                        <h1 className='tc mb-5'>Host</h1>
+                        <div className="flex items-center justify-between px-5">
+                            <div className=''>
+                                <div className='ml-2 mb-2'>Game Type: </div>
+                                <ListBox className="w-[7rem]" source={guessSongGameType} selected={selectedGameType} setSelected={setSelectedGameType} />
+                            </div>
+                            <div className=''>
+                                <div className='ml-2 mb-2'>Level: </div>
+                                <div className="flex justify-between items-center">
+                                    <ListBox className="w-[5.5rem]" source={level.filter(k => {
+                                        return k.value <= upperLevelRange.value
+                                    })} selected={lowerLevelRange} setSelected={setLowerLevelRange} />
+                                    <span className="text-lg mx-2 bold"> ー </span>
+                                    <ListBox className="w-[5.5rem]" source={level.filter(k => {
+                                        return k.value >= lowerLevelRange.value
+                                    })} selected={upperLevelRange} setSelected={setUpperLevelRange} />
+                                </div>
+                            </div>
+                        </div>
                         <div className='flex my-5'>
                             <input value={customYoutubeLink} onChange={(e) => {
                                 try {
@@ -456,13 +557,13 @@ const GuessSongGame = () => {
                             </div>
                         </div>
                         <div className='flex my-5'>
-                            <button disabled={songList.length <= 0} className='btn bg-red txt-white mr-2 ' onClick={broadCastConfig}>Start</button>
-                            <button disabled={songList.length <= 0} className='btn bg-red txt-white' onClick={broadCastReplaySong}>Replay</button>
+                            <button disabled={filteredSongList.length <= 0} className='btn bg-red txt-white mr-2 ' onClick={broadCastConfig}>Start</button>
+                            <button disabled={filteredSongList.length <= 0} className='btn bg-red txt-white' onClick={broadCastReplaySong}>Replay</button>
                         </div>
                         <div className='flex my-5'>
                             <div className='flex-1'>
-                                <button disabled={songList.length <= 0} className='btn btn-secondary mr-2 ' onClick={testSong}>Test</button>
-                                <button disabled={songList.length <= 0} className='btn btn-secondary' onClick={getNextSong}>Next</button>
+                                <button disabled={filteredSongList.length <= 0} className='btn btn-secondary mr-2 ' onClick={testSong}>Test</button>
+                                <button disabled={filteredSongList.length <= 0} className='btn btn-secondary' onClick={getNextSong}>Next</button>
                             </div>
                             <button className='btn btn-secondary' onClick={() => {
                                 setIsShowVideo(!isShowVideo)

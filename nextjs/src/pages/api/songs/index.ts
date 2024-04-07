@@ -25,14 +25,14 @@ async function handler(
     await runMiddleware(req, res, cors)
 
     let data = await Songs.findAll({
-        attributes: ['id', 'display_name'],
+        attributes: ['id', 'display_name', 'master', 'ultima' ,'expert'],
         where: {
             [Op.or]: [{
-                "master.rate": { [Op.gte]: 14 },
+                "master.rate": { [Op.gte]: 13 },
             }, {
-                "ultima.rate": { [Op.gte]: 14 },
+                "ultima.rate": { [Op.gte]: 13 },
             }, {
-                "expert.rate": { [Op.gte]: 14 },
+                "expert.rate": { [Op.gte]: 13 },
             }]
         },
     })

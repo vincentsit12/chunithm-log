@@ -27,52 +27,56 @@ async function handler(
     res: NextApiResponse<string | null>
 ) {
     await runMiddleware(req, res, cors)
-    let song_id = Number(req.query.id)
-    let song = await Songs.findOne({ where: { id: song_id } })
+    let song: Songs | null = null
+    let song_id = req.query.id
+    const gameType = req.query.type
+    if (gameType == 'chunithm')
+        song = await Songs.findOne({ where: { id: Number(song_id) } })
     let result = ""
-    if (song) {
-       if (song.youtube_link) {
-            res.status(200).json(song.youtube_link)
-            return
-       }
-        try {
-            const searchKey = `${process.env.YOUTUBE_API_KEY}&q="${song.display_name}" chunithm 譜面確認`
-            let url = encodeURI(`https://www.googleapis.com/youtube/v3/search?key=${searchKey}`)
-            let youtubeAPIResult = await axios.get(url)
-            result = youtubeAPIResult.data.items[0].id.videoId
-            // save to db
+
+    if (song?.youtube_link) {
+        res.status(200).json(song.youtube_link)
+        return
+    }
+    const query = song ? song.display_name : song_id
+    try {
+        const searchKey = `${process.env.YOUTUBE_API_KEY}&q="${query}" ${gameType} 譜面確認`
+        let url = encodeURI(`https://www.googleapis.com/youtube/v3/search?key=${searchKey}`)
+        let youtubeAPIResult = await axios.get(url)
+        result = youtubeAPIResult.data.items[0].id.videoId
+        // save to db
+        if (song) {
             song.youtube_link = result
             song.save()
+        }
 
-        } catch (e) {
-            try {
-                const searchKey = `%27${song.display_name}%27+chunithm+譜面確認`
-                console.log("youtube api fail, start to search local")
-                let url = encodeURI(`https://www.youtube.com/results?search_query=${searchKey}`)
-                let localSearch = await fetch(url)
-                let localSearchRes = await localSearch.text()
-                var doc = parse(localSearchRes)
-                var x = doc.getElementsByTagName("script")
-                for (let i = 0; i < x.length; i++) {
-                    const element = x[i];
-                    if (element.innerHTML.includes("ytInitialData")) {
-                        let predictString = element.innerHTML.substring(element.innerHTML.indexOf("videoId"), element.innerHTML.indexOf("thumbnail"))
-                        result = predictString.split(`\"`)[2]
-                        break
-                    }
+    } catch (e) {
+        try {
+            const searchKey = `%27${query}%27+${gameType}+譜面確認`
+            console.log("youtube api fail, start to search local")
+            let url = encodeURI(`https://www.youtube.com/results?search_query=${searchKey}`)
+            let localSearch = await fetch(url)
+            let localSearchRes = await localSearch.text()
+            var doc = parse(localSearchRes)
+            var x = doc.getElementsByTagName("script")
+            for (let i = 0; i < x.length; i++) {
+                const element = x[i];
+                if (element.innerHTML.includes("ytInitialData")) {
+                    let predictString = element.innerHTML.substring(element.innerHTML.indexOf("videoId"), element.innerHTML.indexOf("thumbnail"))
+                    result = predictString.split(`\"`)[2]
+                    break
                 }
-            } catch (error) {
-                throw new BadRequestError("cannot find song")
             }
+        } catch (error) {
+            throw new BadRequestError("cannot find song")
         }
-
-        if (result) {
-            console.log(result)
-            res.status(200).json(result)
-        }
-        else new BadRequestError("cannot get music link")
     }
-    else throw new BadRequestError("cannot find song")
+
+    if (result) {
+        console.log(result)
+        res.status(200).json(result)
+    }
+    else new BadRequestError("cannot get music link")
 
 
 }

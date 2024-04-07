@@ -20,6 +20,7 @@ async function createSchedule() {
                     master: k[1].master || null,
                     ultima: k[1].ultima || null,
                     expert: k[1].expert || null,
+                    genre : k[1].genre
                 }
             })
             const songs = await Songs.findAll()
@@ -43,7 +44,7 @@ async function createSchedule() {
             console.table(newData)
             await Songs.bulkCreate(newData,
                 {
-                    updateOnDuplicate: ['display_name', 'master', 'expert', 'ultima', 'updatedAt'],
+                    updateOnDuplicate: ['display_name', 'master', 'expert', 'ultima', 'genre' ,'updatedAt'],
                 });
         }
         await updateDB()
@@ -115,5 +116,5 @@ async function updateGameScript() {
 }
 
 
-// createSchedule()
-updateGameScript()
+createSchedule()
+// updateGameScript()

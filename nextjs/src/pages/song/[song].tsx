@@ -23,10 +23,6 @@ type SongProps = {
     song: Songs
 };
 
-type DifficultyInfo = {
-
-}
-
 const SongPage: NextPage<SongProps> = ({ record, song }) => {
 
     const [difficulty, setDifficulty] = useState<Difficulty>("master")
@@ -46,6 +42,25 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
     //     [difficulty, song]
     // )
 
+    const getGenreString = () => {
+        switch (song.genre) {
+            case 'ORI':
+                return 'ORIGINAL'
+            case 'P&A':
+                return 'POPS & ANIME'
+            case 'VAR':
+                return 'VARIETY'
+            case 'nico':
+                return 'niconico'
+            case 'イロ':
+                return 'イロドリミドリ'
+            case '撃舞':
+                return 'ゲキマイ'
+            case '東方':
+                return '東方Project'
+        }
+    }
+
     useEffect(() => {
         if (!song["master"]) {
             if (song["ultima"]) {
@@ -62,7 +77,8 @@ const SongPage: NextPage<SongProps> = ({ record, song }) => {
         <LayoutWrapper>
             <div className='inner inner-540 '>
                 <div className='box box-shadow inner-p20'>
-                    <h4 className='tc bold mb20'>{song.display_name}</h4>
+                    <h4 className='tc bold mb10'>{song.display_name}</h4>
+                    <h5 className='tc bold mb10'>{getGenreString()}</h5>
                     <div className='flex justify-center w-full mb20' >
                         <div className="flex flex-wrap justify-center w-full">
                             {song.master &&

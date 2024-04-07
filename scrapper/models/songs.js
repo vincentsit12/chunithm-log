@@ -30,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.JSONB,
     },
     youtube_link: { type: DataTypes.TEXT, },
+    genre: { type: DataTypes.TEXT, },
     
   }, {
     sequelize,

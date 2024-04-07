@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
-import { Song } from "types";
+import { MaimaiSongGenre, Song, SongGenre } from "types";
 import { sequelize } from "..";
 
 
@@ -11,8 +11,15 @@ type SongAttributes = {
     expert?: Song,
     ultima?: Song,
     youtube_link?: string
+    genre: SongGenre,
     // other attributes...
 };
+export interface MaimaiSongs extends Omit<SongAttributes, 'genre'> {
+    artist: string,
+    version: string,
+    genre : MaimaiSongGenre
+    remaster? : Song
+}
 type SongCreationAttributes = Optional<SongAttributes, 'id'>;
 
 export default class Songs extends Model<SongAttributes, SongCreationAttributes> {
@@ -22,7 +29,8 @@ export default class Songs extends Model<SongAttributes, SongCreationAttributes>
     declare master?: Song;
     declare expert?: Song;
     declare ultima?: Song;
-    declare youtube_link? : string;
+    declare youtube_link?: string;
+    declare genre: SongGenre;
 }
 
 Songs.init({
@@ -49,8 +57,11 @@ Songs.init({
 
     youtube_link: {
         type: DataTypes.TEXT,
-    }
+    },
 
+    genre: {
+        type: DataTypes.TEXT,
+    }
 
 }, {
     // Other model options go here

@@ -316,7 +316,6 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
             })}
         </>
     }
-
     return <>
         <div className='inner inner-720'  >
             <input value={searchText} onChange={(e) => {
