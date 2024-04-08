@@ -1,3 +1,5 @@
+import Songs, { MaimaiSongs } from "db/model/songs"
+
 export interface Rating {
     song: string,
     rating: number,
@@ -21,6 +23,7 @@ export type SongGenre = 'ORI' | 'VAR' | '撃舞' | '東方' | 'P&A' | 'nico' | '
 export type MaimaiSongGenre = '舞' | '撃&チ' | 'ゲ&バ' | '東方' | 'P&ア' | 'nico'
 export type MaiMaiDifficulty = 'master' | 'expert' | 'remaster' | 'advanced'
 
+export type GuessGameSong = Songs | MaimaiSongs
 export interface Song {
     rate: number,
     combo: number,

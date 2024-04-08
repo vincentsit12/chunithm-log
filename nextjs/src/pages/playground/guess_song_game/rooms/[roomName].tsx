@@ -14,6 +14,7 @@ import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import ListBox from 'components/ListBox';
+import { GuessGameSong } from 'types';
 const enum GuessSongGameType {
     chunithm = 1,
     maimai,
@@ -52,7 +53,6 @@ function useSocketClient() {
     return { socket: socket.current, state }
 }
 
-type GuessGameSong = Songs | MaimaiSongs
 const generateLevel = () => {
     let x = []
     for (let i = 15.4; i >= 13.0; i -= 0.1) {
@@ -102,8 +102,8 @@ const GuessSongGame = () => {
         isCustom: false
     })
 
-    const [customYoutubeLink, setCustomYoutubeLink] = useState<string>()
-    const [customAnswer, setCustomAnswer] = useState<string>()
+    const [customYoutubeLink, setCustomYoutubeLink] = useState<string>("")
+    const [customAnswer, setCustomAnswer] = useState<string>("")
 
 
     const [isHost, setIsHost] = useState(false)
@@ -124,15 +124,6 @@ const GuessSongGame = () => {
     const [playlist, setPlaylist] = useState<string>("")
 
     useEffect(() => {
-        // Listen for incoming messages
-        socket?.on('message', (message, withNotification: boolean) => {
-            setMessages((prevMessages) => [...prevMessages, message]);
-            if (withNotification) {
-                showMessage(message)
-            }
-        });
-
-
         if (socket) {
             socket.emit('create-room', { roomID, playerName: session?.user.username }, (isHost: boolean) => {
                 if (isHost) {
@@ -155,6 +146,7 @@ const GuessSongGame = () => {
     }, [state]);
 
     useEffect(() => {
+        if (!isHost) return
         setSongList([])
         if (selectedGameType.value == GuessSongGameType.chunithm) {
             setPlaylist("")
@@ -167,10 +159,11 @@ const GuessSongGame = () => {
             setUpperLevelRange(level.find(k => k.value == maimaiDefaulLevelRange[1])!)
             getMaimaiSongList()
         }
-    }, [selectedGameType])
+        socket?.emit('change-game-type', { roomID }, selectedGameType.name)
+    }, [selectedGameType, isHost])
 
     useEffect(() => {
-        if ((selectedGameType.value == GuessSongGameType.playlist)) {
+        if ((!isHost || selectedGameType.value == GuessSongGameType.playlist)) {
             setFilteredSongList(songList)
             return
         }
@@ -220,6 +213,15 @@ const GuessSongGame = () => {
     }, [gameOption, state])
 
     useEffect(() => {
+        // Listen for incoming messages
+        socket?.on('message', (message, withNotification: boolean, onlyPlayer: boolean) => {
+            if (onlyPlayer && isHost) { return }
+            setMessages((prevMessages) => [...prevMessages, message]);
+            if (withNotification) {
+                showMessage(message)
+            }
+        });
+
         socket?.on('buffer-music', (gameOption: GuessSongGameOption) => {
             if (!isHost) {
                 console.log('buffer-music', gameOption)
@@ -232,14 +234,29 @@ const GuessSongGame = () => {
             })
         });
 
+        socket?.on('change-song-list', (songList: GuessGameSong[]) => {
+            if (!isHost) {
+                setFilteredSongList(songList)
+            }
+        })
+
         return () => {
+            socket?.removeListener('message')
             socket?.removeListener('buffer-music')
+            socket?.removeListener('change-song-list')
         };
     }, [isHost, state])
 
     useEffect(() => {
         chatBoxRef.current?.scrollTo({ top: chatBoxRef.current.scrollHeight })
     }, [messages])
+
+    useEffect(() => {
+        if (isHost)
+            socket?.emit("change-song-list", { roomID }, filteredSongList.map((k) => {
+            return { display_name : k.display_name }
+        }))
+    }, [filteredSongList, isHost])
 
     const showMessage = (message: string, isError: boolean = false) => {
         if (isError) {
@@ -447,7 +464,7 @@ const GuessSongGame = () => {
 
     return (
         <LayoutWrapper>
-            <div className='inner inner-720 min-h-[700px]'>
+            <div className='inner inner-720 min-h-[800px]'>
                 {/* Display the messages */}
                 <div ref={chatBoxRef} className="box box-shadow p-2 h-[300px] overflow-y-scroll">
                     {messages.map((message, index) => (
@@ -499,10 +516,10 @@ const GuessSongGame = () => {
                 {isHost &&
                     <div>
                         <h1 className='tc mb-5'>Host</h1>
-                        <div className="flex items-center justify-between px-5">
+                        <div className="flex items-center justify-between px-4">
                             <div className=''>
                                 <div className='ml-2 mb-2'>Game Type: </div>
-                                <ListBox className="w-[7rem]" source={guessSongGameType} selected={selectedGameType} setSelected={setSelectedGameType} />
+                                <ListBox className="w-[7.5rem]" source={guessSongGameType} selected={selectedGameType} setSelected={setSelectedGameType} />
                             </div>
                             {selectedGameType.value != GuessSongGameType.playlist &&
                                 <div className=''>

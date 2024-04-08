@@ -3,6 +3,8 @@ import { Server } from "socket.io"
 import { NextApiResponseWithSocket } from "./type"
 import shared from "./shared"
 import Fuse from 'fuse.js'
+import Songs, { MaimaiSongs } from "db/model/songs"
+import { GuessGameSong } from "types"
 
 
 const PORT = 3000
@@ -76,7 +78,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         }
         room.players.set(socket.id, player)
 
-        console.log("joins ", shared.rooms)
+        console.log("joins ", room.players)
         callBack(false)
         return
       }
@@ -95,7 +97,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       shared.rooms.set(roomID, room)
       io.in(socket.id).emit("message", "You are the host")
       callBack(true)
-      console.log("create ", shared.rooms)
+      console.log("create ", room.players)
     })
 
     socket.on("join-game", async (data: RoomEvent, callBack: () => void) => {
@@ -107,7 +109,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       if (room && player) {
         player.isJoined = true
         io.in(roomID).emit("message", player.name + ": join game")
-        console.log("join", player)
+        io.in(socket.id).emit('change-song-list', room.currentSongList)
       }
       callBack()
     })
@@ -183,6 +185,19 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       }
 
     })
+    socket.on("change-game-type", (data: RoomEvent, gameType: string) => {
+      let roomID = data.roomID
+      io.in(roomID).emit("message", `Host changed the game type to ${gameType}`, true, true)
+    })
+
+    socket.on("change-song-list", (data: RoomEvent, songList: GuessGameSong[]) => {
+      let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
+      if (room) {
+        room.currentSongList = songList 
+        io.in(roomID).emit("change-song-list", songList)
+      }
+    })
   })
 
   res.socket.server.io = io
@@ -194,10 +209,12 @@ export class GuessSongGameRoom {
   roomID: string
   players: Map<string, Player>
   currentSongName?: string
+  currentSongList: GuessGameSong[]
 
   constructor(roomID: string) {
     this.roomID = roomID
     this.players = new Map()
+    this.currentSongList = []
   }
 
   // Return player that is host or is joined to the game
