@@ -26,17 +26,18 @@ async function handler(
     await runMiddleware(req, res, cors)
     let songs: Response[] = []
     const playlistID = req.query.id
-    let nextPageToken : string | null = ""
-    for (let i = 0; i < 4; i++) {
-        
+    let nextPageToken: string | null = ""
+    while (true) {
         let searchKey = `?part=snippet&key=${process.env.YOUTUBE_API_KEY}&playlistId=${playlistID}&maxResults=50`
         if (nextPageToken) {
             searchKey += `&pageToken=${nextPageToken}`
-        } 
+        }
         let url = encodeURI(`https://www.googleapis.com/youtube/v3/playlistItems${searchKey}`)
         let youtubeAPIResult = await axios.get(url)
         nextPageToken = youtubeAPIResult.data.nextPageToken
-        let result = _.map<any, Response>(youtubeAPIResult.data.items, k => {
+
+        let filteredItem = _.filter(youtubeAPIResult.data.items, k => k.snippet.title == "Deleted video")
+        let result = _.map<any, Response>(filteredItem, k => {
             return {
                 display_name: k.snippet.title,
                 youtube_link: k.snippet.resourceId.videoId

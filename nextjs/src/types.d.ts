@@ -1,4 +1,5 @@
 import Songs, { MaimaiSongs } from "db/model/songs"
+import { TypeOptions } from "react-toastify"
 
 export interface Rating {
     song: string,
@@ -41,4 +42,10 @@ type ChunithmNetRecord = {
 type ChunithmNetLogin = {
     sid: string,
     password: string
+}
+
+type MessageDetails = {
+    withNotification?: boolean,
+    onlyPlayer?: boolean,
+    type? :  TypeOptions
 }

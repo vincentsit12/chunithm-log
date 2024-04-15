@@ -33,7 +33,10 @@
  }
 
  :root {
-    --toastify-color-info: #eab058!important
+    --toastify-color-light: rgb(0, 77, 153)!important;
+    --toastify-text-color-light: #fff!important;
+    --toastify-color-info: #eab058!important;
+    --toastify-font-family: inherit!important;
  }
 
 @layer components {

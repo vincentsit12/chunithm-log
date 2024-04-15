@@ -4,7 +4,7 @@ import { NextApiResponseWithSocket } from "./type"
 import shared from "./shared"
 import Fuse from 'fuse.js'
 import Songs, { MaimaiSongs } from "db/model/songs"
-import { GuessGameSong } from "types"
+import { GuessGameSong, MessageDetails } from "types"
 
 
 const PORT = 3000
@@ -121,7 +121,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let room = shared.rooms.get(roomID)
       if (room) {
         room.currentSongName = currentSongName
-        io.in(roomID).emit("message", "Music will start to play", true)
+        let details: MessageDetails = { withNotification: true, type: 'info' }
+        io.in(roomID).emit("message", "Music will start to play", details)
         io.in(roomID).emit("buffer-music", gameOptions)
       }
     })
@@ -155,6 +156,14 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       io.in(roomID).emit("replay-music")
     })
 
+    socket.on("show-answer", (data: RoomEvent) => {
+      let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
+      if (room) {
+        io.in(roomID).emit("message",`The answer is ${room.currentSongName}`)
+      }
+    })
+
     socket.on("send-anwser", (data: RoomEvent, answer: string) => {
       let roomID = data.roomID
       let room = shared.rooms.get(roomID)
@@ -167,7 +176,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
           let answerMatchingResult = fuse.search(answer)
           if (answer == room.currentSongName || (answerMatchingResult.length > 0 && answerMatchingResult[0].score && answerMatchingResult[0].score <= 0.3)) {
             player.score += 1
-            io.in(roomID).emit("message", `${player.name} is correct`, true)
+            let details: MessageDetails = { withNotification: true, type: 'success' }
+            io.in(roomID).emit("message", `${player.name} is correct`, details)
             io.in(roomID).emit("message", `${player.name} score : ${player.score}`)
             room.currentSongName = undefined
           }
@@ -187,15 +197,27 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     })
     socket.on("change-game-type", (data: RoomEvent, gameType: string) => {
       let roomID = data.roomID
-      io.in(roomID).emit("message", `Host changed the game type to ${gameType}`, true, true)
+      let details: MessageDetails = { withNotification: true, onlyPlayer: true, type: 'info' }
+      io.in(roomID).emit("message", `Host changed the game type to ${gameType}`, details)
     })
 
     socket.on("change-song-list", (data: RoomEvent, songList: GuessGameSong[]) => {
       let roomID = data.roomID
       let room = shared.rooms.get(roomID)
       if (room) {
-        room.currentSongList = songList 
+        room.currentSongList = songList
         io.in(roomID).emit("change-song-list", songList)
+      }
+    })
+
+
+    socket.on("request-replay", (data: RoomEvent) => {
+      let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
+      let player = room?.players.get(data.playerID)
+      if (room && player) {
+        io.in(roomID).emit("request-replay", player.name)
+        io.in(roomID).emit("message", `${player.name} request replay music`)
       }
     })
   })
@@ -269,7 +291,8 @@ export interface RoomEvent {
 
 export interface GuessSongGameOption {
   youtubeID: string,
-  startTime: number,
-  duration: number,
-  isCustom: boolean
+  startTime: string
+  duration: string
+  isCustom: boolean,
+  isFixedStartTime: boolean
 }

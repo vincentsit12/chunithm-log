@@ -14,7 +14,7 @@ import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import ListBox from 'components/ListBox';
-import { GuessGameSong } from 'types';
+import { GuessGameSong, MessageDetails } from 'types';
 const enum GuessSongGameType {
     chunithm = 1,
     maimai,
@@ -97,9 +97,10 @@ const GuessSongGame = () => {
 
     const [gameOption, setGameOption] = useState<GuessSongGameOption>({
         youtubeID: "Mru-JAtqagE",
-        startTime: 10,
-        duration: 2,
-        isCustom: false
+        startTime: "10",
+        duration: "2",
+        isCustom: false,
+        isFixedStartTime: false,
     })
 
     const [customYoutubeLink, setCustomYoutubeLink] = useState<string>("")
@@ -111,6 +112,7 @@ const GuessSongGame = () => {
     const [isJoined, setIsJoined] = useState(false)
 
     const [shouldSendBufferedSignal, setShouldSendBufferedSignal] = useState(true)
+    const [shouldGetNewRandomStartTime, setShouldGetNewRandomStartTime] = useState(true)
 
     const [isShowVideo, setIsShowVideo] = useState(true)
 
@@ -122,6 +124,7 @@ const GuessSongGame = () => {
     const [upperLevelRange, setUpperLevelRange] = useState<{ name: string; value: number }>(level.find(k => k.value == chunithmDefaulLevelRange[1])!)
 
     const [playlist, setPlaylist] = useState<string>("")
+
 
     useEffect(() => {
         if (socket) {
@@ -213,12 +216,41 @@ const GuessSongGame = () => {
     }, [gameOption, state])
 
     useEffect(() => {
+        socket?.on('request-replay', (playerName: string) => {
+            if (isHost) {
+                toast(playerName + " Request Replay", {
+                    position: 'bottom-right',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    closeButton: () => {
+                        return <div className='flex items-center'>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={replaySong}>Replay</button>
+                        </div>
+                    },
+                    type: 'default',
+                    theme: 'light',
+                    className: "",
+                })
+            }
+        })
+
+        return () => {
+            socket?.removeListener('request-replay')
+        };
+    }, [gameOption, isHost, state])
+
+    useEffect(() => {
         // Listen for incoming messages
-        socket?.on('message', (message, withNotification: boolean, onlyPlayer: boolean) => {
-            if (onlyPlayer && isHost) { return }
+        socket?.on('message', (message, messageDetails: MessageDetails = {
+            onlyPlayer: false, withNotification: false
+        }) => {
+            if (messageDetails.onlyPlayer && isHost) { return }
             setMessages((prevMessages) => [...prevMessages, message]);
-            if (withNotification) {
-                showMessage(message)
+            if (messageDetails.withNotification) {
+                showMessage(message, messageDetails)
             }
         });
 
@@ -229,8 +261,8 @@ const GuessSongGame = () => {
             }
             youtubeRef.current?.target.cueVideoById({
                 'videoId': gameOption.youtubeID,
-                'startSeconds': gameOption.startTime,
-                'endSeconds': gameOption.startTime + gameOption.duration
+                'startSeconds': parseFloat(gameOption.startTime),
+                'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
             })
         });
 
@@ -254,36 +286,24 @@ const GuessSongGame = () => {
     useEffect(() => {
         if (isHost)
             socket?.emit("change-song-list", { roomID }, filteredSongList.map((k) => {
-            return { display_name : k.display_name }
-        }))
+                return { display_name: k.display_name }
+            }))
     }, [filteredSongList, isHost])
 
-    const showMessage = (message: string, isError: boolean = false) => {
-        if (isError) {
-            toast.error(message, {
-                position: "top-center",
-                autoClose: 1000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: false,
-                draggable: true,
-                progress: undefined,
-                theme: 'colored',
-                className: "",
-            })
-        } else {
-            toast.info(message, {
-                position: "top-center",
-                autoClose: 1000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: false,
-                draggable: true,
-                progress: undefined,
-                theme: 'colored',
-                className: "",
-            })
-        }
+    const showMessage = (message: string, messageDetails?: MessageDetails) => {
+        toast(message, {
+            position: "top-center",
+            autoClose: 1000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            type: messageDetails?.type ?? 'default',
+            progress: undefined,
+            theme: 'colored',
+            className: "",
+        })
+
     }
 
     const sendMessage = () => {
@@ -323,6 +343,9 @@ const GuessSongGame = () => {
         setGameOption(k => {
             return { ...k, isCustom: false, }
         })
+        if (!gameOption.isFixedStartTime) {
+            setShouldGetNewRandomStartTime(true)
+        }
         if (selectedGameType.value == GuessSongGameType.playlist && song.youtube_link) {
             if (isHost) {
                 socket?.emit("get-player-count", { roomID }, (playerCount: number) => {
@@ -332,8 +355,8 @@ const GuessSongGame = () => {
                     }
                     youtubeRef.current?.target.cueVideoById({
                         'videoId': song.youtube_link,
-                        'startSeconds': gameOption.startTime,
-                        'endSeconds': gameOption.startTime + gameOption.duration
+                        'startSeconds': parseFloat(gameOption.startTime),
+                        'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
                     })
                     showMessage("Changed to next song")
                 })
@@ -357,8 +380,8 @@ const GuessSongGame = () => {
                     }
                     youtubeRef.current?.target.cueVideoById({
                         'videoId': youtubeAPIResult.data,
-                        'startSeconds': gameOption.startTime,
-                        'endSeconds': gameOption.startTime + gameOption.duration
+                        'startSeconds': parseFloat(gameOption.startTime),
+                        'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
                     })
                     showMessage("Changed to next song")
                 })
@@ -403,8 +426,8 @@ const GuessSongGame = () => {
     const testSong = () => {
         youtubeRef.current?.target.loadVideoById({
             'videoId': gameOption.youtubeID,
-            'startSeconds': gameOption.startTime,
-            'endSeconds': gameOption.startTime + gameOption.duration
+            'startSeconds': parseFloat(gameOption.startTime),
+            'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
         })
         // youtubeRef.current?.target.seekTo(gameOption?.startTime, true)
         youtubeRef.current?.target.playVideo()
@@ -415,15 +438,18 @@ const GuessSongGame = () => {
 
     const replaySong = () => {
         console.log("replay", gameOption?.startTime)
-        youtubeRef.current?.target.seekTo(gameOption?.startTime, true)
+        youtubeRef.current?.target.seekTo(parseFloat(gameOption?.startTime), true)
     }
 
     const playSong = () => {
         console.log("start play music", gameOption)
-        youtubeRef.current?.target.seekTo(gameOption?.startTime, true)
+        youtubeRef.current?.target.seekTo(parseFloat(gameOption?.startTime), true)
         youtubeRef.current?.target.playVideo()
     }
 
+    const requestReplySong = () => {
+        socket?.emit('request-replay', { roomID, playerID: socket.id });
+    }
 
     const joinGame = () => {
         console.log("join-game")
@@ -456,15 +482,23 @@ const GuessSongGame = () => {
         setGameOption((gameOption) => {
             return {
                 ...gameOption,
-                startTime: Math.max(0, _.random(parseInt(youtubeRef.current?.target.getDuration())) - gameOption.duration)
+                startTime: Math.max(0, _.random(parseInt(youtubeRef.current?.target.getDuration())) - parseFloat(gameOption.duration)).toString()
             }
         })
         // socket?.emit('send-anwser', { roomID, playerID: socket.id }, () => { });
     }
 
+    const showAnswer = () => {
+        socket?.emit('show-answer', { roomID, playerID: socket.id });
+    }
+
+    const canControlGamePanel = isHost && gameOption.startTime && gameOption.duration && filteredSongList.length > 0
+
+
     return (
         <LayoutWrapper>
             <div className='inner inner-720 min-h-[800px]'>
+                <h1 className='tc mb-5'>{roomID}</h1>
                 {/* Display the messages */}
                 <div ref={chatBoxRef} className="box box-shadow p-2 h-[300px] overflow-y-scroll">
                     {messages.map((message, index) => (
@@ -499,12 +533,17 @@ const GuessSongGame = () => {
                                 boxShadow: "0 1px 5px rgba(0, 0, 0, 0.3)",
                                 backgroundColor: "#d9e9ee",
                                 fontFamily: "inherit",
-                                fontSize: 'inherit'
+                                fontSize: 'inherit',
+                                zIndex: 999
                             }}
                             className='flex-1 auto-search'
                         />
                         <button className='btn btn-secondary ml-2' onClick={sendAnswer}>Answer</button>
-                    </div></>}
+                    </div>
+                    {true && <div className='my-5'>
+                        <button className='btn btn-secondary' onClick={requestReplySong}>Request Replay</button>
+                    </div>}
+                </>}
                 {/* <div className='my-10'>
                 <input
                     type="text"
@@ -589,8 +628,8 @@ const GuessSongGame = () => {
                                     })
                                     youtubeRef.current?.target.cueVideoById({
                                         'videoId': customYoutubeLink,
-                                        'startSeconds': gameOption.startTime,
-                                        'endSeconds': gameOption.startTime + gameOption.duration
+                                        'startSeconds': parseFloat(gameOption.startTime),
+                                        'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
                                     })
                                 } else {
                                     alert("Please input both youtube link and answer!")
@@ -599,13 +638,29 @@ const GuessSongGame = () => {
                             }>Load</button>
                         </div>
                         <div className='mt-5'>
-                            <div className='p-2 bold'>Start Time</div>
+                            <div className="flex justify-between items-center">
+                                <div className='p-2 bold'>Start Time</div>
+                                <div className="flex justify-center items-center">
+                                    <input onChange={(e) => {
+                                        setGameOption((gameOption) => {
+                                            return {
+                                                ...gameOption,
+                                                isFixedStartTime: e.target.checked
+                                            }
+                                        })
+                                    }} checked={gameOption.isFixedStartTime} id="game-fullscreen" className="checkbox" type="checkbox" />
+                                    <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Fixed Time</label>
+                                </div>
+                            </div>
                             <div className='flex '>
                                 <input value={gameOption.startTime} onChange={(e) => setGameOption((gameOption) => {
-                                    return {
-                                        ...gameOption,
-                                        startTime: isNaN(Number(e.target.value)) ? 1 : Number(e.target.value)
-                                    }
+                                    const re = /^(\d*)?(\.\d{0,1})?$/
+                                    if (re.test(e.target.value))
+                                        return {
+                                            ...gameOption,
+                                            startTime: e.target.value
+                                        }
+                                    return gameOption
                                 })}
                                     className='px-4 py-2 box box-shadow w-full' placeholder='Start Time'></input>
                                 <button className='btn btn-secondary ml-2' onClick={getRandomTime}>Random</button>
@@ -615,22 +670,27 @@ const GuessSongGame = () => {
                             <div className='p-2 bold'>Duration</div>
                             <div className='flex'>
                                 <input value={gameOption.duration} onChange={(e) => setGameOption((gameOption) => {
-                                    return {
-                                        ...gameOption,
-                                        duration: isNaN(Number(e.target.value)) ? 1 : Number(e.target.value)
-                                    }
+                                    const re = /^(\d*)?(\.\d{0,1})?$/
+                                    if (re.test(e.target.value))
+                                        return {
+                                            ...gameOption,
+                                            duration: e.target.value
+                                        }
+                                    return gameOption
                                 })}
                                     className='px-4 py-2 box box-shadow w-full' placeholder='Duration'></input>
                             </div>
                         </div>
+                        {!canControlGamePanel && (!gameOption.duration || !gameOption.startTime) && <div className='text-red-500 bold'>Please input both start time and duration!</div>}
                         <div className='flex my-5'>
-                            <button disabled={filteredSongList.length <= 0} className='btn bg-red txt-white mr-2 ' onClick={broadCastConfig}>Start</button>
-                            <button disabled={filteredSongList.length <= 0} className='btn bg-red txt-white' onClick={broadCastReplaySong}>Replay</button>
+                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2 ' onClick={broadCastConfig}>Start</button>
+                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2' onClick={broadCastReplaySong}>Replay</button>
+                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white' onClick={showAnswer}>Reveal</button>
                         </div>
                         <div className='flex my-5'>
                             <div className='flex-1'>
-                                <button disabled={filteredSongList.length <= 0} className='btn btn-secondary mr-2 ' onClick={testSong}>Test</button>
-                                <button disabled={filteredSongList.length <= 0} className='btn btn-secondary' onClick={getNextSong}>Next</button>
+                                <button disabled={!canControlGamePanel} className='btn btn-secondary mr-2 ' onClick={testSong}>Test</button>
+                                <button disabled={!canControlGamePanel} className='btn btn-secondary' onClick={getNextSong}>Next</button>
                             </div>
                             <button className='btn btn-secondary' onClick={() => {
                                 setIsShowVideo(!isShowVideo)
@@ -663,6 +723,10 @@ const GuessSongGame = () => {
                                 if (customYoutubeLink && customAnswer) {
                                     showMessage("Loaded custom video successfully")
                                 }
+                            }
+                            if (shouldGetNewRandomStartTime) {
+                                getRandomTime()
+                                setShouldGetNewRandomStartTime(false)
                             }
                         }
                     }} />
