@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
 import { Socket, io } from "socket.io-client"
 import _, { uniqBy, values } from 'lodash'
 import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
@@ -12,6 +12,7 @@ import LayoutWrapper from 'components/LayoutWrapper';
 import { useRouter } from 'next/router';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaFlag } from "react-icons/fa6";
 
 import ListBox from 'components/ListBox';
 import { GuessGameSong, MessageDetails } from 'types';
@@ -117,7 +118,8 @@ const GuessSongGame = () => {
     const [isSurrendered, setIsSurrendered] = useState(false)
 
     const [shouldSendBufferedSignal, setShouldSendBufferedSignal] = useState(true)
-    const [shouldGetNewRandomStartTime, setShouldGetNewRandomStartTime] = useState(true)
+    const [shouldGetNewRandomStartTime, setShouldGetNewRandomStartTime] = useState(false)
+    const [shouldStartNewRound, setShouldStartNewRound] = useState(true)
 
     const [isShowVideo, setIsShowVideo] = useState(true)
 
@@ -231,7 +233,9 @@ const GuessSongGame = () => {
         });
 
         socket?.on('play-music', (message) => {
+            console.log('replay-music-11', gameOption)
             setTimeout(() => {
+                console.log('replay-music-12', gameOption)
                 playSong()
             }, 1000)
 
@@ -429,6 +433,7 @@ const GuessSongGame = () => {
                     youtubeID: youtubeAPIResult.data
                 }
             })
+            setShouldStartNewRound(true)
         }
     }
 
@@ -454,10 +459,12 @@ const GuessSongGame = () => {
     const broadCastConfig = () => {
 
         if (gameOption.isCustom) {
-            socket?.emit('load-music', { roomID }, gameOption, customAnswer);
+            socket?.emit('load-music', { roomID }, gameOption, customAnswer, shouldStartNewRound);
         } else {
-            socket?.emit('load-music', { roomID }, gameOption, currentSong?.display_name);
+            socket?.emit('load-music', { roomID }, gameOption, currentSong?.display_name, shouldStartNewRound);
         }
+
+        setShouldStartNewRound(false)
     }
 
     const testSong = () => {
@@ -533,72 +540,91 @@ const GuessSongGame = () => {
     }
 
     const canControlGamePanel = isHost && gameOption.startTime && gameOption.duration && filteredSongList.length > 0
-
+    const playerInfo = useMemo(() => { return _.find(roomInfo?.players, k => { return k.id == socket?.id }) }, [roomInfo, socket, state])
 
     return (
         <LayoutWrapper>
-            <div className=''>
-                <div id="guess-song-game" className={classNames('inner inner-720', { 'min-h-[800px]': !isHost })}>
+            <div className='flex flex-wrap justify-center'>
+                <div id={`guess-song-game-${isHost ? 'host' : 'player'}-space`} className={classNames({ 'min-h-[800px]': !isHost })}>
                     <h1 className='tc mb-5'>{roomID}</h1>
-                    {/* Display the messages */}
-                    <div ref={chatBoxRef} className="box box-shadow p-2 h-[300px] overflow-y-scroll">
-                        {messages.map((message, index) => (
-                            <p key={index}>{message}</p>
-                        ))}
-                    </div>
+                    <div id={`guess-song-game-${isHost ? 'host' : 'player'}-chatbox`}>
+                        <div className='flex-1'>
+                            {/* Display the messages */}
+                            <div ref={chatBoxRef} className="box box-shadow p-2 h-[300px] overflow-y-scroll">
+                                {messages.map((message, index) => (
+                                    <p key={index}>{message}</p>
+                                ))}
+                            </div>
 
-                    {/* Input field for sending new messages */}
-                    {isJoined && <><div className='flex my-5'>
-                        <input value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)}
-                            className='px-4 py-2 box box-shadow w-full' placeholder='Chat'></input>
-                        <button disabled={currentMessage.length == 0} className='btn btn-secondary ml-2' onClick={sendMessage}>Send</button>
+                            {/* Input field for sending new messages */}
+                            {isJoined && <><div className='flex my-5'>
+                                <input value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)}
+                                    className='px-4 py-2 box box-shadow w-full' placeholder='Chat'></input>
+                                <button disabled={currentMessage.length == 0} className='btn btn-secondary ml-2' onClick={sendMessage}>Send</button>
+                            </div>
+                                {gameOption.answerRaceChoices.length <= 0 ? <div className='flex my-5'>
+                                    <ReactSearchAutocomplete<GuessGameSong>
+                                        inputSearchString={answer}
+                                        items={filteredSongList}
+                                        onSearch={handleOnSearch}
+                                        onClear={() => { setAnswer(undefined) }}
+                                        // onHover={handleOnHover}
+                                        onSelect={handleOnSelect}
+                                        // onFocus={handleOnFocus}
+                                        fuseOptions={{ keys: ["display_name"] }}
+                                        resultStringKeyName='display_name'
+                                        placeholder='Answer'
+                                        key={"display_name"}
+                                        // formatResult={formatResult}
+                                        showIcon={false}
+                                        styling={{
+                                            borderRadius: '10px',
+                                            height: "auto",
+                                            boxShadow: "0 1px 5px rgba(0, 0, 0, 0.3)",
+                                            backgroundColor: "#d9e9ee",
+                                            fontFamily: "inherit",
+                                            fontSize: 'inherit',
+                                            zIndex: 999
+                                        }}
+                                        className='flex-1 auto-search'
+                                    />
+                                    <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary ml-2' onClick={sendAnswer}>Answer</button>
+                                </div>
+                                    : <div className='my-5 box box-shadow w-full flex p-4 flex-wrap'>
+                                        {_.map(gameOption.answerRaceChoices, (k, i) => {
+                                            return <button key={i} className='btn m-1 answer-race bg-master' onClick={
+                                                () => {
+                                                    socket?.emit('send-answer', { roomID, playerID: socket.id }, k);
+                                                }
+                                            }>{k}</button>
+                                        })}
+                                    </div>}
+                                <div className='my-5 flex'>
+                                    <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary mr-2' onClick={requestReplySong}>Request Replay</button>
+                                    <button disabled={playerInfo?.isSurrendered} className='btn bg-red text-white' onClick={surrender}>Surrender</button>
+                                </div>
+                            </>}
+                            {!isJoined && <button className='btn btn-secondary my-5' onClick={joinGame}>Join</button>}
+                        </div>
+                        <div id={`guess-song-game-${isHost ? 'host' : 'player'}-scorebox`} className='box box-shadow'>
+                            {roomInfo && roomInfo.players.map(k => {
+                                return <ul className='even:bg-[#eab058] odd:bg-[#ea8b58]'>
+                                    <li className='px-5 py-3 text-white'>
+                                        <div className='flex justify-between'>
+                                            <div className='flex items-center'>
+                                                <div className='mr-2'>{k.name}</div>
+                                                {k.isSurrendered && <FaFlag />}
+                                            </div>
+                                            <span>{`score: ${k.score}`}</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            })}
+                        </div>
                     </div>
-                        {gameOption.answerRaceChoices.length <= 0 ? <div className='flex my-5'>
-                            <ReactSearchAutocomplete<GuessGameSong>
-                                inputSearchString={answer}
-                                items={filteredSongList}
-                                onSearch={handleOnSearch}
-                                onClear={() => { setAnswer(undefined) }}
-                                // onHover={handleOnHover}
-                                onSelect={handleOnSelect}
-                                // onFocus={handleOnFocus}
-                                fuseOptions={{ keys: ["display_name"] }}
-                                resultStringKeyName='display_name'
-                                placeholder='Answer'
-                                key={"display_name"}
-                                // formatResult={formatResult}
-                                showIcon={false}
-                                styling={{
-                                    borderRadius: '10px',
-                                    height: "auto",
-                                    boxShadow: "0 1px 5px rgba(0, 0, 0, 0.3)",
-                                    backgroundColor: "#d9e9ee",
-                                    fontFamily: "inherit",
-                                    fontSize: 'inherit',
-                                    zIndex: 999
-                                }}
-                                className='flex-1 auto-search'
-                            />
-                            <button disabled={roomInfo?.self?.isSurrendered} className='btn btn-secondary ml-2' onClick={sendAnswer}>Answer</button>
-                        </div>
-                            : <div className='my-5 box box-shadow w-full flex p-4 flex-wrap'>
-                                {_.map(gameOption.answerRaceChoices, (k, i) => {
-                                    return <button key={i} className='btn m-1 answer-race bg-master' onClick={
-                                        () => {
-                                            socket?.emit('send-answer', { roomID, playerID: socket.id }, k);
-                                        }
-                                    }>{k}</button>
-                                })}
-                            </div>}
-                        <div className='my-5 flex'>
-                            <button disabled={roomInfo?.self?.isSurrendered} className='btn btn-secondary mr-2' onClick={requestReplySong}>Request Replay</button>
-                            <button disabled={roomInfo?.self?.isSurrendered} className='btn bg-red text-white' onClick={surrender}>Surrender</button>
-                        </div>
-                    </>}
-                    {!isJoined && <button className='btn btn-secondary my-5' onClick={joinGame}>Join</button>}
                 </div>
                 {isHost &&
-                    <div className='inner inner-720'>
+                    <div id="guess-song-game-host" className=''>
                         <h1 className='tc mb-5'>Host</h1>
                         <div className="flex items-center justify-between px-4">
                             <div className=''>
@@ -731,15 +757,15 @@ const GuessSongGame = () => {
                             </div>
                         </div>
                         {!canControlGamePanel && (!gameOption.duration || !gameOption.startTime) && <div className='text-red-500 bold'>Please input both start time and duration!</div>}
-                        <div className='flex my-5'>
-                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2 ' onClick={broadCastConfig}>Start</button>
-                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2' onClick={broadCastReplaySong}>Replay</button>
-                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white' onClick={showAnswer}>Reveal</button>
+                        <div className='flex flex-wrap my-5'>
+                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastConfig}>Start</button>
+                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastReplaySong}>Replay</button>
+                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white my-1' onClick={showAnswer}>Reveal</button>
                         </div>
-                        <div className='flex my-5'>
+                        <div className='flex my-5 items-center'>
                             <div className='flex-1'>
-                                <button disabled={!canControlGamePanel} className='btn btn-secondary mr-2 mb-1 ' onClick={testSong}>Test</button>
-                                <button disabled={!canControlGamePanel} className='btn btn-secondary' onClick={getNextSong}>Next</button>
+                                <button disabled={!canControlGamePanel} className='btn btn-secondary mr-2 my-1' onClick={testSong}>Test</button>
+                                <button disabled={!canControlGamePanel} className='btn btn-secondary my-1' onClick={getNextSong}>Next</button>
                             </div>
                             <button className='btn btn-secondary' onClick={() => {
                                 setIsShowVideo(!isShowVideo)
@@ -747,40 +773,41 @@ const GuessSongGame = () => {
                         </div>
                     </div>
                 }
-                <div className='relative inner inner-720'>
-                    <YouTube videoId="fR7e0N1UkRI" opts={{
-                        height: '320',
-                        width: '80%',
-                        playerVars: {
-                            // https://developers.google.com/youtube/player_parameters
-                            // playsinline: 1,
-                            controls: 0,
-                            disablekb: 1,
-                            fs: 0,
-                            // start: gameOption.startTime,
-                            // end: gameOption.startTime + gameOption.duration
-                        },
-                    }} style={(isHost && isShowVideo) ? { opacity: 1 } : { opacity: 0, position: "absolute", top: -999 }}
-                        onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
-                            console.log(e.data)
-                            if (e.data == 5) {
-                                console.log("finish buffer")
-                                // youtubeRef.current?.target.playVideo()
-                                if (shouldSendBufferedSignal) {
-                                    socket?.emit('finish-buffer-music', { roomID, playerID: socket.id });
-                                } else {
-                                    setShouldSendBufferedSignal(true)
-                                    if (customYoutubeLink && customAnswer) {
-                                        showMessage("Loaded custom video successfully")
-                                    }
-                                }
-                                if (shouldGetNewRandomStartTime) {
-                                    getRandomTime()
-                                    setShouldGetNewRandomStartTime(false)
+
+            </div>
+            <div className='relative inner inner-p20 inner-540'>
+                <YouTube videoId="fR7e0N1UkRI" opts={{
+                    height: '100%',
+                    width: '100%',
+                    playerVars: {
+                        // https://developers.google.com/youtube/player_parameters
+                        // playsinline: 1,
+                        controls: 0,
+                        disablekb: 1,
+                        fs: 0,
+                        // start: gameOption.startTime,
+                        // end: gameOption.startTime + gameOption.duration
+                    },
+                }} style={(isHost && isShowVideo) ? { opacity: 1, aspectRatio: 16 / 9 } : { opacity: 0, position: "absolute", top: -999 }}
+                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        console.log(e.data)
+                        if (e.data == 5) {
+                            console.log("finish buffer")
+                            // youtubeRef.current?.target.playVideo()
+                            if (shouldSendBufferedSignal) {
+                                socket?.emit('finish-buffer-music', { roomID, playerID: socket.id });
+                            } else {
+                                setShouldSendBufferedSignal(true)
+                                if (customYoutubeLink && customAnswer) {
+                                    showMessage("Loaded custom video successfully")
                                 }
                             }
-                        }} />
-                </div>
+                            if (shouldGetNewRandomStartTime) {
+                                getRandomTime()
+                                setShouldGetNewRandomStartTime(false)
+                            }
+                        }
+                    }} />
             </div>
             <ToastContainer
             />

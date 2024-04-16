@@ -44,7 +44,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
               shared.rooms.delete(k)
               io.in(room.roomID).emit("delete-room")
             } else if (player.isJoined) {
-              io.in(room.roomID).emit("update-room-info", room.getRoomInfo(socket.id))
+              io.in(room.roomID).emit("update-room-info", room.getRoomInfo())
               io.in(room.roomID).emit("message", player.name + " leaved room")
             }
             console.log("delete ", room.players)
@@ -111,34 +111,33 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let player = room?.players.get(data.playerID)
       if (room && player) {
         player.isJoined = true
-        io.in(roomID).emit("update-room-info", room.getRoomInfo(socket.id))
+        io.in(roomID).emit("update-room-info", room.getRoomInfo())
         io.in(roomID).emit("message", player.name + " joined game")
         io.in(socket.id).emit('change-song-list', room.currentSongList)
       }
     })
 
-    socket.on("load-music", async (data: RoomEvent, gameOption: GuessSongGameOption, currentSongName: string) => {
+    socket.on("load-music", async (data: RoomEvent, gameOption: GuessSongGameOption, currentSongName: string, shouldStartNewRound: boolean) => {
       console.log("load music", data, gameOption, currentSongName)
       let roomID = data.roomID
-      let gameOptions = { ...gameOption }
+      let _gameOption = { ...gameOption }
       let room = shared.rooms.get(roomID)
       if (room) {
-        const shoudStartNewRound = room.currentSongName == undefined
         room.currentSongName = currentSongName
         let details: MessageDetails = { withNotification: true, type: 'info' }
         io.in(roomID).emit("message", "Music will start to play", details)
-        if (!gameOptions.isCustom) {
-          console.log(gameOptions, room.currentSongName)
-          if (shoudStartNewRound) {
+        if (!_gameOption.isCustom) {
+          console.log(_gameOption, room.currentSongName)
+          if (shouldStartNewRound) {
             room.currentRound += 1
-            io.in(roomID).emit("update-room-info", room.getRoomInfo(socket.id))
-            gameOptions.answerRaceChoices = room.generateAnswerRaceChoices(gameOption.answerRaceChoicesNumber)
+            io.in(roomID).emit("update-room-info", room.getRoomInfo())
+            _gameOption.answerRaceChoices = room.generateAnswerRaceChoices(_gameOption.answerRaceChoicesNumber)
           } else {
-            gameOptions.answerRaceChoices = room.currentChoices
+            _gameOption.answerRaceChoices = room.currentChoices
           }
         }
 
-        io.in(roomID).emit("buffer-music", gameOptions)
+        io.in(roomID).emit("buffer-music", _gameOption)
       }
     })
 
@@ -262,7 +261,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
             io.in(roomID).emit("message", `The answer is ${room.currentSongName}`)
             room.endThisRound()
           }
-          io.in(roomID).emit("update-room-info", room.getRoomInfo(socket.id))
+          io.in(roomID).emit("update-room-info", room.getRoomInfo())
         }
       }
     })
@@ -334,7 +333,6 @@ export class GuessSongGameRoom {
   getSurrenderedCount = () => {
     let joinedPlayer = this.joinedPlayer(false)
     let surrenderedCount = 0
-
     joinedPlayer.forEach((values, keys) => {
       if (values.isSurrendered)
         surrenderedCount += 1
@@ -352,14 +350,14 @@ export class GuessSongGameRoom {
     return choices
   }
 
-  getRoomInfo = (id: string) => {
+  getRoomInfo = () => {
     let joinedPlayer = this.joinedPlayer()
-    let self = joinedPlayer.get(id)
     let roomInfo: RoomInfo = {
       roomID: this.roomID,
       noOfRound: this.currentRound,
       players: Array.from(joinedPlayer.values()).map(k => {
         let player = {
+          id : k.id,
           name: k.name,
           isSurrendered: k.isSurrendered,
           score: k.score,
@@ -367,12 +365,6 @@ export class GuessSongGameRoom {
         }
         return player
       }),
-      self: self ? {
-        name: self?.name,
-        isSurrendered: self?.isSurrendered,
-        score: self?.score,
-        isHost: self?.isHost,
-      } : undefined
     }
 
     return roomInfo
@@ -401,10 +393,9 @@ export interface RoomInfo {
   roomID: string,
   noOfRound: number,
   players: RoomPlayer[],
-  self?: RoomPlayer
 }
 
-export type RoomPlayer = Omit<Player, "id" | "isReady" | "isJoined">
+export type RoomPlayer = Omit<Player, "isReady" | "isJoined">
 
 export interface GuessSongGameOption {
   youtubeID: string,

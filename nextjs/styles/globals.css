@@ -89,4 +89,31 @@
         @apply min-w-fit text-white text-sm
     }
 
+    #guess-song-game-player-space {
+        @apply xl:w-[1080px] w-full md:px-5 xl:px-10
+    }
+
+    #guess-song-game-host-space {
+        @apply xl:w-[720px] w-full md:px-5 xl:px-10
+    }
+
+    #guess-song-game-host {
+        @apply xl:w-[560px] w-full md:px-5 xl:px-10
+    }
+
+    #guess-song-game-player-chatbox {
+        @apply lg:flex block
+    }
+
+    #guess-song-game-player-scorebox {
+        @apply lg:mx-2 lg:my-0 mx-0 my-2 w-[300px] h-[300px] overflow-hidden overflow-y-scroll
+    }
+
+    #guess-song-game-host-chatbox {
+        @apply block
+    }
+
+    #guess-song-game-host-scorebox {
+        @apply lg:my-0 mx-0 my-2 w-[300px] h-[300px] overflow-hidden overflow-y-scroll
+    }
 }
