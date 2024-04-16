@@ -144,7 +144,7 @@ const GuessSongGame = () => {
     const [roomInfo, setRoomInfo] = useState<RoomInfo>()
 
     useEffect(() => {
-        if (state && !isHost && isJoined) {
+        if (!state && !isHost && isJoined) {
             alert("You leaved room")
             router.replace("../rooms")
         }
