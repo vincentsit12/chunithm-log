@@ -27,29 +27,29 @@ type Props = {
   userName?: string
 };
 
-const RecommadSongs = ({ avg }: { avg: number }) => {
-  const [list, setList] = useState<Songs[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+// const RecommadSongs = ({ avg }: { avg: number }) => {
+//   const [list, setList] = useState<Songs[]>([])
+//   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    let upper = Math.max(avg + 0.1 - 2.15, 10)
-    let lower = Math.max(avg - 2.15, 0)
-    getRecommandList(lower, upper).then(d => {
-      setList(d.data)
-    }).catch((e) => {
+//   useEffect(() => {
+//     let upper = Math.max(avg + 0.1 - 2.15, 10)
+//     let lower = Math.max(avg - 2.15, 0)
+//     getRecommandList(lower, upper).then(d => {
+//       setList(d.data)
+//     }).catch((e) => {
 
-    })
+//     })
 
-  }, [])
+//   }, [])
 
-  return <ul>
-    {_.map(list, (k, i) => {
-      return <li>
-        {`${i}. ${k.display_name} ${k.id}}`}
-      </li>
-    })}
-  </ul>
-}
+//   return <ul>
+//     {_.map(list, (k, i) => {
+//       return <li>
+//         {`${i}. ${k.display_name} ${k.id}}`}
+//       </li>
+//     })}
+//   </ul>
+// }
 const UserScript = ({ userId }: { userId: string }) => {
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
@@ -79,14 +79,14 @@ const UserScript = ({ userId }: { userId: string }) => {
 const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
 
   const [average, max, recentAverage, recent] = useMemo(() => {
-    const additons = 0.00000001
+    const additions = 0.00000001
     const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
-    const top30Avg = top30Total / 30 + additons
+    const top30Avg = top30Total / 30 + additions
     const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
-    const recentAvg = recentRatingList.length > 0 ? (recentTotal / recentRatingList.length) + additons : 0
-    const maxRate = top30.length > 1 ? (top30Total + top30[0].rating * 10) / 40 + additons : 0
-    const recent = (top30Total + recentTotal) / (30 + recentRatingList.length) + additons
+    const recentAvg = recentRatingList.length > 0 ? (recentTotal / recentRatingList.length) + additions : 0
+    const maxRate = top30.length > 1 ? (top30Total + top30[0].rating * 10) / 40 + additions : 0
+    const recent = (top30Total + recentTotal) / (30 + recentRatingList.length) + additions
     return [top30Avg, maxRate, recentAvg, recent]
   }, [bestRatingList, recentRatingList])
   const [loading, setLoading] = useState(false)

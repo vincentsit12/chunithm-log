@@ -28,16 +28,17 @@
 .auto-search .wrapper {
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3)
 }
-.auto-search input::placeholder {
-    color: #999!important
- }
 
- :root {
-    --toastify-color-light: rgb(0, 77, 153)!important;
-    --toastify-text-color-light: #fff!important;
-    --toastify-color-info: #eab058!important;
-    --toastify-font-family: inherit!important;
- }
+.auto-search input::placeholder {
+    color: #999 !important
+}
+
+:root {
+    --toastify-color-light: rgb(0, 77, 153) !important;
+    --toastify-text-color-light: #fff !important;
+    --toastify-color-info: #eab058 !important;
+    --toastify-font-family: inherit !important;
+}
 
 @layer components {
     #__next {
@@ -83,4 +84,9 @@
     .auto-search input {
         @apply !py-2 !px-4 h-[2.8rem]
     }
+
+    .answer-race.btn {
+        @apply min-w-fit text-white text-sm
+    }
+
 }
