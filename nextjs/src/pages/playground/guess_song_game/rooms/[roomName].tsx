@@ -519,7 +519,7 @@ const GuessSongGame = () => {
         setGameOption((gameOption) => {
             return {
                 ...gameOption,
-                startTime: Math.max(0, _.random(parseInt(youtubeRef.current?.target.getDuration())) - parseFloat(gameOption.duration)).toString()
+                startTime: Math.max(0, _.random(parseFloat(youtubeRef.current?.target.getDuration())) - parseFloat(gameOption.duration) - 1).toString()
             }
         })
     }
