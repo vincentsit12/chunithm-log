@@ -27,16 +27,18 @@ async function handler(
     let songs: Response[] = []
     const playlistID = req.query.id
     let nextPageToken: string | null = ""
+    let x = 0
     while (true) {
         let searchKey = `?part=snippet&key=${process.env.YOUTUBE_API_KEY}&playlistId=${playlistID}&maxResults=50`
         if (nextPageToken) {
             searchKey += `&pageToken=${nextPageToken}`
         }
         let url = encodeURI(`https://www.googleapis.com/youtube/v3/playlistItems${searchKey}`)
+        console.log(url)
         let youtubeAPIResult = await axios.get(url)
         nextPageToken = youtubeAPIResult.data.nextPageToken
 
-        let filteredItem = _.filter(youtubeAPIResult.data.items, k => k.snippet.title == "Deleted video")
+        let filteredItem = _.filter(youtubeAPIResult.data.items, k => k.snippet.title != "Deleted video")
         let result = _.map<any, Response>(filteredItem, k => {
             return {
                 display_name: k.snippet.title,
@@ -44,7 +46,8 @@ async function handler(
             }
         })
         songs = songs.concat(result)
-        if (!nextPageToken) {
+        x++
+        if (!nextPageToken || songs.length >= youtubeAPIResult.data.pageInfo.totalResults) {
             break
         }
     }
