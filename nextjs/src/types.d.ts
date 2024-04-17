@@ -1,4 +1,5 @@
 import Songs, { MaimaiSongs } from "db/model/songs"
+import { CustomSong } from "pages/api/socket"
 import { TypeOptions } from "react-toastify"
 
 export interface Rating {
@@ -24,7 +25,7 @@ export type SongGenre = 'ORI' | 'VAR' | '撃舞' | '東方' | 'P&A' | 'nico' | '
 export type MaimaiSongGenre = '舞' | '撃&チ' | 'ゲ&バ' | '東方' | 'P&ア' | 'nico'
 export type MaiMaiDifficulty = 'master' | 'expert' | 'remaster' | 'advanced'
 
-export type GuessGameSong = Songs | MaimaiSongs
+export type GuessGameSong = Songs | MaimaiSongs | CustomSong
 export interface Song {
     rate: number,
     combo: number,

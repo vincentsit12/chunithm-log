@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import classNames from 'classnames'
 
-type Props = {
+export type ModalProps = {
     isOpen: boolean,
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
     closeModal?: () => void
@@ -14,7 +14,7 @@ type Props = {
     closeWhenClickBackDrop?: boolean
 }
 
-export default function Modal(props: Props) {
+export default function Modal(props: ModalProps) {
     const { isOpen, setIsOpen, title, children, positiveBtnText, showButton = true } = props
     const ref = useRef(null)
     function closeModal() {

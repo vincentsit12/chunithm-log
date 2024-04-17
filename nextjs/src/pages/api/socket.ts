@@ -72,9 +72,9 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         let room = shared.rooms.get(roomID)!
         let player: Player = {
           id: socket.id, //use socket id first
-          name: data.playerName ?? "Guest - " + socket.id,
+          name: data.playerName ?? "Guest - " + socket.id.substring(0, 5),
           isHost: false,
-          isJoined: true,
+          isJoined: false,
           isReady: false,
           score: 0,
           isSurrendered: false
@@ -88,7 +88,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
       let player: Player = {
         id: socket.id, //use socket id first
-        name: data.playerName ?? "Host - " + socket.id,
+        name: data.playerName ?? "Guest - " + socket.id.substring(0, 5),
         isHost: true,
         isReady: false,
         isJoined: false,
@@ -112,7 +112,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       if (room && player) {
         player.isJoined = true
         io.in(roomID).emit("update-room-info", room.getRoomInfo())
-        io.in(roomID).emit("message", player.name + " joined game")
+        io.in(roomID).emit("message", (player.isHost ? "Host" : player.name) + " joined game")
         io.in(socket.id).emit('change-song-list', room.currentSongList)
       }
     })
@@ -126,26 +126,18 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         room.currentSongName = currentSongName
         let details: MessageDetails = { withNotification: true, type: 'info' }
         io.in(roomID).emit("message", "Music will start to play", details)
-        if (!_gameOption.isCustom) {
-          console.log(_gameOption, room.currentSongName)
-          if (shouldStartNewRound) {
-            room.currentRound += 1
-            io.in(roomID).emit("update-room-info", room.getRoomInfo())
-            _gameOption.answerRaceChoices = room.generateAnswerRaceChoices(_gameOption.answerRaceChoicesNumber)
-          } else {
-            _gameOption.answerRaceChoices = room.currentChoices
-          }
+
+        console.log(_gameOption, room.currentSongName)
+        if (shouldStartNewRound) {
+          room.currentRound += 1
+          io.in(roomID).emit("update-room-info", room.getRoomInfo())
+          _gameOption.answerRaceChoices = room.generateAnswerRaceChoices(_gameOption.answerRaceChoicesNumber)
+        } else {
+          _gameOption.answerRaceChoices = room.currentChoices
         }
 
         io.in(roomID).emit("buffer-music", _gameOption)
       }
-    })
-
-    socket.on("start-music", async (data: RoomEvent) => {
-      let roomID = data.roomID
-
-      io.in(roomID).emit("message", "start play music")
-      io.in(roomID).emit("play-music")
     })
 
     socket.on("finish-buffer-music", async (data: RoomEvent) => {
@@ -166,7 +158,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
     socket.on("replay-music", async (data: RoomEvent) => {
       let roomID = data.roomID
-      io.in(roomID).emit("message", "Replay music")
+      io.in(roomID).emit("message", "Host Replay music")
       io.in(roomID).emit("replay-music")
     })
 
@@ -199,6 +191,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
             let details: MessageDetails = { withNotification: true, type: 'success' }
             io.in(roomID).emit("message", `${player.name} is correct`, details)
             io.in(roomID).emit("message", `${player.name} score : ${player.score}`)
+            io.in(roomID).emit("update-room-info", room.getRoomInfo())
             room.endThisRound()
           }
         }
@@ -215,10 +208,15 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       }
 
     })
-    socket.on("change-game-type", (data: RoomEvent, gameType: string) => {
+    socket.on("change-game-type", (data: RoomEvent, gameType: GuessSongGameType, gameTypeName: string) => {
       let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
       let details: MessageDetails = { withNotification: true, onlyPlayer: true, type: 'info' }
-      io.in(roomID).emit("message", `Host changed the game type to ${gameType}`, details)
+      if (room) {
+        room.gameType = gameType
+        io.in(roomID).emit("update-room-info", room.getRoomInfo())
+        io.in(roomID).emit("message", `Host changed the game type to ${gameTypeName}`, details)
+      }
     })
 
     socket.on("change-song-list", (data: RoomEvent, songList: GuessGameSong[]) => {
@@ -279,6 +277,7 @@ export class GuessSongGameRoom {
   currentSongList: GuessGameSong[]
   currentChoices: string[]
   currentRound: number
+  gameType: GuessSongGameType
 
   constructor(roomID: string) {
     this.roomID = roomID
@@ -286,6 +285,7 @@ export class GuessSongGameRoom {
     this.currentSongList = []
     this.currentChoices = []
     this.currentRound = 0
+    this.gameType = GuessSongGameType.chunithm
   }
 
   // Return player that is host or is joined to the game
@@ -352,19 +352,12 @@ export class GuessSongGameRoom {
 
   getRoomInfo = () => {
     let joinedPlayer = this.joinedPlayer()
+    console.log("joinedPlayer : ", joinedPlayer)
     let roomInfo: RoomInfo = {
       roomID: this.roomID,
       noOfRound: this.currentRound,
-      players: Array.from(joinedPlayer.values()).map(k => {
-        let player = {
-          id : k.id,
-          name: k.name,
-          isSurrendered: k.isSurrendered,
-          score: k.score,
-          isHost: k.isHost,
-        }
-        return player
-      }),
+      players: Array.from(joinedPlayer.values()),
+      gameType: this.gameType
     }
 
     return roomInfo
@@ -392,17 +385,29 @@ export interface RoomEvent {
 export interface RoomInfo {
   roomID: string,
   noOfRound: number,
-  players: RoomPlayer[],
+  gameType: number
+  players: Player[],
 }
-
-export type RoomPlayer = Omit<Player, "isReady" | "isJoined">
 
 export interface GuessSongGameOption {
   youtubeID: string,
   startTime: string
   duration: string
-  isCustom: boolean,
   isFixedStartTime: boolean,
   answerRaceChoices: string[],
   answerRaceChoicesNumber: number,
+}
+
+export type CustomSong = {
+  id: number,
+  youtube_link: string,
+  display_name: string,
+  startTime: number
+}
+
+enum GuessSongGameType {
+  chunithm = 1,
+  maimai,
+  playlist,
+  custom,
 }

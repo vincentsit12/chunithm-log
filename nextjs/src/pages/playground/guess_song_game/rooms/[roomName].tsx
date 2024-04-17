@@ -1,26 +1,28 @@
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo, SetStateAction, Dispatch } from 'react';
 import { Socket, io } from "socket.io-client"
 import _, { uniqBy, values } from 'lodash'
 import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
 import Songs, { MaimaiSongs } from 'db/model/songs';
-import { GuessSongGameOption, RoomInfo } from '../../../api/socket';
+import { CustomSong, GuessSongGameOption, RoomInfo } from '../../../api/socket';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import LayoutWrapper from 'components/LayoutWrapper';
 import { useRouter } from 'next/router';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaFlag } from "react-icons/fa6";
+import { FaFlag, FaRobot } from "react-icons/fa6";
 
 import ListBox from 'components/ListBox';
 import { GuessGameSong, MessageDetails } from 'types';
 import classNames from 'classnames';
-const enum GuessSongGameType {
+import Modal, { ModalProps } from 'components/Modal';
+enum GuessSongGameType {
     chunithm = 1,
     maimai,
     playlist,
+    custom,
 }
 
 function useSocketClient() {
@@ -76,7 +78,12 @@ const generateChoices = () => {
 const guessSongGameType: {
     name: string,
     value: GuessSongGameType
-}[] = [{ "name": "chunithm", "value": GuessSongGameType.chunithm }, { "name": "maimai", "value": GuessSongGameType.maimai }, { "name": "playlist", "value": GuessSongGameType.playlist }]
+}[] =
+    [{ "name": "chunithm", "value": GuessSongGameType.chunithm },
+    { "name": "maimai", "value": GuessSongGameType.maimai },
+    { "name": "playlist", "value": GuessSongGameType.playlist },
+    { "name": "custom", "value": GuessSongGameType.custom },
+    ]
 
 const level = generateLevel()
 const answerChoices = generateChoices()
@@ -107,21 +114,25 @@ const GuessSongGame = () => {
 
     const roomID = router.query.roomName
 
-    const [customYoutubeLink, setCustomYoutubeLink] = useState<string>("")
-    const [customAnswer, setCustomAnswer] = useState<string>("")
 
 
     const [isHost, setIsHost] = useState(false)
 
     const [isJoined, setIsJoined] = useState(false)
 
-    const [isSurrendered, setIsSurrendered] = useState(false)
-
     const [shouldSendBufferedSignal, setShouldSendBufferedSignal] = useState(true)
     const [shouldGetNewRandomStartTime, setShouldGetNewRandomStartTime] = useState(false)
     const [shouldStartNewRound, setShouldStartNewRound] = useState(true)
 
     const [isShowVideo, setIsShowVideo] = useState(true)
+
+    const [isInputAnswerSetModalOpen, setIsInputAnswerSetModalOpen] = useState(false)
+
+    // Custom youtube link
+    const [customYoutubeLink, setCustomYoutubeLink] = useState<string>("PvC92bu-PZs")
+    const [customSongList, setCustomSongList] = useState<CustomSong[]>([])
+    const [customMusicPlayerInitialized, setCustomMusicPlayerInitialized] = useState(false)
+
 
     const chatBoxRef = useRef<HTMLDivElement>(null)
 
@@ -137,13 +148,15 @@ const GuessSongGame = () => {
         youtubeID: "Mru-JAtqagE",
         startTime: "10",
         duration: "2",
-        isCustom: false,
         isFixedStartTime: false,
         answerRaceChoices: [],
         answerRaceChoicesNumber: answerRaceChoicesNumber.value,
     })
 
     const [roomInfo, setRoomInfo] = useState<RoomInfo>()
+
+    const timer = useRef<NodeJS.Timeout>()
+
 
     useEffect(() => {
         if (!state && !isHost && isJoined) {
@@ -161,11 +174,6 @@ const GuessSongGame = () => {
             });
         }
 
-        socket?.on('update-room-info', (roomInfo: RoomInfo) => {
-            console.log("updae", roomInfo)
-            setRoomInfo(roomInfo)
-        });
-
         socket?.on('delete-room', (message) => {
             alert("Room has been deleted")
             router.replace("../rooms")
@@ -182,6 +190,7 @@ const GuessSongGame = () => {
     useEffect(() => {
         if (!isHost) return
         setSongList([])
+        setCurrentSong(undefined)
         if (selectedGameType.value == GuessSongGameType.chunithm) {
             setPlaylist("")
             setLowerLevelRange(level.find(k => k.value == chunithmDefaulLevelRange[0])!)
@@ -192,18 +201,24 @@ const GuessSongGame = () => {
             setLowerLevelRange(level.find(k => k.value == maimaiDefaulLevelRange[0])!)
             setUpperLevelRange(level.find(k => k.value == maimaiDefaulLevelRange[1])!)
             getMaimaiSongList()
+        } else if (selectedGameType.value == GuessSongGameType.custom) {
+            setPlaylist("")
+            setGameOption(k => { return { ...k, isFixedStartTime: false } })
         }
-        socket?.emit('change-game-type', { roomID }, selectedGameType.name)
+        socket?.emit('change-game-type', { roomID }, selectedGameType.value, selectedGameType.name)
     }, [selectedGameType, isHost])
 
     useEffect(() => {
-        if ((!isHost || selectedGameType.value == GuessSongGameType.playlist)) {
+        if (!isHost || selectedGameType.value == GuessSongGameType.playlist || selectedGameType.value == GuessSongGameType.custom) {
             setFilteredSongList(songList)
             return
         }
+        const isCustomSongs = (x: any): x is CustomSong => x.startTime != undefined;
         const isMaimaiSongs = (x: any): x is MaimaiSongs => true;
+
         let filteredSongList = songList.filter(k => {
             let isValid = false
+            if (isCustomSongs(k)) return true
             if (isMaimaiSongs(k)) {
                 if (k.remaster?.rate && k.remaster.rate <= upperLevelRange.value && k.remaster.rate >= lowerLevelRange.value) {
                     return true
@@ -224,21 +239,18 @@ const GuessSongGame = () => {
         })
 
         setFilteredSongList(filteredSongList)
-    }, [songList, upperLevelRange, lowerLevelRange])
+    }, [songList, upperLevelRange, lowerLevelRange, selectedGameType, isHost])
 
     useEffect(() => {
         socket?.on('replay-music', (message) => {
             console.log('replay-music', gameOption)
-            replaySong()
+            playSong()
         });
 
         socket?.on('play-music', (message) => {
-            console.log('replay-music-11', gameOption)
             setTimeout(() => {
-                console.log('replay-music-12', gameOption)
                 playSong()
             }, 1000)
-
         });
 
         return () => {
@@ -246,7 +258,7 @@ const GuessSongGame = () => {
             socket?.removeListener('replay-music')
         };
 
-    }, [gameOption, state])
+    }, [gameOption, state, selectedGameType])
 
     useEffect(() => {
         socket?.on('request-replay', (playerName: string) => {
@@ -260,7 +272,7 @@ const GuessSongGame = () => {
                     draggable: true,
                     closeButton: () => {
                         return <div className='flex items-center'>
-                            <button className='btn bg-red txt-white !min-w-min' onClick={replaySong}>Replay</button>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={playSong}>Replay</button>
                         </div>
                     },
                     type: 'default',
@@ -287,15 +299,39 @@ const GuessSongGame = () => {
             }
         });
 
-        socket?.on('buffer-music', (gameOption: GuessSongGameOption) => {
 
-            console.log('buffer-music', gameOption)
-            setGameOption((x) => { return { ...x, ...gameOption } })
-            youtubeRef.current?.target.cueVideoById({
-                'videoId': gameOption.youtubeID,
-                'startSeconds': parseFloat(gameOption.startTime),
-                'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
+        socket?.on('update-room-info', (roomInfo: RoomInfo) => {
+            console.log("update", roomInfo)
+            if (!isHost && selectedGameType.value != roomInfo.gameType) {
+                setSelectedGameType(guessSongGameType[roomInfo.gameType - 1])
+            }
+            setRoomInfo(roomInfo)
+        });
+
+        socket?.on('buffer-music', (newGameOption: GuessSongGameOption) => {
+
+            console.log('buffer-music', newGameOption, gameOption)
+            setGameOption((x) => {
+                return { ...x, ...newGameOption }
             })
+
+            if (selectedGameType.value != GuessSongGameType.custom) {
+                youtubeRef.current?.target.cueVideoById({
+                    'videoId': newGameOption.youtubeID,
+                    'startSeconds': parseFloat(newGameOption.startTime),
+                    'endSeconds': parseFloat(newGameOption.startTime) + parseFloat(newGameOption.duration)
+                })
+            } else {
+                if (gameOption.youtubeID != newGameOption.youtubeID) {
+                    youtubeRef.current?.target.cueVideoById({
+                        'videoId': newGameOption.youtubeID,
+                        'startSeconds': parseFloat(newGameOption.startTime),
+                        'endSeconds': parseFloat(newGameOption.startTime) + parseFloat(newGameOption.duration)
+                    })
+                } else {
+                    socket?.emit('finish-buffer-music', { roomID, playerID: socket.id });
+                }
+            }
         });
 
         socket?.on('change-song-list', (songList: GuessGameSong[]) => {
@@ -306,10 +342,11 @@ const GuessSongGame = () => {
 
         return () => {
             socket?.removeListener('message')
+            socket?.removeListener('update-room-info')
             socket?.removeListener('buffer-music')
             socket?.removeListener('change-song-list')
         };
-    }, [isHost, state])
+    }, [isHost, state, selectedGameType, gameOption])
 
     useEffect(() => {
         chatBoxRef.current?.scrollTo({ top: chatBoxRef.current.scrollHeight })
@@ -379,11 +416,9 @@ const GuessSongGame = () => {
         let song = _.sampleSize<GuessGameSong>(filteredSongList, 1)[0]
         console.log(song)
         setCurrentSong(song)
-        setCustomAnswer("")
+        setCustomSongList([])
         setCustomYoutubeLink("")
-        setGameOption(k => {
-            return { ...k, isCustom: false, }
-        })
+
         if (!gameOption.isFixedStartTime) {
             setShouldGetNewRandomStartTime(true)
         }
@@ -408,6 +443,7 @@ const GuessSongGame = () => {
                     youtubeID: song.youtube_link ?? gameOption.youtubeID
                 }
             })
+            setShouldStartNewRound(true)
         }
         else {
             let url = selectedGameType.value == GuessSongGameType.chunithm ? `/api/songs/youtubeID?type=chunithm&id=${song.id}` : `/api/songs/youtubeID?type=maimai&id=${song.display_name}`
@@ -457,36 +493,45 @@ const GuessSongGame = () => {
     }
 
     const broadCastConfig = () => {
-
-        if (gameOption.isCustom) {
-            socket?.emit('load-music', { roomID }, gameOption, customAnswer, shouldStartNewRound);
+        if (selectedGameType.value == GuessSongGameType.custom) {
+            socket?.emit('load-music', { roomID }, gameOption, currentSong?.display_name, true);
         } else {
             socket?.emit('load-music', { roomID }, gameOption, currentSong?.display_name, shouldStartNewRound);
         }
+        setShouldStartNewRound(false)
+    }
 
+    const broadCastConfigWithRandomTime = () => {
+        let [randomTime, song] = getRandomTime()
+        if (selectedGameType.value == GuessSongGameType.custom) {
+            socket?.emit('load-music', { roomID }, { ...gameOption, startTime: randomTime?.toString() }, song?.display_name, true);
+        } else {
+            socket?.emit('load-music', { roomID }, { ...gameOption, startTime: randomTime?.toString() }, currentSong?.display_name, shouldStartNewRound);
+        }
         setShouldStartNewRound(false)
     }
 
     const testSong = () => {
-        youtubeRef.current?.target.loadVideoById({
-            'videoId': gameOption.youtubeID,
-            'startSeconds': parseFloat(gameOption.startTime),
-            'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
-        })
-        // youtubeRef.current?.target.seekTo(gameOption?.startTime, true)
-        youtubeRef.current?.target.playVideo()
-        // setTimeout(() => {
-        //     youtubeRef.current?.target.pauseVideo()
-        // }, gameOption.duration * 1000)
-    }
-
-    const replaySong = () => {
-        console.log("replay", gameOption?.startTime)
-        youtubeRef.current?.target.seekTo(parseFloat(gameOption?.startTime), true)
+        if (selectedGameType.value != GuessSongGameType.custom) {
+            youtubeRef.current?.target.loadVideoById({
+                'videoId': gameOption.youtubeID,
+                'startSeconds': parseFloat(gameOption.startTime),
+                'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
+            })
+            youtubeRef.current?.target.playVideo()
+        } else {
+            playSong()
+        }
     }
 
     const playSong = () => {
-        console.log("start play music", gameOption)
+        if (timer.current)
+            clearTimeout(timer.current)
+
+        console.log("start play music", gameOption.startTime, gameOption.duration)
+        if (selectedGameType.value == GuessSongGameType.custom && isJoined) {
+            youtubeRef.current?.target.unMute()
+        }
         youtubeRef.current?.target.seekTo(parseFloat(gameOption?.startTime), true)
         youtubeRef.current?.target.playVideo()
     }
@@ -496,7 +541,7 @@ const GuessSongGame = () => {
     }
 
     const joinGame = () => {
-        console.log("join-game")
+        console.log("join-game", socket?.id)
         // youtubeRef.current?.target.seekTo(gameOption?.startTime, true)
 
         socket?.emit('join-game', { roomID, playerID: socket.id });
@@ -522,13 +567,46 @@ const GuessSongGame = () => {
         setAnswer("")
     }
 
-    const getRandomTime = () => {
-        setGameOption((gameOption) => {
-            return {
-                ...gameOption,
-                startTime: Math.max(0, _.random(parseFloat(youtubeRef.current?.target.getDuration())) - parseFloat(gameOption.duration) - 1).toString()
+    const getRandomTime = (): [number, GuessGameSong?] => {
+        let randomTime = 0
+        if (selectedGameType.value == GuessSongGameType.custom) {
+            let randomSongIndex = _.random(songList.length - 1)
+            if (customSongList[randomSongIndex]) {
+                let startTime = customSongList[randomSongIndex].startTime
+                let endTime = customSongList[randomSongIndex + 1] ? customSongList[randomSongIndex + 1].startTime : parseFloat(youtubeRef.current?.target.getDuration())
+                randomTime = ~~Math.max(startTime, startTime + _.random(endTime - startTime) - parseFloat(gameOption.duration))
+                setGameOption((gameOption) => {
+                    return {
+                        ...gameOption,
+                        startTime: randomTime.toString()
+                    }
+                })
+
+                setShouldStartNewRound(true)
+                setCurrentSong(customSongList[randomSongIndex])
+                return [randomTime, customSongList[randomSongIndex]]
+            } else {
+                setGameOption((gameOption) => {
+                    return {
+                        ...gameOption,
+                        startTime: randomTime.toString()
+                    }
+                })
+                setShouldStartNewRound(true)
+                return [randomTime, customSongList[randomSongIndex]]
             }
-        })
+
+        } else {
+            randomTime = ~~Math.max(0, _.random(parseFloat(youtubeRef.current?.target.getDuration()) - parseFloat(gameOption.duration)))
+            setGameOption((gameOption) => {
+                return {
+                    ...gameOption,
+                    startTime: randomTime.toString()
+                }
+            })
+
+            return [randomTime, currentSong]
+        }
     }
 
     const showAnswer = () => {
@@ -607,15 +685,16 @@ const GuessSongGame = () => {
                             {!isJoined && <button className='btn btn-secondary my-5' onClick={joinGame}>Join</button>}
                         </div>
                         <div id={`guess-song-game-${isHost ? 'host' : 'player'}-scorebox`} className='box box-shadow'>
-                            {roomInfo && roomInfo.players.map((k,i) => {
+                            {roomInfo && roomInfo.players.map((k, i) => {
                                 return <ul key={i} className='even:bg-[#eab058] odd:bg-[#ea8b58]'>
                                     <li className='px-5 py-3 text-white'>
                                         <div className='flex justify-between'>
                                             <div className='flex items-center'>
-                                                <div className='mr-2'>{k.name}</div>
+                                                <div className='mr-1'>{k.name}</div>
+                                                {k.isHost && <FaRobot className='mr-1' />}
                                                 {k.isSurrendered && <FaFlag />}
                                             </div>
-                                            <span>{`score: ${k.score}`}</span>
+                                            {(!k.isHost || (k.isHost && k.isJoined)) && <span>{`score: ${k.score}`}</span>}
                                         </div>
                                     </li>
                                 </ul>
@@ -631,7 +710,7 @@ const GuessSongGame = () => {
                                 <div className='ml-2 mb-2'>Game Type: </div>
                                 <ListBox className="w-[7.5rem]" source={guessSongGameType} selected={selectedGameType} setSelected={setSelectedGameType} />
                             </div>
-                            {selectedGameType.value != GuessSongGameType.playlist &&
+                            {selectedGameType.value != GuessSongGameType.playlist && selectedGameType.value != GuessSongGameType.custom &&
                                 <div className=''>
                                     <div className='ml-2 mb-2'>Level: </div>
                                     <div className="flex justify-between items-center">
@@ -668,7 +747,7 @@ const GuessSongGame = () => {
                             }
                             }>Load</button>
                         </div>}
-                        <div className='flex my-5'>
+                        {selectedGameType.value == GuessSongGameType.custom && <div className='flex my-5'>
                             <input value={customYoutubeLink} onChange={(e) => {
                                 try {
                                     let url = new URL(e.target.value)
@@ -686,36 +765,37 @@ const GuessSongGame = () => {
 
                             }}
                                 className='px-4 py-2 mr-2 box box-shadow w-full' placeholder='Youtube link'></input>
-                            <input value={customAnswer} onChange={(e) => {
-                                setCustomAnswer(e.target.value)
-                            }}
-                                className='px-4 py-2 box box-shadow w-full' placeholder='Answer'></input>
-                            <button className='btn btn-secondary ml-2' onClick={() => {
-
-                                if (customYoutubeLink && customAnswer) {
-                                    setShouldSendBufferedSignal(false)
-                                    setGameOption((gameOption) => {
-                                        return {
-                                            ...gameOption,
-                                            youtubeID: customYoutubeLink,
-                                            isCustom: true,
-                                        }
+                            <button className='btn btn-secondary ml-2 ' onClick={() => {
+                                if (!customYoutubeLink) {
+                                    showMessage("Please input the link first!", {
+                                        type: "error"
                                     })
-                                    youtubeRef.current?.target.cueVideoById({
-                                        'videoId': customYoutubeLink,
-                                        'startSeconds': parseFloat(gameOption.startTime),
-                                        'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
-                                    })
-                                } else {
-                                    alert("Please input both youtube link and answer!")
+                                    return
                                 }
+                                setIsInputAnswerSetModalOpen(true)
+                            }
+                            }>Config</button>
+                            <button disabled={customSongList.length == 0 || !customYoutubeLink} className='btn btn-secondary ml-2' onClick={() => {
+
+                                setShouldSendBufferedSignal(false)
+                                setGameOption((gameOption) => {
+                                    return {
+                                        ...gameOption,
+                                        youtubeID: customYoutubeLink,
+                                    }
+                                })
+                                youtubeRef.current?.target.cueVideoById({
+                                    'videoId': customYoutubeLink,
+                                    'startSeconds': parseFloat(gameOption.startTime),
+                                    'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
+                                })
                             }
                             }>Load</button>
-                        </div>
+                        </div>}
                         <div className='mt-5'>
                             <div className="flex justify-between items-center">
                                 <div className='p-2 bold'>Start Time</div>
-                                <div className="flex justify-center items-center">
+                                {selectedGameType.value != GuessSongGameType.custom && <div className="flex justify-center items-center">
                                     <input onChange={(e) => {
                                         setGameOption((gameOption) => {
                                             return {
@@ -724,8 +804,8 @@ const GuessSongGame = () => {
                                             }
                                         })
                                     }} checked={gameOption.isFixedStartTime} id="game-fullscreen" className="checkbox" type="checkbox" />
-                                    <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Fixed Time</label>
-                                </div>
+                                    <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen">Fixed Time</label>
+                                </div>}
                             </div>
                             <div className='flex '>
                                 <input value={gameOption.startTime} onChange={(e) => setGameOption((gameOption) => {
@@ -758,14 +838,16 @@ const GuessSongGame = () => {
                         </div>
                         {!canControlGamePanel && (!gameOption.duration || !gameOption.startTime) && <div className='text-red-500 bold'>Please input both start time and duration!</div>}
                         <div className='flex flex-wrap my-5'>
-                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastConfig}>Start</button>
+                            <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastConfig}>Start</button>
+                            <button disabled={!canControlGamePanel || (selectedGameType.value != GuessSongGameType.custom && !currentSong)} className='btn bg-red txt-white mr-2 my-1'
+                                onClick={broadCastConfigWithRandomTime}>Start(R)</button>
                             <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastReplaySong}>Replay</button>
                             <button disabled={!canControlGamePanel} className='btn bg-red txt-white my-1' onClick={showAnswer}>Reveal</button>
                         </div>
                         <div className='flex my-5 items-center'>
                             <div className='flex-1'>
                                 <button disabled={!canControlGamePanel} className='btn btn-secondary mr-2 my-1' onClick={testSong}>Test</button>
-                                <button disabled={!canControlGamePanel} className='btn btn-secondary my-1' onClick={getNextSong}>Next</button>
+                                {selectedGameType.value != GuessSongGameType.custom && <button disabled={!canControlGamePanel} className='btn btn-secondary my-1' onClick={getNextSong}>Next</button>}
                             </div>
                             <button className='btn btn-secondary' onClick={() => {
                                 setIsShowVideo(!isShowVideo)
@@ -782,15 +864,21 @@ const GuessSongGame = () => {
                     playerVars: {
                         // https://developers.google.com/youtube/player_parameters
                         // playsinline: 1,
-                        controls: 0,
+                        controls: 1,
                         disablekb: 1,
                         fs: 0,
                         // start: gameOption.startTime,
                         // end: gameOption.startTime + gameOption.duration
                     },
-                }} style={(isHost && isShowVideo) ? { opacity: 1, aspectRatio: 16 / 9 } : { opacity: 0, position: "absolute", top: -999 }}
-                    onReady={youtubeVideoOnReady} onError={youtubeVideoOnError} onStateChange={(e) => {
-                        console.log(e.data)
+                }} style={(isHost && isShowVideo) ? { opacity: 1, aspectRatio: 16 / 9 } : { opacity: 0, position: "absolute", top: -999, height: 100, width: 100 }}
+                    onReady={youtubeVideoOnReady} onPlay={() => {
+                        if (selectedGameType.value == GuessSongGameType.custom) {
+                            timer.current = setTimeout(() => {
+                                youtubeRef.current?.target.pauseVideo()
+                            }, parseFloat(gameOption?.duration) * 1000)
+                        }
+                    }} onError={youtubeVideoOnError} onStateChange={(e) => {
+                        console.log("video time : ", youtubeRef.current?.target.getCurrentTime(), e.data)
                         if (e.data == 5) {
                             console.log("finish buffer")
                             // youtubeRef.current?.target.playVideo()
@@ -798,17 +886,29 @@ const GuessSongGame = () => {
                                 socket?.emit('finish-buffer-music', { roomID, playerID: socket.id });
                             } else {
                                 setShouldSendBufferedSignal(true)
-                                if (customYoutubeLink && customAnswer) {
+                                if (customYoutubeLink && customSongList.length > 0) {
+                                    setSongList(customSongList)
                                     showMessage("Loaded custom video successfully")
                                 }
                             }
                             if (shouldGetNewRandomStartTime) {
+                                console.log("shouldGetNewRandomStartTime", "youtube")
                                 getRandomTime()
                                 setShouldGetNewRandomStartTime(false)
+                            }
+
+                            if (selectedGameType.value == GuessSongGameType.custom) {
+                                youtubeRef.current?.target.mute()
+                                youtubeRef.current?.target.seekTo(0, true)
+                                youtubeRef.current?.target.playVideo()
                             }
                         }
                     }} />
             </div>
+            <InputAnswerSetModal youtube_link={customYoutubeLink} isOpen={isInputAnswerSetModalOpen} setIsOpen={setIsInputAnswerSetModalOpen} callBack={(songs: CustomSong[]) => {
+                setCustomSongList(songs.sort((a, b) => a.startTime - b.startTime))
+                setIsInputAnswerSetModalOpen(false)
+            }} />
             <ToastContainer
             />
         </LayoutWrapper >
@@ -816,3 +916,73 @@ const GuessSongGame = () => {
 };
 
 export default GuessSongGame;
+
+
+
+const InputAnswerSetModal: React.FC<Omit<ModalProps, "children"> & {
+    youtube_link: string
+    callBack: (songs: CustomSong[]) => void
+}> = ({
+    isOpen, setIsOpen, callBack, youtube_link
+}) => {
+        const [answerSetText, setAnswerSetText] = useState(
+            `Season 1
+00:00 - Hishoku no Sora「Mami Kawada」
+04:15 - Yoake Umarekuru Shoujo「Youko Takahashi」
+08:27 - being「KOTOKO」
+13:14 - Aka no Seijaku「Yoko Ishida」
+__________________________________
+Season 2
+18:25 - JOINT「Mami Kawada」
+22:25 - triangle「Mami Kawada」
+27:14 - BLAZE「KOTOKO」
+32:19 - Sociometry「KOTOKO」
+37:03 - sense「Mami Kawada」
+__________________________________
+Season 3
+41:16 - Light My Fire「KOTOKO」
+45:02 - I'll believe「Altima」- Rest in peace Maon Kurosaki
+50:42 - Serment「Mami Kawada」
+54:50 - ONE「Altima」
+59:58 - u/n「Mami Kawada」
+1:04:06 - Koubou「Mami Kawada`)
+
+        return <Modal title={"Please Input the answer set"} positiveBtnText={"Convert"} rightBtnCallBack={() => {
+            let answerSetTextArray = answerSetText.split("\n")
+            const re = /([0-9]?[0-9]:)?([0-5][0-9])(:[0-5][0-9])/
+            let songList: CustomSong[] = []
+            answerSetTextArray.map((k, i) => {
+                let test = re.exec(k)
+                if (test) {
+                    // console.log(test)
+                    let time = test[0].split(":")
+                    let duration = 0
+                    time.forEach((z, i) => {
+                        duration += parseInt(z) * Math.pow(60, time.length - 1 - i)
+                    })
+                    let songName = k.replaceAll(test[0], "")
+                    songList.push({
+                        id: i,
+                        youtube_link,
+                        display_name: songName,
+                        startTime: duration
+                    })
+                }
+            })
+            if (songList.length == 0) {
+                callBack([{ id: 0, youtube_link, display_name: answerSetText, startTime: 0 }])
+                return
+            }
+            console.log(songList)
+            callBack(songList)
+        }} isOpen={isOpen} setIsOpen={setIsOpen}>
+            <div className='px-5'>
+                <textarea value={answerSetText} onChange={e => setAnswerSetText(e.target.value)}
+                    placeholder={`Song Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\n`}
+                    className='box box-shadow h-[300px] w-full p-3'>
+
+                </textarea>
+            </div>
+        </Modal>
+    }
+
