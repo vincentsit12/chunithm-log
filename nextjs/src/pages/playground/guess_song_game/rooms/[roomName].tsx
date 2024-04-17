@@ -607,8 +607,8 @@ const GuessSongGame = () => {
                             {!isJoined && <button className='btn btn-secondary my-5' onClick={joinGame}>Join</button>}
                         </div>
                         <div id={`guess-song-game-${isHost ? 'host' : 'player'}-scorebox`} className='box box-shadow'>
-                            {roomInfo && roomInfo.players.map(k => {
-                                return <ul className='even:bg-[#eab058] odd:bg-[#ea8b58]'>
+                            {roomInfo && roomInfo.players.map((k,i) => {
+                                return <ul key={i} className='even:bg-[#eab058] odd:bg-[#ea8b58]'>
                                     <li className='px-5 py-3 text-white'>
                                         <div className='flex justify-between'>
                                             <div className='flex items-center'>
