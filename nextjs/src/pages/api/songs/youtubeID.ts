@@ -39,8 +39,9 @@ async function handler(
         return
     }
     const query = song ? song.display_name : song_id
+    const subphase = gameType == 'chunithm' ? "譜面確認" : "外部出力"
     try {
-        const searchKey = `?key=${process.env.YOUTUBE_API_KEY}&q="${query}" ${gameType} 譜面確認`
+        const searchKey = `?key=${process.env.YOUTUBE_API_KEY}&q="${query}" ${gameType} ${subphase}`
         let url = encodeURI(`https://www.googleapis.com/youtube/v3/search${searchKey}`)
         let youtubeAPIResult = await axios.get(url)
         result = youtubeAPIResult.data.items[0].id.videoId
@@ -52,18 +53,22 @@ async function handler(
 
     } catch (e) {
         try {
-            const searchKey = `%27${query}%27+${gameType}+譜面確認`
-            console.error("youtube api fail, start to search local")
+            const searchKey = `%27${query}%27+${gameType}+${subphase}`
+            console.info("youtube api fail, start to search local")
             let url = encodeURI(`https://www.youtube.com/results?search_query=${searchKey}`)
             let localSearch = await fetch(url)
             let localSearchRes = await localSearch.text()
-            console.error("get youtube page success")
+            console.info("get youtube page success")
             var doc = parse(localSearchRes)
+            console.info("parse doc success")
             var x = doc.getElementsByTagName("script")
+            console.info("get script success", x.length)
             for (let i = 0; i < x.length; i++) {
                 const element = x[i];
                 if (element.innerHTML.includes("ytInitialData")) {
+                    console.info("get ytInitialData success")
                     let predictString = element.innerHTML.substring(element.innerHTML.indexOf("videoId"), element.innerHTML.indexOf("thumbnail"))
+                    console.info("get predictString success")
                     result = predictString.split(`\"`)[2]
                     break
                 }
