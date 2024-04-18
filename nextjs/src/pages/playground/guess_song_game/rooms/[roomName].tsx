@@ -753,7 +753,7 @@ const GuessSongGame = () => {
                                             backgroundColor: "#d9e9ee",
                                             fontFamily: "inherit",
                                             fontSize: 'inherit',
-                                            zIndex: 999
+                                            zIndex: 99
                                         }}
                                         className='flex-1 auto-search'
                                     />

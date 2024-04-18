@@ -53,10 +53,11 @@ async function handler(
     } catch (e) {
         try {
             const searchKey = `%27${query}%27+${gameType}+譜面確認`
-            console.log("youtube api fail, start to search local")
+            console.error("youtube api fail, start to search local")
             let url = encodeURI(`https://www.youtube.com/results?search_query=${searchKey}`)
             let localSearch = await fetch(url)
             let localSearchRes = await localSearch.text()
+            console.error("get youtube page success")
             var doc = parse(localSearchRes)
             var x = doc.getElementsByTagName("script")
             for (let i = 0; i < x.length; i++) {
@@ -68,7 +69,7 @@ async function handler(
                 }
             }
         } catch (error) {
-            throw new BadRequestError("cannot find song")
+            throw error
         }
     }
 

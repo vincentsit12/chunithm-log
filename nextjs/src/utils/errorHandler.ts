@@ -9,7 +9,7 @@ const withErrorHandler = (handler: any) => {
             await handler(req, res)
         }
         catch (e) {
-            console.log("🚀 ~ file: errorHandler.ts ~ line 12 ~ return ~ e", e)
+            console.error("🚀 ~ file: errorHandler.ts ~ line 12 ~ return ~ e", e)
             if (e instanceof CustomAPIError) {
                 res.status(e.statusCode).send({ message: e.message, errorCode: e.errorCode })
             }
