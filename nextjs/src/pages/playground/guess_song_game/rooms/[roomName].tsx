@@ -10,7 +10,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import LayoutWrapper from 'components/LayoutWrapper';
 import { useRouter } from 'next/router';
-import { Bounce, ToastContainer, toast } from 'react-toastify';
+import { Bounce, Id, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaFlag, FaRobot } from "react-icons/fa6";
 
@@ -24,6 +24,8 @@ enum GuessSongGameType {
     playlist,
     custom,
 }
+
+type RequestType = "replay" | "longer" | "anotherSection"
 
 function useSocketClient() {
     const [state, setState] = useState(false)
@@ -157,6 +159,9 @@ const GuessSongGame = () => {
 
     const timer = useRef<NodeJS.Timeout>()
 
+    const replayRef = useRef<Id>()
+    const longerRef = useRef<Id>()
+    const anotherSectionRef = useRef<Id>()
 
     useEffect(() => {
         if (!state && !isHost && isJoined) {
@@ -209,7 +214,8 @@ const GuessSongGame = () => {
     }, [selectedGameType, isHost])
 
     useEffect(() => {
-        if (!isHost || selectedGameType.value == GuessSongGameType.playlist || selectedGameType.value == GuessSongGameType.custom) {
+        if (!isHost) return
+        if (selectedGameType.value == GuessSongGameType.playlist || selectedGameType.value == GuessSongGameType.custom) {
             setFilteredSongList(songList)
             return
         }
@@ -241,51 +247,25 @@ const GuessSongGame = () => {
         setFilteredSongList(filteredSongList)
     }, [songList, upperLevelRange, lowerLevelRange, selectedGameType, isHost])
 
+    // Player Request 
     useEffect(() => {
-        socket?.on('replay-music', (message) => {
-            console.log('replay-music', gameOption)
-            playSong()
-        });
-
-        socket?.on('play-music', (message) => {
-            setTimeout(() => {
-                playSong()
-            }, 1000)
-        });
-
-        return () => {
-            socket?.removeListener('play-music')
-            socket?.removeListener('replay-music')
-        };
-
-    }, [gameOption, state, selectedGameType])
-
-    useEffect(() => {
+        if (!isHost) return
         socket?.on('request-replay', (playerName: string) => {
-            if (isHost) {
-                toast(playerName + " Request Replay", {
-                    position: 'bottom-right',
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    closeButton: () => {
-                        return <div className='flex items-center'>
-                            <button className='btn bg-red txt-white !min-w-min' onClick={playSong}>Replay</button>
-                        </div>
-                    },
-                    type: 'default',
-                    theme: 'light',
-                    className: "",
-                })
-            }
+            showRequest(playerName, 'replay')
+        })
+        socket?.on('request-longer', (playerName: string) => {
+            showRequest(playerName, 'longer')
+        })
+        socket?.on('request-another-section', (playerName: string) => {
+            showRequest(playerName, 'anotherSection')
         })
 
         return () => {
             socket?.removeListener('request-replay')
+            socket?.removeListener('request-longer')
+            socket?.removeListener('request-another-section')
         };
-    }, [gameOption, isHost, state])
+    }, [gameOption, isHost, state, selectedGameType, currentSong, shouldStartNewRound])
 
     useEffect(() => {
         // Listen for incoming messages
@@ -299,13 +279,30 @@ const GuessSongGame = () => {
             }
         });
 
-
         socket?.on('update-room-info', (roomInfo: RoomInfo) => {
             console.log("update", roomInfo)
             if (!isHost && selectedGameType.value != roomInfo.gameType) {
                 setSelectedGameType(guessSongGameType[roomInfo.gameType - 1])
             }
             setRoomInfo(roomInfo)
+        });
+
+
+        socket?.on('change-song-list', (songList: GuessGameSong[]) => {
+            if (!isHost) {
+                setFilteredSongList(songList)
+            }
+        })
+
+        socket?.on('replay-music', (message) => {
+            console.log('replay-music', gameOption)
+            playSong()
+        });
+
+        socket?.on('play-music', (message) => {
+            setTimeout(() => {
+                playSong()
+            }, 1000)
         });
 
         socket?.on('buffer-music', (newGameOption: GuessSongGameOption) => {
@@ -334,29 +331,22 @@ const GuessSongGame = () => {
             }
         });
 
-        socket?.on('change-song-list', (songList: GuessGameSong[]) => {
-            if (!isHost) {
-                setFilteredSongList(songList)
-            }
-        })
-
         return () => {
             socket?.removeListener('message')
             socket?.removeListener('update-room-info')
             socket?.removeListener('buffer-music')
             socket?.removeListener('change-song-list')
+            socket?.removeListener('play-music')
+            socket?.removeListener('replay-music')
         };
     }, [isHost, state, selectedGameType, gameOption])
 
-    useEffect(() => {
-        chatBoxRef.current?.scrollTo({ top: chatBoxRef.current.scrollHeight })
-    }, [messages])
 
     useEffect(() => {
-        if (isHost)
-            socket?.emit("change-song-list", { roomID }, filteredSongList.map((k) => {
-                return { display_name: k.display_name }
-            }))
+        if (!isHost) return
+        socket?.emit("change-song-list", { roomID }, filteredSongList.map((k) => {
+            return { display_name: k.display_name }
+        }))
     }, [filteredSongList, isHost])
 
     useEffect(() => {
@@ -367,6 +357,11 @@ const GuessSongGame = () => {
             }
         })
     }, [answerRaceChoicesNumber])
+
+    useEffect(() => {
+        chatBoxRef.current?.scrollTo({ top: chatBoxRef.current.scrollHeight })
+    }, [messages])
+
 
     const showMessage = (message: string, messageDetails?: MessageDetails) => {
         toast(message, {
@@ -384,6 +379,65 @@ const GuessSongGame = () => {
 
     }
 
+    const showRequest = (playerName: string, requestType: RequestType) => {
+        let message = ""
+        switch (requestType) {
+            case "replay":
+                message = playerName + " requested replay"
+                if (replayRef.current)
+                    toast.dismiss(replayRef.current)
+                break;
+            case "anotherSection":
+                message = "Players requested another section"
+                if (anotherSectionRef.current)
+                    toast.dismiss(anotherSectionRef.current)
+                break;
+            case "longer":
+                message = "Players requested longer"
+                if (longerRef.current)
+                    toast.dismiss(longerRef.current)
+                break;
+        }
+        let id = toast(message, {
+            position: 'bottom-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            closeButton: () => {
+                switch (requestType) {
+                    case "replay":
+                        return <div className='flex items-center'>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={playSong}>Replay</button>
+                        </div >
+                    case "anotherSection":
+                        return <div className='flex items-center'>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={broadCastConfigWithRandomTime}>Start(R)</button>
+                        </div >
+                    case "longer":
+                        return <div className='flex items-center'>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={broadCastConfigWithLongerTime}>Add 1s</button>
+                        </div >
+                }
+            },
+            type: 'default',
+            theme: 'light',
+            className: "",
+        })
+        switch (requestType) {
+            case "replay":
+                replayRef.current = id
+                break;
+            case "anotherSection":
+                anotherSectionRef.current = id
+                break;
+            case "longer":
+                longerRef.current = id
+                break;
+        }
+    }
+
     const sendMessage = () => {
         // Send the message to the server
         socket?.emit('message', { roomID }, currentMessage);
@@ -391,32 +445,35 @@ const GuessSongGame = () => {
         setCurrentMessage('');
     };
 
-    const getSongList = async () => {
+    const getSongList = useCallback(async () => {
         // Send the message to the server
         let result = await axios.get<Songs[]>("/api/songs")
-        setSongList(result.data)
+        if (selectedGameType.value == GuessSongGameType.chunithm)
+            setSongList(result.data)
         console.log(result)
-    };
+    }, [selectedGameType])
 
-    const getMaimaiSongList = async () => {
+    const getMaimaiSongList = useCallback(async () => {
         // Send the message to the server
         let result = await axios.get<MaimaiSongs[]>("/api/songs/maimaiSongList")
-        setSongList(result.data)
+        if (selectedGameType.value == GuessSongGameType.maimai)
+            setSongList(result.data)
         console.log(result)
-    };
+    }, [selectedGameType])
 
-    const getPlaylist = async () => {
+    const getPlaylist = useCallback(async () => {
         // Send the message to the server
         try {
             setIsLoadingSongList(true)
             let result = await axios.get<Songs[]>(`/api/songs/playlist?id=${playlist}`)
-            setSongList(result.data)
+            if (selectedGameType.value == GuessSongGameType.playlist)
+                setSongList(result.data)
             console.log(result)
         } catch (error) {
 
         }
         setIsLoadingSongList(false)
-    };
+    }, [selectedGameType]);
 
     const getNextSong = async () => {
         let song = _.sampleSize<GuessGameSong>(filteredSongList, 1)[0]
@@ -517,6 +574,21 @@ const GuessSongGame = () => {
         setShouldStartNewRound(false)
     }
 
+    const broadCastConfigWithLongerTime = () => {
+        setGameOption((k) => {
+            return {
+                ...k,
+                duration: k.duration + 1
+            }
+        })
+        if (selectedGameType.value == GuessSongGameType.custom) {
+            socket?.emit('load-music', { roomID }, { ...gameOption, duration: (parseFloat(gameOption.duration) + 1).toString() }, currentSong?.display_name, shouldStartNewRound);
+        } else {
+            socket?.emit('load-music', { roomID }, { ...gameOption, duration: (parseFloat(gameOption.duration) + 1).toString() }, currentSong?.display_name, shouldStartNewRound);
+        }
+        setShouldStartNewRound(false)
+    }
+
     const testSong = () => {
         if (selectedGameType.value != GuessSongGameType.custom) {
             youtubeRef.current?.target.loadVideoById({
@@ -542,8 +614,21 @@ const GuessSongGame = () => {
         youtubeRef.current?.target.playVideo()
     }
 
-    const requestReplySong = () => {
-        socket?.emit('request-replay', { roomID, playerID: socket.id });
+    const makeRequest = (request: RequestType) => {
+        switch (request) {
+            case "replay":
+                socket?.emit('request-replay', { roomID, playerID: socket.id });
+                break;
+            case "anotherSection":
+                socket?.emit('request-another-section', { roomID, playerID: socket.id });
+                break;
+            case "longer":
+                socket?.emit('request-longer', { roomID, playerID: socket.id });
+                break;
+            default:
+                break;
+        }
+
     }
 
     const joinGame = () => {
@@ -683,9 +768,14 @@ const GuessSongGame = () => {
                                             }>{k}</button>
                                         })}
                                     </div>}
-                                <div className='my-5 flex'>
-                                    <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary mr-2' onClick={requestReplySong}>Request Replay</button>
-                                    <button disabled={playerInfo?.isSurrendered} className='btn bg-red text-white' onClick={surrender}>Surrender</button>
+                                <div className='my-5 flex justify-between flex-wrap items-center'>
+                                    <div className='flex flex-wrap items-center'>
+                                        <span className='bold'>Request: </span>
+                                        <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary ml-2 my-1 !min-w-fit' onClick={() => makeRequest("replay")}>Replay</button>
+                                        <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary ml-2 my-1 !min-w-fit' onClick={() => makeRequest("longer")}>Longer</button>
+                                        <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary mx-2 my-1 !min-w-fit' onClick={() => makeRequest("anotherSection")}>Section</button>
+                                    </div>
+                                    <button disabled={playerInfo?.isSurrendered} className='btn bg-red text-white my-1' onClick={surrender}>Surrender</button>
                                 </div>
                             </>}
                             {!isJoined && <button className='btn btn-secondary my-5' onClick={joinGame}>Join</button>}
@@ -853,8 +943,8 @@ const GuessSongGame = () => {
                             <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastConfig}>Start</button>
                             <button disabled={!canControlGamePanel || (selectedGameType.value != GuessSongGameType.custom && !currentSong)} className='btn bg-red txt-white mr-2 my-1'
                                 onClick={broadCastConfigWithRandomTime}>Start(R)</button>
-                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastReplaySong}>Replay</button>
-                            <button disabled={!canControlGamePanel} className='btn bg-red txt-white my-1' onClick={showAnswer}>Reveal</button>
+                            <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastReplaySong}>Replay</button>
+                            <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white my-1' onClick={showAnswer}>Reveal</button>
                         </div>
                         <div className='flex my-5 items-center'>
                             <div className='flex-1'>

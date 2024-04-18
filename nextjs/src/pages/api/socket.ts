@@ -77,7 +77,9 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
           isJoined: false,
           isReady: false,
           score: 0,
-          isSurrendered: false
+          isSurrendered: false,
+          isRequestedLonger: false,
+          isRequestedAnotherSection: false,
         }
         room.players.set(socket.id, player)
 
@@ -93,7 +95,9 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         isReady: false,
         isJoined: false,
         score: 0,
-        isSurrendered: false
+        isSurrendered: false,
+        isRequestedLonger: false,
+        isRequestedAnotherSection: false,
       }
 
       let room = new GuessSongGameRoom(roomID)
@@ -135,7 +139,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         } else {
           _gameOption.answerRaceChoices = room.currentChoices
         }
-
+        room.resetRequestState()
         io.in(roomID).emit("buffer-music", _gameOption)
       }
     })
@@ -158,8 +162,16 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
     socket.on("replay-music", async (data: RoomEvent) => {
       let roomID = data.roomID
-      io.in(roomID).emit("message", "Host Replay music")
-      io.in(roomID).emit("replay-music")
+      let room = shared.rooms.get(roomID)
+      if (room) {
+        if (!room.currentSongName) {
+          let details: MessageDetails = { withNotification: true, type: 'error' }
+          io.in(socket.id).emit("message", `Please start the game first!`, details)
+        } else {
+          io.in(roomID).emit("message", "Host Replay music")
+          io.in(roomID).emit("replay-music")
+        }
+      }
     })
 
     socket.on("show-answer", (data: RoomEvent) => {
@@ -234,8 +246,65 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let room = shared.rooms.get(roomID)
       let player = room?.players.get(data.playerID)
       if (room && player) {
+        let details: MessageDetails = { withNotification: true, type: 'error' }
+        if (!room.currentSongName) {
+          io.in(socket.id).emit("message", `Please wait the next round start!`, details)
+          return
+        }
         io.in(roomID).emit("request-replay", player.name)
-        io.in(roomID).emit("message", `${player.name} request replay music`)
+        io.in(roomID).emit("message", `${player.name} requested replay music`)
+      }
+    })
+
+    socket.on("request-longer", (data: RoomEvent) => {
+      let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
+      let player = room?.players.get(data.playerID)
+      if (room && player) {
+        let details: MessageDetails = { withNotification: true, type: 'error' }
+        if (!room.currentSongName) {
+          io.in(socket.id).emit("message", `Please wait the next round start!`, details)
+          return
+        }
+        if (!player.isRequestedLonger) {
+          player.isRequestedLonger = true
+          const [count, totalPlayerCount] = room.getRequestedLongerCount()
+          if (totalPlayerCount / 2 <= count) {
+            io.in(roomID).emit("request-longer")
+            room.resetRequestLongerState()
+          } else {
+            let details: MessageDetails = { withNotification: true, onlyPlayer: true, type: 'info' }
+            io.in(socket.id).emit("message", "Will send the request to host when half of player was requested", details)
+          }
+
+          io.in(roomID).emit("update-room-info", room.getRoomInfo())
+        }
+      }
+    })
+
+    socket.on("request-another-section", (data: RoomEvent) => {
+      let roomID = data.roomID
+      let room = shared.rooms.get(roomID)
+      let player = room?.players.get(data.playerID)
+      if (room && player) {
+        let details: MessageDetails = { withNotification: true, type: 'error' }
+        if (!room.currentSongName) {
+          io.in(socket.id).emit("message", `Please wait the next round start!`, details)
+          return
+        }
+        if (!player.isRequestedAnotherSection) {
+          player.isRequestedAnotherSection = true
+          const [count, totalPlayerCount] = room.getRequestedAnotherSectionCount()
+          if (totalPlayerCount / 2 <= count) {
+            io.in(roomID).emit("request-another-section")
+            room.resetRequestedAnotherSectionState()
+          } else {
+            let details: MessageDetails = { withNotification: true, onlyPlayer: true, type: 'info' }
+            io.in(socket.id).emit("message", "Will send the request to the host when more than half of the players have made a request", details)
+          }
+
+          io.in(roomID).emit("update-room-info", room.getRoomInfo())
+        }
       }
     })
 
@@ -248,7 +317,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         if (!room.currentSongName) {
           io.in(socket.id).emit("message", `Please wait the next round start!`, details)
           return
-        } if (player.isSurrendered) {
+        }
+        if (player.isSurrendered) {
           io.in(socket.id).emit("message", `諦めるのは最後までいっぱい頑張ってからにして下さい！`, details)
           return
         } else {
@@ -305,6 +375,25 @@ export class GuessSongGameRoom {
     })
   }
 
+  resetRequestState = () => {
+    this.players.forEach((k) => {
+      k.isRequestedLonger = false
+      k.isRequestedAnotherSection = false
+    })
+  }
+
+  resetRequestLongerState = () => {
+    this.players.forEach((k) => {
+      k.isRequestedLonger = false
+    })
+  }
+
+  resetRequestedAnotherSectionState = () => {
+    this.players.forEach((k) => {
+      k.isRequestedAnotherSection = false
+    })
+  }
+
   removePlayer = (id: string) => {
     this.players.delete(id)
     if (this.players.size === 0) {
@@ -340,6 +429,25 @@ export class GuessSongGameRoom {
     return [surrenderedCount, joinedPlayer.size]
   }
 
+  getRequestedLongerCount = () => {
+    let joinedPlayer = this.joinedPlayer(false)
+    let requestedLongerCount = 0
+    joinedPlayer.forEach((values, keys) => {
+      if (values.isRequestedLonger || values.isSurrendered)
+        requestedLongerCount += 1
+    });
+    return [requestedLongerCount, joinedPlayer.size]
+  }
+
+  getRequestedAnotherSectionCount = () => {
+    let joinedPlayer = this.joinedPlayer(false)
+    let requestedAnotherSectionCount = 0
+    joinedPlayer.forEach((values, keys) => {
+      if (values.isRequestedAnotherSection || values.isSurrendered)
+        requestedAnotherSectionCount += 1
+    });
+    return [requestedAnotherSectionCount, joinedPlayer.size]
+  }
 
   generateAnswerRaceChoices = (number: number) => {
     if (!this.currentSongName || number - 1 < 0) return []
@@ -373,6 +481,8 @@ interface Player {
   isJoined: boolean,
   score: number,
   isSurrendered: boolean
+  isRequestedLonger: boolean
+  isRequestedAnotherSection: boolean
 }
 
 export interface RoomEvent {
