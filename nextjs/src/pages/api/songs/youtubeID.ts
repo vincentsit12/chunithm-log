@@ -53,27 +53,28 @@ async function handler(
 
     } catch (e) {
         try {
-            const searchKey = `%27${query}%27+${gameType}+${subphase}`
+            const searchKey = `\"${query}\"+${gameType}+${subphase}`
             console.info("youtube api fail, start to search local")
             let url = encodeURI(`https://www.youtube.com/results?search_query=${searchKey}`)
+            console.info("url", url)
             let localSearch = await fetch(url)
             let localSearchRes = await localSearch.text()
             var doc = parse(localSearchRes)
-            console.info("parse doc success")
             var x = doc.getElementsByTagName("script")
-            console.info("get script success", x.length)
             for (let i = 0; i < x.length; i++) {
                 const element = x[i];
                 if (element.innerHTML.includes("ytInitialData")) {
                     console.info("get ytInitialData success", element.innerHTML.length)
                     let indexOfVideo = element.innerHTML.indexOf("videoId")
                     console.info("get indexOfVideo success", indexOfVideo)
-                    let indexOfthumbnail = element.innerHTML.indexOf("thumbnail")
+                    let indexOfthumbnail = element.innerHTML.indexOf("thumbnail", indexOfVideo)
                     console.info("get indexOfthumbnail success", indexOfthumbnail)
                     let predictString = element.innerHTML.substring(indexOfVideo, indexOfthumbnail)
-                    console.info("get predictString success", predictString)
                     result = predictString.split(`\"`)[2]
-                    break
+                    console.info("get predictString success", predictString.split(`\"`))
+                    if (result) {
+                        break
+                    }
                 }
             }
         } catch (error) {
@@ -85,7 +86,9 @@ async function handler(
         console.log(result)
         res.status(200).json(result)
     }
-    else new BadRequestError("cannot get music link")
+    else {
+        throw new BadRequestError("cannot get music link")
+    }
 
 
 }
