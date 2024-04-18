@@ -58,7 +58,6 @@ async function handler(
             let url = encodeURI(`https://www.youtube.com/results?search_query=${searchKey}`)
             let localSearch = await fetch(url)
             let localSearchRes = await localSearch.text()
-            console.info("get youtube page success")
             var doc = parse(localSearchRes)
             console.info("parse doc success")
             var x = doc.getElementsByTagName("script")
@@ -66,9 +65,13 @@ async function handler(
             for (let i = 0; i < x.length; i++) {
                 const element = x[i];
                 if (element.innerHTML.includes("ytInitialData")) {
-                    console.info("get ytInitialData success")
-                    let predictString = element.innerHTML.substring(element.innerHTML.indexOf("videoId"), element.innerHTML.indexOf("thumbnail"))
-                    console.info("get predictString success")
+                    console.info("get ytInitialData success", element.innerHTML.length)
+                    let indexOfVideo = element.innerHTML.indexOf("videoId")
+                    console.info("get indexOfVideo success", indexOfVideo)
+                    let indexOfthumbnail = element.innerHTML.indexOf("thumbnail")
+                    console.info("get indexOfthumbnail success", indexOfthumbnail)
+                    let predictString = element.innerHTML.substring(indexOfVideo, indexOfthumbnail)
+                    console.info("get predictString success", predictString)
                     result = predictString.split(`\"`)[2]
                     break
                 }
