@@ -35,19 +35,24 @@ async function handler(
         }
         let url = encodeURI(`https://www.googleapis.com/youtube/v3/playlistItems${searchKey}`)
         console.log(url)
-        let youtubeAPIResult = await axios.get(url)
-        nextPageToken = youtubeAPIResult.data.nextPageToken
+        try {
+            let youtubeAPIResult = await axios.get(url)
+            nextPageToken = youtubeAPIResult.data.nextPageToken
 
-        let filteredItem = _.filter(youtubeAPIResult.data.items, k => k.snippet.title != "Deleted video")
-        let result = _.map<any, Response>(filteredItem, k => {
-            return {
-                display_name: k.snippet.title,
-                youtube_link: k.snippet.resourceId.videoId
+            let filteredItem = _.filter(youtubeAPIResult.data.items, k => k.snippet.title != "Deleted video")
+            let result = _.map<any, Response>(filteredItem, k => {
+                return {
+                    display_name: k.snippet.title,
+                    youtube_link: k.snippet.resourceId.videoId
+                }
+            })
+            songs = songs.concat(result)
+            x++
+            if (!nextPageToken || songs.length >= youtubeAPIResult.data.pageInfo.totalResults) {
+                break
             }
-        })
-        songs = songs.concat(result)
-        x++
-        if (!nextPageToken || songs.length >= youtubeAPIResult.data.pageInfo.totalResults) {
+        } catch (e) {
+            console.info("cannot get the full list, youtube api error", e)
             break
         }
     }

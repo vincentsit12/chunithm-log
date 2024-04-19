@@ -409,15 +409,29 @@ const GuessSongGame = () => {
                 switch (requestType) {
                     case "replay":
                         return <div className='flex items-center'>
-                            <button className='btn bg-red txt-white !min-w-min' onClick={playSong}>Replay</button>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={() => {
+                                playSong()
+                                if (replayRef.current)
+                                    toast.dismiss(replayRef.current)
+                            }
+                            }>Replay</button>
                         </div >
                     case "anotherSection":
                         return <div className='flex items-center'>
-                            <button className='btn bg-red txt-white !min-w-min' onClick={broadCastConfigWithRandomTime}>Start(R)</button>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={() => {
+                                broadCastConfigWithRandomTime()
+                                if (anotherSectionRef.current)
+                                    toast.dismiss(anotherSectionRef.current)
+                            }}>Start(R)</button>
                         </div >
                     case "longer":
                         return <div className='flex items-center'>
-                            <button className='btn bg-red txt-white !min-w-min' onClick={broadCastConfigWithLongerTime}>Add 1s</button>
+                            <button className='btn bg-red txt-white !min-w-min' onClick={() => {
+                                broadCastConfigWithLongerTime()
+                                if (longerRef.current)
+                                    toast.dismiss(longerRef.current)
+                            }
+                            }>Add 1s</button>
                         </div >
                 }
             },
