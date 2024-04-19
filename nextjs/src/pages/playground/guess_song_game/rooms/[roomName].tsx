@@ -473,7 +473,7 @@ const GuessSongGame = () => {
 
         }
         setIsLoadingSongList(false)
-    }, [selectedGameType]);
+    }, [selectedGameType, playlist]);
 
     const getNextSong = async () => {
         let song = _.sampleSize<GuessGameSong>(filteredSongList, 1)[0]
