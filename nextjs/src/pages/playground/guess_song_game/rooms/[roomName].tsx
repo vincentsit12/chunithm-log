@@ -470,7 +470,6 @@ const GuessSongGame = () => {
                 setSongList(result.data)
             console.log(result)
         } catch (error) {
-
         }
         setIsLoadingSongList(false)
     }, [selectedGameType, playlist]);
