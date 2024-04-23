@@ -77,6 +77,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
           isJoined: false,
           isReady: false,
           score: 0,
+          isAnwsered: false,
           isSurrendered: false,
           isRequestedLonger: false,
           isRequestedAnotherSection: false,
@@ -95,6 +96,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         isReady: false,
         isJoined: false,
         score: 0,
+        isAnwsered: false,
         isSurrendered: false,
         isRequestedLonger: false,
         isRequestedAnotherSection: false,
@@ -129,7 +131,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       if (room) {
         room.currentSongName = currentSongName
         let details: MessageDetails = { withNotification: true, type: 'info' }
-        io.in(roomID).emit("message", "Music will start to play", details)
+        io.in(room.getHosts()).emit("message", "Waiting all players ready...", details)
 
         console.log(_gameOption, room.currentSongName)
         if (shouldStartNewRound) {
@@ -153,11 +155,14 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         player.isReady = true
         if (room.checkAllPlayersIsReady()) {
           console.log("------------------------- all finish-buffer-music")
+          let details: MessageDetails = { withNotification: true, type: 'info' }
+          io.in(roomID).emit("message", "Music will start to play!", details)
           io.in(roomID).emit("play-music")
+
+          console.log("finish-buffer-music", room?.players)
           room.resetReadyState()
         }
       }
-      console.log("finish-buffer-music", room?.players)
     })
 
     socket.on("replay-music", async (data: RoomEvent) => {
@@ -203,9 +208,11 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
             let details: MessageDetails = { withNotification: true, type: 'success' }
             io.in(roomID).emit("message", `${player.name} is correct`, details)
             io.in(roomID).emit("message", `${player.name} score : ${player.score}`)
-            io.in(roomID).emit("update-room-info", room.getRoomInfo())
             room.endThisRound()
+          } else {
+            player.isAnwsered = true
           }
+          io.in(roomID).emit("update-room-info", room.getRoomInfo())
         }
       }
     })
@@ -414,10 +421,20 @@ export class GuessSongGameRoom {
   endThisRound = () => {
     this.currentSongName = undefined
     this.players.forEach((k) => {
+      k.isAnwsered = false
       k.isSurrendered = false
     })
   }
 
+  getHosts = () => {
+    let hosts: string[] = []
+    this.players.forEach((values, keys) => {
+      if (values.isHost) {
+        hosts.push(values.id)
+      }
+    });
+    return hosts
+  }
 
   getSurrenderedCount = () => {
     let joinedPlayer = this.joinedPlayer(false)
@@ -480,6 +497,7 @@ interface Player {
   isHost: boolean,
   isJoined: boolean,
   score: number,
+  isAnwsered: boolean,
   isSurrendered: boolean
   isRequestedLonger: boolean
   isRequestedAnotherSection: boolean
