@@ -430,7 +430,7 @@ const GuessSongGame = () => {
                     case "anotherSection":
                         return <div className='flex items-center'>
                             <button className='btn bg-red txt-white !min-w-min' onClick={() => {
-                                broadCastConfigWithRandomTime()
+                                broadCastConfigWithRandomTime(true)
                                 if (anotherSectionRef.current)
                                     toast.dismiss(anotherSectionRef.current)
                             }}>Start(R)</button>
@@ -595,10 +595,10 @@ const GuessSongGame = () => {
         setShouldStartNewRound(false)
     }
 
-    const broadCastConfigWithRandomTime = () => {
-        let [randomTime, song] = getRandomTime()
+    const broadCastConfigWithRandomTime = (isSameSong: boolean = false) => {
+        let [randomTime, song] = getRandomTime(isSameSong)
         if (selectedGameType.value == GuessSongGameType.custom) {
-            socket?.emit('load-music', { roomID }, { ...gameOption, startTime: randomTime?.toString() }, song?.display_name, true);
+            socket?.emit('load-music', { roomID }, { ...gameOption, startTime: randomTime?.toString() }, song?.display_name, !isSameSong);
         } else {
             socket?.emit('load-music', { roomID }, { ...gameOption, startTime: randomTime?.toString() }, currentSong?.display_name, shouldStartNewRound);
         }
@@ -689,10 +689,10 @@ const GuessSongGame = () => {
         setAnswer("")
     }
 
-    const getRandomTime = (): [number, GuessGameSong?] => {
+    const getRandomTime = (isSameSong: boolean = false): [number, GuessGameSong?] => {
         let randomTime = 0
         if (selectedGameType.value == GuessSongGameType.custom) {
-            let randomSongIndex = _.random(songList.length - 1)
+            let randomSongIndex = isSameSong ? _.findIndex(songList, currentSong) : _.random(songList.length - 1)
             if (customSongList[randomSongIndex]) {
                 let startTime = customSongList[randomSongIndex].startTime
                 let endTime = customSongList[randomSongIndex + 1] ? customSongList[randomSongIndex + 1].startTime : parseFloat(youtubeRef.current?.target.getDuration())
@@ -945,7 +945,7 @@ const GuessSongGame = () => {
                                     return gameOption
                                 })}
                                     className='px-4 py-2 box box-shadow w-full' placeholder='Start Time'></input>
-                                <button className='btn btn-secondary ml-2' onClick={getRandomTime}>Random</button>
+                                <button className='btn btn-secondary ml-2' onClick={() => getRandomTime()}>Random</button>
                             </div>
                         </div>
                         <div className='mb-5'>
@@ -967,7 +967,7 @@ const GuessSongGame = () => {
                         <div className='flex flex-wrap my-5'>
                             <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastConfig}>Start</button>
                             <button disabled={!canControlGamePanel || (selectedGameType.value != GuessSongGameType.custom && !currentSong)} className='btn bg-red txt-white mr-2 my-1'
-                                onClick={broadCastConfigWithRandomTime}>Start(R)</button>
+                                onClick={() => { broadCastConfigWithRandomTime() }}>Start(R)</button>
                             <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastReplaySong}>Replay</button>
                             <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white my-1' onClick={showAnswer}>Reveal</button>
                         </div>
