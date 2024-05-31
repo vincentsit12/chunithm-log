@@ -66,8 +66,8 @@ export class ActionPoint {
         this.timer = null
         this.kill = kill;
         this.answerSound = new Audio('/click.mp3')
-        // this.answerSound.load()
         this.answerSound.addEventListener('canplaythrough', this.setIsReady)
+        this.answerSound.load()
         // this.answer_sound.volume = 1
 
         //reaction music game
@@ -81,7 +81,7 @@ export class ActionPoint {
     }
 
     setIsReady = () => {
-            this.isReady = true
+        this.isReady = true
     }
     killMusicNote = (id: number) => {
         this.musicNotes = this.musicNotes.filter(k => k.id != id)
