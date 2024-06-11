@@ -17,7 +17,7 @@ FROM node:18-alpine3.18 as builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-COPY .env.production .env.production
+# COPY .env.production .env.production
 RUN npm run build
 
 FROM node:18-alpine3.18 as runner
