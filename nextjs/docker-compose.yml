@@ -2,3 +2,5 @@ services:
   chunithm-log-nextjs:
     build:
       context: .
+    ports:
+      - "4100:3000"
