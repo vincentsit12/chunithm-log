@@ -1,0 +1,4 @@
+services:
+  chunithm-log-nextjs:
+    build:
+      context: .
