@@ -3,3 +3,4 @@ services:
     image: gitea.io.kookiym.com/kooki/chunithm-log-next:latest
     ports:
       - "4100:3000"
+    entrypoint: ["npm", "start"]
