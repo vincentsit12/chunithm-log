@@ -13,13 +13,15 @@ services:
   #   env_file : 
   #     - ./env/db.env
   web:
-    image: gitea.io.kookiym.com/kooki/chunithm-log-next:latest
+    image: chunithm-log-web
+    build: 
+      context: ./nextjs
     ports:
-      - '4100:3000'
-  # datascraper :
-  #   image: gitea.io.kookiym.com/kooki/chunithm-log-datascraper:latest
-  #   build: 
-  #     context: ./scrapper
+      - '3000:3000'
+  datascraper :
+    image: chunithm-log-datascraper
+    build: 
+      context: ./scrapper
 
 volumes:
   data:

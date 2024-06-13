@@ -1,6 +1,5 @@
 services:
   chunithm-log-nextjs:
-    build:
-      context: .
+    image: gitea.io.kookiym.com/kooki/chunithm-log-next:latest
     ports:
       - "4100:3000"
