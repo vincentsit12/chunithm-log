@@ -21,7 +21,7 @@ export class Game {
     musicNotes: MusicNote[]
     config: GameConfig
     timerId: any[]
-    drawId: number
+    drawId?: NodeJS.Timer
     constructor(
         canvas: HTMLCanvasElement,
         type: GameType,
@@ -60,7 +60,6 @@ export class Game {
 
         this.timeline = timeline
         this.timerId = []
-        this.drawId = 0
         this.config = config
 
         this.music = music
@@ -83,9 +82,10 @@ export class Game {
             color = 'rgba(255, 255, 255 ,0)'
         }
         else {
-            let reactionTime = Math.abs(performance.now() - this.reactionPoints[_index].musicNotes[0].judgementTime)
-
-            if (reactionTime <= 50) {
+            let _reactionTime = performance.now() - this.reactionPoints[_index].musicNotes[0].judgementTime
+            console.log(_reactionTime)
+            let  reactionTime = Math.abs(_reactionTime)
+            if (reactionTime <= 30) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 // console.log('perfect', reactionTime);
                 this.combo++
@@ -95,7 +95,7 @@ export class Game {
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
 
             }
-            else if (reactionTime <= 100) {
+            else if (reactionTime <= 60) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 // console.log('great', reactionTime);
                 this.combo++
@@ -105,7 +105,7 @@ export class Game {
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
 
             }
-            else if (reactionTime >= 100 && reactionTime <= 150) {
+            else if (reactionTime <= 90) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 this.combo++
                 this.score += 250
@@ -113,7 +113,7 @@ export class Game {
                 this.reactionPoints[_index].showJudgement('GOOD', `rgba(11, 250, 80 ,%)`)
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
             }
-            else return `rgba(255, 255, 255 ,%)`
+            return `rgba(255, 255, 255 ,%)`
         }
         // }
         // scoreText.innerHTML = this.score
@@ -666,14 +666,14 @@ export class Game {
                     this.reactionPoints.forEach((k) => k.answerSound.removeEventListener("canplaythrough", k.setIsReady))
                     resolve(true);
                 }
-            }, 500)
+            }, 100)
         })
 
         this.isStarted = true;
         // this.poseLandmarks = [];
         this.score = 0;
         this.combo = 0;
-        this.drawId = requestAnimationFrame(this.draw)
+        this.drawId = setInterval(this.draw, 1000 / 120)
 
 
 
@@ -790,7 +790,8 @@ export class Game {
             this.music.ref.seekTo(this.music.startTime)
         }
         this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        cancelAnimationFrame(this.drawId)
+        if (this.drawId)
+            clearInterval(this.drawId)
 
     }
 
@@ -856,7 +857,7 @@ export class Game {
 
         ctx.restore()
         // stats.end();
-        this.drawId = requestAnimationFrame(this.draw)
+        // this.drawId = setInterval(this.draw, 1000 / 120)
     }
 
 
