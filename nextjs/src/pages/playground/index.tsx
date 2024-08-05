@@ -161,6 +161,15 @@ const Playground = (props: Props) => {
         game.current?.reset()
     }
 
+    const openGamePanel = () => {
+        try {
+            let x = JSON.parse("[" + timelineString + "]")
+            setModalIsOpen(true)
+        } catch (e) {
+            alert('invalid timeline!')
+        }
+    }
+
 
     const youtubeVideoOnReady: YouTubeProps['onReady'] = (e) => {
 
@@ -214,11 +223,11 @@ const Playground = (props: Props) => {
                                 .catch((err) =>
                                     console.log("err", err))
                                 .finally(() => {
-                                    setModalIsOpen(true)
+                                    openGamePanel()
                                 })
                         }
                         else {
-                            setModalIsOpen(true)
+                            openGamePanel()
                         }
 
 
@@ -229,15 +238,15 @@ const Playground = (props: Props) => {
 
                         dom.requestFullscreen({ navigationUI: "show" })
                             .then(() => {
-                                // setModalIsOpen(true)
+                                // openGamePanel()
                                 if (screen?.orientation) {
                                     screen.orientation?.lock("landscape-primary").catch((err) =>
                                         console.log("err", err)).finally(() => {
-                                            setModalIsOpen(true)
+                                            openGamePanel()
                                         })
                                 }
                                 else {
-                                    setModalIsOpen(true)
+                                    openGamePanel()
                                 }
                             })
                             .catch(function (error) {
@@ -246,7 +255,7 @@ const Playground = (props: Props) => {
 
                     }
                     else {
-                        setModalIsOpen(true)
+                        openGamePanel()
                     }
                 }} className='btn btn-secondary mx-5 cursor-not-allowed disabled:opacity-30' disabled={youtubeLink.length > 0 && !isYoubleReady}>Start Game</button>
                 <button onClick={() => {
@@ -389,6 +398,7 @@ const Playground = (props: Props) => {
                             onTouchMove={e => game.current?.ontouchmove(e)}
                             onTouchEnd={e => game.current?.ontouchend(e)}
                             className='w-full h-full' ref={canvasRef}></canvas>
+                        <div></div>
                     </div>
                     {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
                     <button onClick={() => {
@@ -406,11 +416,10 @@ const Playground = (props: Props) => {
                             document.webkitExitFullscreen()
                         }
                         else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
-                        else {
-                            setModalIsOpen(false)
-                            closeGame()
-                        }
 
+                        setModalIsOpen(false)
+                        closeGame()
+                        
                         // game.current = null
                     }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
                     {/* </div> */}

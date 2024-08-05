@@ -83,8 +83,8 @@ export class Game {
         }
         else {
             let _reactionTime = performance.now() - this.reactionPoints[_index].musicNotes[0].judgementTime
-            console.log(_reactionTime)
-            let  reactionTime = Math.abs(_reactionTime)
+            // console.log(_reactionTime, this.reactionPoints[_index].musicNotes[0])
+            let reactionTime = Math.abs(_reactionTime)
             if (reactionTime <= 30) {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 // console.log('perfect', reactionTime);
@@ -185,20 +185,21 @@ export class Game {
             }
             //each tap, tap
             else if (notePos - 1 >= 0) {
+                let uniqueSet = new Set<number>()
                 let isEach = notesString.length > 1
                 for (var i = 0; i < notesString.length; i++) {
 
                     let index = parseInt(notesString[i]) % judgementPointCount || judgementPointCount
+                    if (!uniqueSet.has(index)) {
+                        uniqueSet.add(index)
+                        let reactionPoint = this.reactionPoints[index - 1]
 
-
-                    let reactionPoint = this.reactionPoints[index - 1]
-
-
-                    this.musicNotes.push(new MusicNote(this.canvas, Math.random(),
-                        { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
-                        { gameType: this.type, type: 'tap', isEach: isEach, time: time },
-                        reactionPoint.killMusicNote, this.config))
-                    this.totalScore += 500
+                        this.musicNotes.push(new MusicNote(this.canvas, Math.random(),
+                            { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
+                            { gameType: this.type, type: 'tap', isEach: isEach, time: time },
+                            reactionPoint.killMusicNote, this.config))
+                        this.totalScore += 500
+                    }
                 }
 
             }
@@ -264,7 +265,6 @@ export class Game {
     }
 
     drawMusicNote = (time: number) => {
-        // this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
         for (let i = 0; i < this.reactionPoints.length; i++) {
             for (let j = 0; j < this.reactionPoints[i].musicNotes.length; j++) {
@@ -617,10 +617,10 @@ export class Game {
                     let c = this.checkReactionTime(i + 1)
                     k.onTouch(c)
                 }
-            });
+            });   
         }
-
     }
+
     ontouchmove = (e: React.TouchEvent<HTMLCanvasElement>) => {
         if (!this.isStarted) return
         const clientRect = this.canvasElement.getBoundingClientRect()
@@ -857,7 +857,6 @@ export class Game {
 
         ctx.restore()
         // stats.end();
-        // this.drawId = setInterval(this.draw, 1000 / 120)
     }
 
 

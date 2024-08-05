@@ -118,7 +118,8 @@ export class ActionPoint {
     onTouch = (color: string) => {
         if (this.answerSound.currentTime !== 0 && !this.answerSound.ended) {
             // console.log(this.answerSound.currentTime)
-            // this.answerSound.play()
+            this.answerSound.currentTime = 0
+            this.answerSound.play()
         }
         else if (this.answerSound.currentTime === 0 || this.answerSound.ended) {
             this.answerSound.play()
