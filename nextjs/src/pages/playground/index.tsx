@@ -133,8 +133,8 @@ const Playground = (props: Props) => {
                     RMG_CENTERLINE_RADIUS: vmin * .4,
                     RMG_OBJECT_RADIUS: vmin * .4 * (gameType === "maimai" ? .1 : .05),
                     BPM: parseInt(BPM),
-                    SPEED: parseInt(speed),
-                    DURATION: 3000 / parseInt(speed),
+                    SPEED: parseFloat(speed),
+                    DURATION: 3000 / parseFloat(speed),
                 }
                 game.current = new Game(canvasRef.current, gameType, {
                     ref: (youtubeLink && isYoubleReady) ? youtubeRef.current : music,

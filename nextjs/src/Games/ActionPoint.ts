@@ -215,7 +215,6 @@ export class ActionPoint {
                 if (this.onTouched) {
                     ctx.beginPath();
                     ctx.fillStyle = this.onTouchColor.replace('%', this.alpha.toString());
-
                     ctx.arc(this.xInCanvs, this.yInCanvs, this.radius * 3, 0, 2 * Math.PI);
                     ctx.fill();
                     ctx.closePath()

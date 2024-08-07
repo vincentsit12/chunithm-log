@@ -21,7 +21,7 @@ export class Game {
     musicNotes: MusicNote[]
     config: GameConfig
     timerId: any[]
-    drawId?: NodeJS.Timer
+    drawId?: number
     constructor(
         canvas: HTMLCanvasElement,
         type: GameType,
@@ -71,15 +71,15 @@ export class Game {
 
     }
     checkReactionTime = (index: number) => {
-        let color = ''
+        let color = `rgba(255, 255, 255 ,%)`
         let _index = index - 1
         if (this.reactionPoints[_index].musicNotes.length <= 0) {
-            return `rgba(255, 255, 255 ,%)`
+            return color
         }
         if (this.reactionPoints[_index].musicNotes[0].type === 'hold') {
             this.reactionPoints[_index].musicNotes[0].hit = true
             //hold effect
-            color = 'rgba(255, 255, 255 ,0)'
+            return color
         }
         else {
             let _reactionTime = performance.now() - this.reactionPoints[_index].musicNotes[0].judgementTime
@@ -90,7 +90,7 @@ export class Game {
                 // console.log('perfect', reactionTime);
                 this.combo++
                 this.score += 500
-                color = `rgba(255, 138, 6 ,%)`
+                // color = `rgba(255, 138, 6 ,%)`
                 this.reactionPoints[_index].showJudgement('PERFECT', `rgba(255, 138, 6 ,%)`)
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
 
@@ -100,7 +100,7 @@ export class Game {
                 // console.log('great', reactionTime);
                 this.combo++
                 this.score += 400
-                color = `rgba(214, 78, 62 ,%)`
+                // color = `rgba(214, 78, 62 ,%)`
                 this.reactionPoints[_index].showJudgement('GREAT', `rgba(214, 78, 62 ,%)`)
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
 
@@ -109,14 +109,11 @@ export class Game {
                 this.reactionPoints[_index].musicNotes[0].hit = true
                 this.combo++
                 this.score += 250
-                color = `rgba(11, 250, 80 ,%)`
+                // color = `rgba(11, 250, 80 ,%)`
                 this.reactionPoints[_index].showJudgement('GOOD', `rgba(11, 250, 80 ,%)`)
                 this.reactionPoints[_index].killMusicNote(this.reactionPoints[_index].musicNotes[0].id)
             }
-            return `rgba(255, 255, 255 ,%)`
         }
-        // }
-        // scoreText.innerHTML = this.score
         return color
     }
 
@@ -179,7 +176,7 @@ export class Game {
                 this.musicNotes.push(
                     new MusicNote(this.canvas, Math.random(),
                         { index: index, x: reactionPoint.xInCanvs, y: reactionPoint.yInCanvs },
-                        { gameType: this.type, type: 'hold', holdDuration: holdDuration, isEach: true, time: time },
+                        { gameType: this.type, type: 'hold', holdDuration: holdDuration, isEach: false, time: time },
                         reactionPoint.killMusicNote, this.config))
                 this.totalScore += 1000
             }
@@ -264,13 +261,13 @@ export class Game {
         })
     }
 
-    drawMusicNote = (time: number) => {
-
+    drawMusicNote = () => {
+        const time = performance.now()
         for (let i = 0; i < this.reactionPoints.length; i++) {
             for (let j = 0; j < this.reactionPoints[i].musicNotes.length; j++) {
                 const note = this.reactionPoints[i].musicNotes[j]
                 if (!note.startTime) // it's the first frame
-                    note.startTime = time || performance.now();
+                    note.startTime = time
 
 
                 // deltaTime should be in the range [0 ~ 1]
@@ -369,7 +366,6 @@ export class Game {
             }
 
         }
-        // requestAnimationFrame(this.drawMusicNote); // do it again
     }
 
     // startCountDown = () => {
@@ -673,7 +669,7 @@ export class Game {
         // this.poseLandmarks = [];
         this.score = 0;
         this.combo = 0;
-        this.drawId = setInterval(this.draw, 1000 / 120)
+        this.drawId = requestAnimationFrame(this.draw)
 
 
 
@@ -791,7 +787,7 @@ export class Game {
         }
         this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         if (this.drawId)
-            clearInterval(this.drawId)
+            cancelAnimationFrame(this.drawId)
 
     }
 
@@ -811,6 +807,17 @@ export class Game {
                 ctx.arc(.5 * this.canvas.width, .5 * this.canvas.height, RMG_CENTERLINE_RADIUS, 0, 2 * Math.PI);
                 ctx.lineWidth = RMG_OBJECT_RADIUS * .1
                 ctx.stroke();
+
+                ctx.font = `bold ${RMG_OBJECT_RADIUS}px Arial`;
+                ctx.textAlign = "center";
+                // ctx.lineWidth = 2;
+                // ctx.strokeStyle = `rgba(255,255,255, 1})`
+                // ctx.strokeText(this.combo.toString(), 0, 0);
+                ctx.fillStyle = `rgba(255,255,255, .5)`
+                ctx.fillText(this.combo.toString(), .5 * this.canvas.width, .5 * this.canvas.height);
+                ctx.font = `bold ${RMG_OBJECT_RADIUS}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText(`  ${((this.score / this.totalScore) * 100).toFixed(2)}%`, .5 * this.canvas.width,  .5 * this.canvas.height - RMG_OBJECT_RADIUS);
                 ctx.closePath()
                 break;
             case 'djmania':
@@ -854,8 +861,9 @@ export class Game {
 
         //draw music note and judgement line
         this.update();
-
         ctx.restore()
+
+        this.drawId = requestAnimationFrame(this.draw)
         // stats.end();
     }
 
@@ -863,7 +871,7 @@ export class Game {
 
     update = () => {
         this.drawActionPoints()
-        this.drawMusicNote(performance.now())
+        this.drawMusicNote()
     }
 
 
