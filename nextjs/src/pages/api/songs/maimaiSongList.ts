@@ -128,7 +128,8 @@ async function handler(
                                     rate: rate,
                                     combo: parseInt(combo),
 
-                                }
+                                },
+                                is_deleted : false
                             }
                         }
                         else {
