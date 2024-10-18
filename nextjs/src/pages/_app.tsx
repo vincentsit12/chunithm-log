@@ -25,7 +25,7 @@ NProgress.configure({ showSpinner: false });
 //   display: 'swap',
 //   fallback: ['Arial'],
 // })
-const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.woff2', display: "swap" });
+const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.woff2', display: "swap", preload : true });
 
 export default function App({
   Component,
