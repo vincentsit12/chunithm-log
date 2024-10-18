@@ -111,6 +111,9 @@ export async function getServerSideProps(context: NextPageContext) {
 
                 include: [{
                     model: Songs,
+                    where : {
+                        is_deleted : false
+                     }
                 }]
             }
         }))

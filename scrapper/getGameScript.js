@@ -33,7 +33,7 @@ const getGameScript = async () => {
         
         for (let i = 0; i < links.length; i++) {
             await page.goto(links[i], { waitUntil: 'networkidle2' });
-            await page.waitForSelector("body > center > table:nth-child(7) > tbody > tr:nth-child(2) > td.tbg > table")
+            await page.waitForSelector("body > center > table:nth-child(6) > tbody > tr:nth-child(2) > td.tbg > table")
             await page.addScriptTag({ path: "jquery-3.5.1.min.js" })
 
 
@@ -58,7 +58,7 @@ const getGameScript = async () => {
                     return ascii.replace(/[”“]/g, '\"');;
                 }
 
-                let table = $("body > center > table:nth-child(7) > tbody > tr:nth-child(2) > td.tbg > table").find("tr");
+                let table = $("body > center > table:nth-child(6) > tbody > tr:nth-child(2) > td.tbg > table").find("tr");
 
                 let songs = table.filter((i,k) => {
                     return k.childElementCount > 1

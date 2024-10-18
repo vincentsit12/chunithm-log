@@ -29,7 +29,16 @@ async function handler(
 
     if (!session) throw new UnauthenticatedError('please login first')
 
-    let data: Users | null = (await Users.findOne({ where: { id: req.query.user_id }, include: { model: Records, include: [{ model: Songs }] } }))
+    let data: Users | null = (await Users.findOne({
+        where: { id: req.query.user_id }, include: {
+            model: Records, 
+            include: [{
+                model: Songs, where: {
+                    is_deleted: false
+                }
+            }]
+        }
+    }))
     if (!data) throw new BadRequestError(`no data`);
     res.status(200).json(data)
     const ratingList = _.flatMap(data.records, function (o) {

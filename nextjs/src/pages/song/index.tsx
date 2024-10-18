@@ -47,7 +47,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
         <td className='w-20'>{k.expert?.rate ?? '-'}</td>
         <td className='px-4 cursor-pointer' onClick={() => {
           router.push(`/song/${k.display_name}`)
-        }}><CiCircleMore size={"1.5rem"}/></td>
+        }}><CiCircleMore size={"1.5rem"} /></td>
       </tr>
     })
   }
@@ -93,7 +93,15 @@ export default SongPage
 export async function getServerSideProps(context: NextPageContext) {
   context.res?.setHeader('Cache-Control', 'public, s-maxage=600')
   try {
-    let data = await Songs.findAll({ attributes: { exclude: ['user_id'] } })
+    let data = await Songs.findAll({
+      where: {
+        is_deleted: false
+      },
+      attributes: {
+        exclude: ['user_id']
+
+      }
+    })
     // let x = await sequelize.query(`delete from songs WHERE not master::jsonb ? 'rate'`)
     // console.log("🚀 ~ file: song.tsx ~ line 116 ~ getServerSideProps ~ data", x)
 

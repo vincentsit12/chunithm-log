@@ -12,6 +12,7 @@ type SongAttributes = {
     ultima?: Song,
     youtube_link?: string
     genre: SongGenre,
+    is_deleted : Boolean;
     // other attributes...
 };
 export interface MaimaiSongs extends Omit<SongAttributes, 'genre'> {
@@ -31,6 +32,7 @@ export default class Songs extends Model<SongAttributes, SongCreationAttributes>
     declare ultima?: Song;
     declare youtube_link?: string;
     declare genre: SongGenre;
+    declare is_deleted : Boolean;
 }
 
 Songs.init({
@@ -61,7 +63,9 @@ Songs.init({
 
     genre: {
         type: DataTypes.TEXT,
-    }
+    },
+
+    is_deleted : { type : DataTypes.BOOLEAN },
 
 }, {
     // Other model options go here

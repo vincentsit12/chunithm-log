@@ -29,7 +29,7 @@ export default function ListBox({ className, source, selected, setSelected }: Pr
                             <BiSolidDownArrow
                                 size={"10px"}
                                 color="black"
-                                aria-hidden="true"
+                                aria-hidden="true" 
                             />
                         </span>
                     </Listbox.Button>

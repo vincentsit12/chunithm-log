@@ -159,10 +159,13 @@ export async function getServerSideProps(context: NextPageContext) {
         model: Records,
         include: [{
           model: Songs,
+          where : {
+             is_deleted : false
+          }
         }]
       }
     }))
-
+    
     const [bestRatingList, recentRatingList] = await getRatingList(data)
 
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30

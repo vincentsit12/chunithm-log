@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     youtube_link: { type: DataTypes.TEXT, },
     genre: { type: DataTypes.TEXT, },
-    
+    is_deleted: { type : DataTypes.BOOLEAN }
   }, {
     sequelize,
     modelName: 'songs',
