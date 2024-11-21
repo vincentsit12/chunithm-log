@@ -140,6 +140,7 @@ const GuessSongGame = () => {
     const [isLoadingSongList, setIsLoadingSongList] = useState(false)
     const [isLoadingNextSong, setIsLoadingNextSong] = useState(false)
     const [isInputAnswerSetModalOpen, setIsInputAnswerSetModalOpen] = useState(false)
+    const [isAnswered, setIsAnswered] = useState(false)
 
     // Custom youtube link
     const [customYoutubeLink, setCustomYoutubeLink] = useState<string>("PvC92bu-PZs")
@@ -373,6 +374,10 @@ const GuessSongGame = () => {
         chatBoxRef.current?.scrollTo({ top: chatBoxRef.current.scrollHeight })
     }, [messages])
 
+    useEffect(() => {
+        setIsAnswered(false)
+     }, [gameOption.answerRaceChoices])
+ 
 
     const showMessage = (message: string, messageDetails?: MessageDetails) => {
         toast(message, {
@@ -491,8 +496,10 @@ const GuessSongGame = () => {
         try {
             setIsLoadingSongList(true)
             let result = await axios.get<Songs[]>(`/api/songs/playlist?id=${playlist}`)
-            if (selectedGameType.value == GuessSongGameType.playlist)
+            if (selectedGameType.value == GuessSongGameType.playlist) {
                 setSongList(result.data)
+                showMessage("Loaded youtube playlist successfully, press `Next` to change the song!")
+            }
             console.log(result)
         } catch (error) {
         }
@@ -740,7 +747,9 @@ const GuessSongGame = () => {
     }
 
     const canControlGamePanel = isHost && gameOption.startTime && gameOption.duration && filteredSongList.length > 0
-    const playerInfo = useMemo(() => { return _.find(roomInfo?.players, k => { return k.id == socket?.id }) }, [roomInfo, socket, state])
+    const playerInfo = useMemo(() => {
+        return _.find(roomInfo?.players, k => { return k.id == socket?.id })
+    },[roomInfo, socket, state])
 
     return (
         <LayoutWrapper>
@@ -792,9 +801,10 @@ const GuessSongGame = () => {
                                 </div>
                                     : <div className='my-5 box box-shadow w-full flex p-4 flex-wrap'>
                                         {_.map(gameOption.answerRaceChoices, (k, i) => {
-                                            return <button disabled={playerInfo?.isAnwsered == true || playerInfo?.isSurrendered == true} key={i} className='btn m-1 answer-race bg-master' onClick={
+                                            return <button disabled={isAnswered || playerInfo?.isSurrendered == true} key={i} className='btn m-1 answer-race bg-master' onClick={
                                                 () => {
-                                                    socket?.emit('send-answer', { roomID, playerID: socket.id }, k);
+                                                    setIsAnswered(true)
+                                                    socket?.emit('send-answer', { roomID, playerID: socket.id }, k, true);
                                                 }
                                             }>{k}</button>
                                         })}

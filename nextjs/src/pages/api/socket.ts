@@ -77,7 +77,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
           isJoined: false,
           isReady: false,
           score: 0,
-          isAnwsered: false,
+          isAnswered: false,
           isSurrendered: false,
           isRequestedLonger: false,
           isRequestedAnotherSection: false,
@@ -96,7 +96,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         isReady: false,
         isJoined: false,
         score: 0,
-        isAnwsered: false,
+        isAnswered: false,
         isSurrendered: false,
         isRequestedLonger: false,
         isRequestedAnotherSection: false,
@@ -193,7 +193,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       }
     })
 
-    socket.on("send-answer", (data: RoomEvent, answer: string) => {
+    socket.on("send-answer", (data: RoomEvent, answer: string, onlyOnce : boolean = false) => {
       let roomID = data.roomID
       let room = shared.rooms.get(roomID)
       let player = room?.players.get(data.playerID)
@@ -210,7 +210,11 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
             io.in(roomID).emit("message", `${player.name} score : ${player.score}`)
             room.endThisRound()
           } else {
-            player.isAnwsered = true
+            player.isAnswered = onlyOnce 
+            if (room.checkAllPlayersIsAnswered()) {
+              io.in(roomID).emit("message", `All players answered wrong, The answer is ${room.currentSongName}`)
+              room.endThisRound()
+            }
           }
           io.in(roomID).emit("update-room-info", room.getRoomInfo())
         }
@@ -409,19 +413,29 @@ export class GuessSongGameRoom {
   }
 
   checkAllPlayersIsReady = () => {
-    let isAllReady = true
-
+    let notReadyCount = 0
     this.joinedPlayer().forEach((values, keys) => {
       if (!values.isReady)
-        isAllReady = false
+        notReadyCount+= 1
     });
-    return isAllReady
+    return notReadyCount == 0
+  }
+
+  checkAllPlayersIsAnswered = () => {
+    let notAnsweredCount = 0
+
+    this.joinedPlayer(false).forEach(element => {
+      if (!element.isAnswered && !element.isSurrendered) {
+        notAnsweredCount += 1
+      }
+    });
+    return notAnsweredCount == 0
   }
 
   endThisRound = () => {
     this.currentSongName = undefined
     this.players.forEach((k) => {
-      k.isAnwsered = false
+      k.isAnswered = false
       k.isSurrendered = false
     })
   }
@@ -497,7 +511,7 @@ interface Player {
   isHost: boolean,
   isJoined: boolean,
   score: number,
-  isAnwsered: boolean,
+  isAnswered: boolean,
   isSurrendered: boolean
   isRequestedLonger: boolean
   isRequestedAnotherSection: boolean
