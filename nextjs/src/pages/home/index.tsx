@@ -18,6 +18,7 @@ import { getRecommandList } from 'utils/api'
 import { getRatingList } from 'utils/getRatingList'
 import LoadingView from 'components/LoadingView'
 import { AnnouncementView } from 'components/AnnouncementView'
+import { useRouter } from 'next/router'
 
 
 type Props = {
@@ -90,7 +91,6 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
     return [top30Avg, maxRate, recentAvg, recent]
   }, [bestRatingList, recentRatingList])
   const [loading, setLoading] = useState(false)
-
   return (
     <LayoutWrapper>
       {loading &&
@@ -124,9 +124,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
             <span>
               {`Now : ${toFixedTrunc(recent, 2)}`}
             </span>
-
           </div>
-
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
 
@@ -141,6 +139,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
 export default Home
 
 export async function getServerSideProps(context: NextPageContext) {
+  let isJP = context.query.ver == "jp"
   context.res?.setHeader('Cache-Control', 'public, s-maxage=10')
   try {
     let session = await getSession(context)
@@ -159,14 +158,14 @@ export async function getServerSideProps(context: NextPageContext) {
         model: Records,
         include: [{
           model: Songs,
-          where : {
-             is_deleted : false
+          where: {
+            is_deleted: false
           }
         }]
       }
     }))
-    
-    const [bestRatingList, recentRatingList] = await getRatingList(data)
+
+    const [bestRatingList, recentRatingList] = await getRatingList(data, isJP)
 
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {

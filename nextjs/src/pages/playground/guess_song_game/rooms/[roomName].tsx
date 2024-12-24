@@ -1015,7 +1015,7 @@ const GuessSongGame = () => {
                                 youtubeRef.current?.target.pauseVideo()
                             }, parseFloat(gameOption?.duration) * 1000)
                         }
-                    }} onError={youtubeVideoOnError} onStateChange={(e) => {
+                    }} onError={youtubeVideoOnError} onStateChange={(e: any) => {
                         console.log("video time : ", youtubeRef.current?.target.getCurrentTime(), e.data)
                         if (e.data == 5) {
                             console.log("finish buffer")

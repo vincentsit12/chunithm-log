@@ -20,6 +20,7 @@ import { useSession } from "next-auth/react"
 import axios from "axios"
 import { useForm } from "react-hook-form"
 import LoadingView from "./LoadingView"
+import { useParams, usePathname, useSearchParams } from "next/navigation"
 
 
 const defaultHideHeader: TableHeader[] = ["Youtube", "Grade"];
@@ -40,7 +41,7 @@ export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoad
     const { register, handleSubmit, formState: { errors }, } = useForm<ChunithmNetLogin>()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const router = useRouter()
-
+    const query = useSearchParams()
     const height = recentRatingList.length * 42
     const updateRecord = async (chunithmNetLogin?: ChunithmNetLogin) => {
         setLoading(true)
@@ -49,7 +50,7 @@ export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoad
         return axios.post(url, body).then(res => {
             router.reload()
         }).catch(e => {
-            
+
             setLoading(false)
             if (e.response.data.errorCode == 999) {
                 setIsModalOpen(true)
@@ -75,11 +76,22 @@ export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoad
                 }} checked={showTable} id="recent" className="checkbox" type="checkbox" />
                 <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Recent Songs</label>
             </div>
-            {!isOtherUser && <button onClick={async () => {
-                await updateRecord()
-            }}
-                className='btn btn-secondary grid-center btn-icon absolute right-8'>
-                <IoMdRefresh size={"1.25rem"} /></button>}
+            <div className="absolute right-8 flex mb-4">
+                <button onClick={async () => {
+                    if (query.get("ver") == "jp") {
+                        router.replace("/home")
+                    } else {
+                        router.replace("/home?ver=jp")
+                    }
+                }}
+                    className='btn btn-secondary grid-center btn-icon mx-1'>
+                    {query.get("ver") == "jp" ? "Intl" : "JP"}</button>
+                {!isOtherUser && <button onClick={async () => {
+                    await updateRecord()
+                }}
+                    className='btn btn-secondary grid-center btn-icon '>
+                    <IoMdRefresh size={"1.25rem"} /></button>}
+            </div>
         </div>
         <div className={'rating-table mb-5 box box-shadow !min-h-0 collapsable scrollbar-hide'} style={{ 'maxHeight': !showTable ? 0 : `${height}px` }}>
 
@@ -106,7 +118,7 @@ export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoad
             }}
         >
             <section className="px-5">
-                {isLoading && <div className="w-full h-full absolute"></div> }
+                {isLoading && <div className="w-full h-full absolute"></div>}
                 <h4 className="text-left ml-1 bold">Chunithm Net Login</h4>
                 <div className="tl my-2 ml-1 text-[0.75rem] text-gray-500">{"*We will not save your id/password, once the login session is expired, you may need to provide the login again for updating new record from our site."}</div>
                 <Divider />
@@ -187,7 +199,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 else return k.song.toUpperCase().includes(searchText.toUpperCase())
             })
         else return orderedList
-    }, [searchText, sortingPref, selectedLevel, scoreRange])
+    }, [searchText, sortingPref, selectedLevel, scoreRange, ratingList])
 
     const updatedIdSet = useMemo(() => {
         const set = new Set<number>()
@@ -419,6 +431,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     </>
 }
 
+// Other Approaches, currently not using
 export const RatingTable = ({ ratingList, recentRatingList }: { ratingList: Rating[], recentRatingList: Rating[] }) => {
     const height = recentRatingList.length * 42
     const [searchText, setSearchText] = useState('')
