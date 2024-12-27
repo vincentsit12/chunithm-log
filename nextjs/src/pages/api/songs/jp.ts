@@ -6,8 +6,9 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import withErrorHandler from 'utils/errorHandler'
 import Cors from 'cors'
 import { runMiddleware } from 'utils/runMiddleware'
-import _ from 'lodash'
+import _, { replace } from 'lodash'
 import { promises as fs } from 'fs';
+import axios from 'axios'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -19,12 +20,13 @@ const cors = Cors({
 
 async function handler(
     req: NextApiRequest,
-    res: NextApiResponse<string>
+    res: NextApiResponse<Songs[]>
 ) {
     await runMiddleware(req, res, cors)
-    let song = await fs.readFile(process.cwd() + '/src/data/songs_jp.json', 'utf8');
+    let path = ((process.env.NEXT_PUBLIC_API_ENDPOINT ?? "") + "/songs_jp.json").replace("/api", "")
+    let song = (await axios.get(path)).data as Songs[]
     if (song)
-        res.status(200).json(song.toString())
+        res.status(200).json(song)
     else throw new BadRequestError("error")
 }
 

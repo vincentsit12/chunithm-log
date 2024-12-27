@@ -5,14 +5,16 @@ import { calculateSingleSongRating, getGradeOfScore, toFixedTrunc } from "./calc
 import { Rating, Song } from "types";
 import _ from "lodash";
 import { promises as fs } from 'fs';
+import axios from "axios";
+import { getJPSongData } from "./api";
+
 
 
 
 export async function getRatingList(data: Users | null, isJP : boolean = false) {
     let jpData : Songs[] = []
     if (isJP) {
-        let jpDataString = await fs.readFile(process.cwd() + '/src/data/songs_jp.json', 'utf8');
-        jpData = JSON.parse(jpDataString) as Songs[]
+        jpData = (await getJPSongData()).data
     }
     let group = _.groupBy(data?.records, k => k.type)
     const bestRatingList =

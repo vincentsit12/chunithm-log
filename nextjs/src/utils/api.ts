@@ -35,3 +35,7 @@ export function getRatingList() {
 export function getRecommandList(lower: number, upper: number) {
     return instance.get<Songs[]>(`/songs/recommand?lower=${lower}&upper=${upper}`)
 }
+
+export function getJPSongData() {
+    return instance.get<Songs[]>(`/songs/jp`)
+}
