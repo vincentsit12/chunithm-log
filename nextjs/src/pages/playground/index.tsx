@@ -1,6 +1,7 @@
 import { AnnouncementView } from 'components/AnnouncementView';
 import LayoutWrapper from 'components/LayoutWrapper'
-import { Game } from 'Games/Game'
+import { Game } from 'Games/MusicGame/Game';
+import { GameConfig, GameType } from 'Games/MusicGame/musicGameTypes';
 import { isArray } from 'lodash'
 import Head from 'next/head';
 import { useRouter } from 'next/router';

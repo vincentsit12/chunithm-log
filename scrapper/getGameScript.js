@@ -6,7 +6,23 @@ const fs = require('fs')
 
 const getGameScript = async () => {
     try {
-        const links = ["https://sdvx.in/chunithm/sort/14.htm","https://sdvx.in/chunithm/sort/14+.htm","https://sdvx.in/chunithm/sort/15.htm"]
+        const links =
+            [
+                "https://sdvx.in/chunithm/sort/10.htm",
+                "https://sdvx.in/chunithm/sort/10+.htm",
+                "https://sdvx.in/chunithm/sort/11.htm",
+                "https://sdvx.in/chunithm/sort/11+.htm",
+                "https://sdvx.in/chunithm/sort/12.htm",
+                "https://sdvx.in/chunithm/sort/12+.htm",
+                "https://sdvx.in/chunithm/sort/13.htm",
+                "https://sdvx.in/chunithm/sort/13+.htm",
+                "https://sdvx.in/chunithm/sort/14.htm",
+                "https://sdvx.in/chunithm/sort/14+.htm",
+                "https://sdvx.in/chunithm/sort/15.htm",
+                "https://sdvx.in/chunithm/sort/15+.htm"
+            ]
+
+
         // "https://chunithm.gamerch.com/CHUNITHM%20NEW%20PLUS%20%E6%A5%BD%E6%9B%B2%E4%B8%80%E8%A6%A7%EF%BC%88%E5%AE%9A%E6%95%B0%E9%A0%86%EF%BC%892"]
         // const wsChromeEndpointurl = 'ws://127.0.0.1:9222/devtools/browser/58b05181-1096-470c-b9b9-a8e27578a62c';
         // const browser = await puppeteer.connect({
@@ -18,8 +34,9 @@ const getGameScript = async () => {
         //     //   userDataDir : '/Users/yaugor/Library/Application Support/Google/Chrome/',
         //     headless: true // 無外殼的 Chrome，有更佳的效能
         // });
+
         const browser = await puppeteer.launch(
-            {   
+            {
                 // headless : false,
                 args: [
                     '--no-sandbox',
@@ -28,23 +45,44 @@ const getGameScript = async () => {
             }
         );
         const page = await browser.newPage();
-        
+
         let scriptsUrls = [];
-        
+
         for (let i = 0; i < links.length; i++) {
             await page.goto(links[i], { waitUntil: 'networkidle2' });
             await page.waitForSelector("body > center > table:nth-child(6) > tbody > tr:nth-child(2) > td.tbg > table")
             await page.addScriptTag({ path: "jquery-3.5.1.min.js" })
 
 
-           
             console.log('scrap...' + i)
             let x = await page.evaluate(() => {
                 const diffcultyMapping = {
-                    "mst" : "master",
-                    "ult" : "ultima",
-                    "exp" : "expert",
+                    "mst": "master",
+                    "ult": "ultima",
+                    "exp": "expert",
                 }
+                const versionMapping = {
+                    '/chunithm/chfiles/chverselogo.png': 'Verse',
+                    '/chunithm/chfiles/chluminous+logo.png': 'Luminous Plus',
+                    '/chunithm/chfiles/chluminouslogo.png': 'Luminous',
+                    '/chunithm/chfiles/chsun+logo.png': 'Sun Plus',
+                    '/chunithm/chfiles/chsunlogo.png': 'Sun',
+                    '/chunithm/chfiles/chnew+logo.png': 'New Plus',
+                    '/chunithm/chfiles/chnewlogo.png': 'New',
+                    '/chunithm/chfiles/chparadiselostlogo.png': 'Paradise Lost',
+                    '/chunithm/chfiles/chparadiselogo.png': 'Paradise',
+                    '/chunithm/chfiles/chcrystal+logo.png': 'Crystal Plus',
+                    '/chunithm/chfiles/chcrystallogo.png': 'Crystal',
+                    '/chunithm/chfiles/chama+logo.png': 'Amazon Plus',
+                    '/chunithm/chfiles/chamalogo.png': 'Amazon',
+                    '/chunithm/chfiles/chstar+logo.png': 'Star Plus',
+                    '/chunithm/chfiles/chstarlogo.png': 'Star',
+                    '/chunithm/chfiles/chair+logo.png': 'Air Plus',
+                    '/chunithm/chfiles/chairlogo.png': 'Air',
+                    '/chunithm/chfiles/ch+logo.png': 'Chunithm Plus',
+                    '/chunithm/chfiles/chlogo.png': 'Chunithm'
+                };
+
                 let list = {};
                 const toASCII = (chars) => {
                     let ascii = '';
@@ -58,27 +96,35 @@ const getGameScript = async () => {
                     return ascii.replace(/[”“]/g, '\"');;
                 }
 
-                let table = $("body > center > table:nth-child(6) > tbody > tr:nth-child(2) > td.tbg > table").find("tr");
+                let songs = $("body > center > table:nth-child(6) > tbody > tr:nth-child(2) > td.tbg > table").find("tr");
+                let version = null
 
-                let songs = table.filter((i,k) => {
-                    return k.childElementCount > 1
-                })
 
                 //first one is excluded
                 for (i = 0; i < songs.length; i++) {
-                    let script = $(songs[i]).find('a')[0].href;
-                    let name  =  $(songs[i]).find("td:nth-child(2)")[0].innerText 
-                    let diffculty = diffcultyMapping[script.split("/").at(-1).split(".")[0].slice(-3)]
-                   
-                    if (diffculty) {
-                        if (!list[name]) {
-                            list[name] = {
-                                name : toASCII(name).replace(/[\n\s'’]/g, ''),
-                                [diffculty] : script,
+                    if (songs[i].childElementCount <= 1) {
+                        version = $(songs[i]).find("center > img").attr("src") ?? version
+                    } else {
+                        let script = $(songs[i]).find('a')[0]?.href;
+                        let name = $(songs[i]).find("td:nth-child(2)")[0]?.innerText;
+
+                        if (!script || !name) continue;
+                        let diffculty = diffcultyMapping[script.split("/").at(-1).split(".")[0].slice(-3)]
+
+                        if (diffculty) {
+                            if (!list[name]) {
+                                list[name] = {
+                                    name: toASCII(name).replace(/[\n\s'’]/g, ''),
+                                    [diffculty]: {
+                                        script: script,
+                                        version: versionMapping[version]
+                                    }
+
+                                }
                             }
-                        }
-                        else {
-                            list[name][diffculty] = script
+                            else {
+                                list[name][diffculty] = script
+                            }
                         }
                     }
                 }
@@ -86,8 +132,6 @@ const getGameScript = async () => {
                 return list
             })
             scriptsUrls.push(x)
-            // alert('finish');
-
         }
 
 
@@ -136,7 +180,6 @@ const getGameScript = async () => {
         await browser.close();
         // console.log(_.merge(...scriptsUrls))
         return _.merge(...scriptsUrls)
-        
     }
     catch (e) {
         console.log(e)
@@ -148,7 +191,8 @@ const getGameScript = async () => {
 // /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --no-first-run --no-default-browser-check --user-data-dir=$(mktemp -d -t 'chrome-remote_data_dir')
 const init = async () => {
     let r = await getGameScript()
-    console.table(r)
+    // console.table(r)
+    fs.writeFileSync('test3.json', JSON.stringify(r))
     // Object.keys(r).forEach(k => {
     //     if (r[k].master && r[k].master.rate === 0) {
     //         console.log(r[k])

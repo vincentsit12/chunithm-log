@@ -1,31 +1,27 @@
-import { GuessGameSong } from 'Games/GuessSongGame/guessSongGameTypes';
-import { NextApiResponseWithSocket } from './apiTypes';
-import type { NextApiRequest, NextApiResponse } from "next"
+// For testing new nextjs server with socket.io
+
+import { MessageDetails } from './src/types';
+import GuessSongGameRoom from './src/Games/GuessSongGame/Room';
+import shared from './src/pages/api/shared';
+import { createServer } from "node:http";
+import next from "next";
 import { Server } from "socket.io"
-import shared from "./shared"
 import Fuse from 'fuse.js'
-import Songs, { MaimaiSongs } from "db/model/songs"
 import _ from "lodash"
-import { MessageDetails } from 'types';
+import { GuessGameSong, GuessSongGameOption, GuessSongGameType, Player, RoomEvent } from './src/Games/GuessSongGame/guessSongGameTypes';
 
 
-const PORT = 3000
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
+const dev = process.env.NODE_ENV !== "production";
+const hostname = "localhost";
+const port = 3000;
+// when using middleware `hostname` and `port` must be provided below
+const app = next({ dev, hostname, port });
+const handler = app.getRequestHandler();
 
-export default function SocketHandler(_req: NextApiRequest, res: NextApiResponseWithSocket<any>) {
-  if (res.socket.server.io) {
-    console.log("Socket is already running")
-    res.status(200).json({ success: true, message: "Socket is already running", socket: `:${PORT + 1}` })
-    return
-  }
+app.prepare().then(() => {
+  const httpServer = createServer(handler);
 
-  const io = new Server(res.socket.server, {
-    addTrailingSlash: false
-  })
+  const io = new Server(httpServer)
 
   io.on("connection", socket => {
     console.log(socket.id, ": socket connect")
@@ -125,7 +121,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     })
 
     socket.on("load-music", async (data: RoomEvent, gameOption: GuessSongGameOption, currentSongName: string, shouldStartNewRound: boolean) => {
-      console.log("load music", data, gameOption, currentSongName, shouldStartNewRound)
+      console.log("load music", data, gameOption, currentSongName,shouldStartNewRound)
       let roomID = data.roomID
       let _gameOption = { ...gameOption }
       let room = shared.rooms.get(roomID)
@@ -349,211 +345,12 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     })
   })
 
-
-  res.socket.server.io = io
-  res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
-}
-
-
-export class GuessSongGameRoom {
-  roomID: string
-  players: Map<string, Player>
-  currentSongName?: string
-  currentSongList: GuessGameSong[]
-  currentChoices: string[]
-  currentRound: number
-  gameType: GuessSongGameType
-
-  constructor(roomID: string) {
-    this.roomID = roomID
-    this.players = new Map()
-    this.currentSongList = []
-    this.currentChoices = []
-    this.currentRound = 0
-    this.gameType = GuessSongGameType.chunithm
-  }
-
-  // Return player that is host or is joined to the game
-  // *host is always inside the game, but can choose to not join to the game
-  joinedPlayer = (withHost: boolean = true) => {
-    let map = new Map<string, Player>()
-    this.players.forEach((value, key) => {
-      if (value.isJoined || (value.isHost && withHost))
-        map.set(key, value)
+  httpServer
+    .once("error", (err) => {
+      console.error(err);
+      process.exit(1);
     })
-    return map
-  }
-
-  resetReadyState = () => {
-    this.players.forEach((k) => {
-      k.isReady = false
-    })
-  }
-
-  resetRequestState = () => {
-    this.players.forEach((k) => {
-      k.isRequestedLonger = false
-      k.isRequestedAnotherSection = false
-    })
-  }
-
-  resetRequestLongerState = () => {
-    this.players.forEach((k) => {
-      k.isRequestedLonger = false
-    })
-  }
-
-  resetRequestedAnotherSectionState = () => {
-    this.players.forEach((k) => {
-      k.isRequestedAnotherSection = false
-    })
-  }
-
-  removePlayer = (id: string) => {
-    this.players.delete(id)
-    if (this.players.size === 0) {
-      shared.rooms.delete(this.roomID)
-    }
-  }
-
-  checkAllPlayersIsReady = () => {
-    let notReadyCount = 0
-    this.joinedPlayer().forEach((values, keys) => {
-      if (!values.isReady)
-        notReadyCount += 1
+    .listen(port, () => {
+      console.log(`> Ready on http://${hostname}:${port}`);
     });
-    return notReadyCount == 0
-  }
-
-  checkAllPlayersIsAnswered = () => {
-    let notAnsweredCount = 0
-
-    this.joinedPlayer(false).forEach(element => {
-      if (!element.isAnswered && !element.isSurrendered) {
-        notAnsweredCount += 1
-      }
-    });
-    return notAnsweredCount == 0
-  }
-
-  endThisRound = () => {
-    this.currentSongName = undefined
-    this.players.forEach((k) => {
-      k.isAnswered = false
-      k.isSurrendered = false
-    })
-  }
-
-  getHosts = () => {
-    let hosts: string[] = []
-    this.players.forEach((values, keys) => {
-      if (values.isHost) {
-        hosts.push(values.id)
-      }
-    });
-    return hosts
-  }
-
-  getSurrenderedCount = () => {
-    let joinedPlayer = this.joinedPlayer(false)
-    let surrenderedCount = 0
-    joinedPlayer.forEach((values, keys) => {
-      if (values.isSurrendered)
-        surrenderedCount += 1
-    });
-    return [surrenderedCount, joinedPlayer.size]
-  }
-
-  getRequestedLongerCount = () => {
-    let joinedPlayer = this.joinedPlayer(false)
-    let requestedLongerCount = 0
-    joinedPlayer.forEach((values, keys) => {
-      if (values.isRequestedLonger || values.isSurrendered)
-        requestedLongerCount += 1
-    });
-    return [requestedLongerCount, joinedPlayer.size]
-  }
-
-  getRequestedAnotherSectionCount = () => {
-    let joinedPlayer = this.joinedPlayer(false)
-    let requestedAnotherSectionCount = 0
-    joinedPlayer.forEach((values, keys) => {
-      if (values.isRequestedAnotherSection || values.isSurrendered)
-        requestedAnotherSectionCount += 1
-    });
-    return [requestedAnotherSectionCount, joinedPlayer.size]
-  }
-
-  generateAnswerRaceChoices = (number: number) => {
-    if (!this.currentSongName || number - 1 < 0) return []
-    let songMap = _.map(this.currentSongList, k => k.display_name)
-    let choices = _.sampleSize(_.filter(songMap, k => k != this.currentSongName), number - 1)
-    choices.splice((choices.length + 1) * Math.random() | 0, 0, this.currentSongName)
-    this.currentChoices = choices
-    return choices
-  }
-
-  getRoomInfo = () => {
-    let joinedPlayer = this.joinedPlayer()
-    console.log("joinedPlayer : ", joinedPlayer)
-    let roomInfo: RoomInfo = {
-      roomID: this.roomID,
-      noOfRound: this.currentRound,
-      players: Array.from(joinedPlayer.values()),
-      gameType: this.gameType
-    }
-
-    return roomInfo
-
-  }
-}
-
-interface Player {
-  name: string,
-  id: string,
-  isReady: boolean,
-  isHost: boolean,
-  isJoined: boolean,
-  score: number,
-  isAnswered: boolean,
-  isSurrendered: boolean
-  isRequestedLonger: boolean
-  isRequestedAnotherSection: boolean
-}
-
-export interface RoomEvent {
-  roomID: string,
-  roomInfo?: RoomInfo
-  playerID: string,
-  playerName: string,
-}
-
-export interface RoomInfo {
-  roomID: string,
-  noOfRound: number,
-  gameType: number
-  players: Player[],
-}
-
-export interface GuessSongGameOption {
-  youtubeID: string,
-  startTime: string
-  duration: string
-  isFixedStartTime: boolean,
-  answerRaceChoices: string[],
-  answerRaceChoicesNumber: number,
-}
-
-export type CustomSong = {
-  id: number,
-  youtube_link: string,
-  display_name: string,
-  startTime: number
-}
-
-enum GuessSongGameType {
-  chunithm = 1,
-  maimai,
-  playlist,
-  custom,
-}
+});

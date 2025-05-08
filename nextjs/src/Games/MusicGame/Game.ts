@@ -1,6 +1,7 @@
 import { YouTubeEvent } from "react-youtube"
 import { ActionPoint } from "./ActionPoint"
 import { MusicNote } from "./MusicNote"
+import { Canvas, GameConfig, GameType, NoteType } from "./musicGameTypes"
 
 export class Game {
     canvasElement: HTMLCanvasElement

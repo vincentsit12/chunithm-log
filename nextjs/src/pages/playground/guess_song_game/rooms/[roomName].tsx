@@ -5,8 +5,6 @@ import { Socket, io } from "socket.io-client"
 import _, { uniqBy, values } from 'lodash'
 import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
 import Songs, { MaimaiSongs } from 'db/model/songs';
-import { CustomSong, GuessSongGameOption, RoomInfo } from '../../../api/socket';
-import { usePathname, useSearchParams } from 'next/navigation';
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import LayoutWrapper from 'components/LayoutWrapper';
 import { useRouter } from 'next/router';
@@ -15,9 +13,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { FaFlag, FaRobot } from "react-icons/fa6";
 
 import ListBox from 'components/ListBox';
-import { GuessGameSong, MessageDetails } from 'types';
+import { MessageDetails } from 'types';
 import classNames from 'classnames';
 import Modal, { ModalProps } from 'components/Modal';
+import { CustomSong, GuessGameSong, GuessSongGameOption, RoomInfo } from 'Games/GuessSongGame/guessSongGameTypes';
 enum GuessSongGameType {
     chunithm = 1,
     maimai,
@@ -32,27 +31,31 @@ function useSocketClient() {
     const socket = useRef<Socket>()
     useEffect(() => {
 
-        fetch('/api/socket').
-            catch(e => { console.log(e) }).
-            finally(() => {
-                socket.current = io()
-
-                let socketRef = socket.current
-
-                socket.current.on("connect", () => {
-                    console.log("connected", socketRef.id);
-                    setState(true)
-                })
-
-                socket.current.on("disconnect", () => {
-                    console.log("Disconnected")
-                    setState(false)
-                })
-                // socket.current.on("connect_error", async err => {
-                //     console.log(`connect_error due to ${err.message}`)
-                //     await fetch("/api/socket")
-                // })
+        fetch('/api/socket').then(res => {
+            let socketRef = io();
+            
+    
+            socketRef.on("connect", () => {
+                console.log("connected", socketRef.id);
+                setState(true)
             })
+    
+            socketRef.on("disconnect", () => {
+                console.log("Disconnected")
+                setState(false)
+            })
+    
+            socketRef.on("connect_error", async (err: any) => {
+                console.log(`connect_error due to ${err.description}`);
+                // await fetch('/api/socket');
+            });
+    
+            socket.current = socketRef
+        })
+       
+        return () => {
+            socket.current?.disconnect()
+        }
     }, [])
 
 
@@ -159,7 +162,7 @@ const GuessSongGame = () => {
     const [playlist, setPlaylist] = useState<string>("")
 
     const [gameOption, setGameOption] = useState<GuessSongGameOption>({
-        youtubeID: "Mru-JAtqagE",
+        youtubeID: "69plnXaTTnE",
         startTime: "10",
         duration: "2",
         isFixedStartTime: false,
@@ -376,8 +379,8 @@ const GuessSongGame = () => {
 
     useEffect(() => {
         setIsAnswered(false)
-     }, [gameOption.answerRaceChoices])
- 
+    }, [gameOption.answerRaceChoices])
+
 
     const showMessage = (message: string, messageDetails?: MessageDetails) => {
         toast(message, {
@@ -746,10 +749,10 @@ const GuessSongGame = () => {
         socket?.emit('surrender', { roomID, playerID: socket.id });
     }
 
-    const canControlGamePanel = isHost && gameOption.startTime && gameOption.duration && filteredSongList.length > 0
+    const canControlGamePanel = gameOption.startTime && gameOption.duration && filteredSongList.length > 0
     const playerInfo = useMemo(() => {
         return _.find(roomInfo?.players, k => { return k.id == socket?.id })
-    },[roomInfo, socket, state])
+    }, [roomInfo, socket, state])
 
     return (
         <LayoutWrapper>
@@ -996,7 +999,7 @@ const GuessSongGame = () => {
 
             </div>
             <div className='relative inner inner-p20 inner-540'>
-                <YouTube videoId="fR7e0N1UkRI" opts={{
+                <YouTube videoId="69plnXaTTnE" opts={{
                     height: '100%',
                     width: '100%',
                     playerVars: {
@@ -1021,6 +1024,7 @@ const GuessSongGame = () => {
                             console.log("finish buffer")
                             // youtubeRef.current?.target.playVideo()
                             if (shouldSendBufferedSignal) {
+                                console.log("finish buffer", "emit")
                                 socket?.emit('finish-buffer-music', { roomID, playerID: socket.id });
                             } else {
                                 setShouldSendBufferedSignal(true)

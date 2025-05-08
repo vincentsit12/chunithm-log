@@ -1,11 +1,12 @@
 import type { NextPage, NextPageContext } from 'next'
 import { getSession } from 'next-auth/react'
-import { Rating, Song } from 'types'
+import { CURRENT_VERSION, Rating, Song } from 'types'
 import _, { isString } from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
 import Songs from 'db/model/songs'
 import { MdOutlineContentCopy } from 'react-icons/md'
+import { MdOutlineGames } from 'react-icons/md'
 import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/calculateRating'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
@@ -79,18 +80,19 @@ const UserScript = ({ userId }: { userId: string }) => {
 }
 const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
 
-  const [average, max, recentAverage, recent] = useMemo(() => {
+  const [average, recentAverage, recent] = useMemo(() => {
     const additions = 0.00000001
-    const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
+    const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']).filter(k => k.version != CURRENT_VERSION), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
     const top30Avg = top30Total / 30 + additions
     const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
-    const recentAvg = recentRatingList.length > 0 ? (recentTotal / recentRatingList.length) + additions : 0
-    const maxRate = top30.length > 1 ? (top30Total + top30[0].rating * 10) / 40 + additions : 0
-    const recent = (top30Total + recentTotal) / (30 + recentRatingList.length) + additions
-    return [top30Avg, maxRate, recentAvg, recent]
+    const recentAvg = recentRatingList.length > 0 ? (recentTotal / 20) + additions : 0
+    const recent = (top30Total + recentTotal) / 50 + additions
+    return [top30Avg, recentAvg, recent]
   }, [bestRatingList, recentRatingList])
+  
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
   return (
     <LayoutWrapper>
       {loading &&
@@ -113,9 +115,6 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
             <span >
               {`Top 30 Average : ${toFixedTrunc(average, 4)}`}
             </span>
-            <span>
-              {`Max : ${toFixedTrunc(max, 2)}`}
-            </span>
           </div>
           <div className="space-x-5">
             <span>
@@ -124,6 +123,21 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
             <span>
               {`Now : ${toFixedTrunc(recent, 2)}`}
             </span>
+          </div>
+          <div className="fixed bottom-8 right-8 z-50">
+            <Tooltip 
+              overlay="Play Guess Song Game!" 
+              placement="left"
+              overlayClassName={'fadeIn'}
+              showArrow={true}
+            >
+              <button 
+                className="btn btn-secondary grid-center btn-icon shadow-lg hover:shadow-xl transition-all"
+                onClick={() => router.push('/playground/guess_song_game/rooms')}
+              >
+                <MdOutlineGames size={"1.5rem"} />
+              </button>
+            </Tooltip>
           </div>
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
@@ -139,7 +153,6 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
 export default Home
 
 export async function getServerSideProps(context: NextPageContext) {
-  let isJP = context.query.ver == "jp"
   context.res?.setHeader('Cache-Control', 'public, s-maxage=10')
   try {
     let session = await getSession(context)
@@ -165,7 +178,7 @@ export async function getServerSideProps(context: NextPageContext) {
       }
     }))
 
-    const [bestRatingList, recentRatingList] = await getRatingList(data, isJP)
+    const [bestRatingList, recentRatingList] = await getRatingList(data)
 
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {

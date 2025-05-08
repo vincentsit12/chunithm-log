@@ -1,5 +1,3 @@
-import Songs, { MaimaiSongs } from "db/model/songs"
-import { CustomSong } from "pages/api/socket"
 import { TypeOptions } from "react-toastify"
 
 export interface Rating {
@@ -12,6 +10,7 @@ export interface Rating {
     difficulty: Difficulty
     combo: number,
     scriptUrl?: string,
+    version?: ChunithmVersion | null,
     order?: number,
     updatedAt?: string
 }
@@ -25,14 +24,18 @@ export type SongGenre = 'ORI' | 'VAR' | '撃舞' | '東方' | 'P&A' | 'nico' | '
 export type MaimaiSongGenre = '舞' | '撃&チ' | 'ゲ&バ' | '東方' | 'P&ア' | 'nico'
 export type MaiMaiDifficulty = 'master' | 'expert' | 'remaster' | 'advanced'
 
-export type GuessGameSong = Songs | MaimaiSongs | CustomSong
+// Chunithm Version
+export const CURRENT_VERSION: ChunithmVersion = 'Verse'
+export type ChunithmVersion  =  'Verse' | 'Luminous Plus' | 'Luminous' | 'Sun Plus' | 'Sun' | 'New Plus' | 'New' | 'Paradise Lost' | 'Paradise' | 'Crystal Plus' | 'Crystal' | 'Amazon Plus' | 'Amazon' | 'Star Plus' | 'Star' | 'Air Plus' | 'Air' | 'Chunithm Plus' | 'Chunithm'
+
 export interface Song {
     rate: number,
     combo: number,
     scriptUrl?: string
+    version?: ChunithmVersion
 }
 
-type ChunithmNetRecord = {
+export type ChunithmNetRecord = {
     name: string,
     difficulty: Difficulty,
     score: number
@@ -40,12 +43,12 @@ type ChunithmNetRecord = {
 }
 
 
-type ChunithmNetLogin = {
+export type ChunithmNetLogin = {
     sid: string,
     password: string
 }
 
-type MessageDetails = {
+export type MessageDetails = {
     withNotification?: boolean,
     onlyPlayer?: boolean,
     type? :  TypeOptions

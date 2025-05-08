@@ -10,9 +10,10 @@ import { getToken } from 'next-auth/jwt'
 import _, { values } from 'lodash'
 import { Op } from 'sequelize'
 import axios from 'axios'
-import { GuessSongGameRoom } from '../socket'
-import { NextApiResponseWithSocket } from '../type'
+
 import shared from '../shared'
+import GuessSongGameRoom from 'Games/GuessSongGame/Room'
+import { NextApiResponseWithSocket } from '../apiTypes'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204

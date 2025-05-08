@@ -3,7 +3,7 @@ import _, { isNumber } from "lodash"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { Fragment, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { ChunithmNetLogin, Rating, SortingKeys, TableHeader } from "types"
+import { ChunithmNetLogin, CURRENT_VERSION, Rating, SortingKeys, TableHeader } from "types"
 import { AutoSizer, CellMeasurer, CellMeasurerCache, Column, List, Table, WindowScroller } from 'react-virtualized';
 import { toFixedTrunc } from "utils/calculateRating"
 import { useWindowResize } from "utils/hooks/useWindowResize"
@@ -26,6 +26,8 @@ import { useParams, usePathname, useSearchParams } from "next/navigation"
 const defaultHideHeader: TableHeader[] = ["Youtube", "Grade"];
 const defaultDisplayHeader: TableHeader[] = ["Rank", "Name", "Script", "Base", "Score", "Rate"];
 const levels = [{ "name": "All", "value": 0 }, { "name": "15", "value": 15 }, { "name": "14+", "value": 14.5 }, { "name": "14", "value": 14 }, { "name": "13+", "value": 13.5 }, { "name": "13", "value": 13 }, { "name": "12+", "value": 12.5 }, { "name": "12", "value": 12 }, { "name": "11+", "value": 11.5 }, { "name": "11", "value": 11 }, { "name": "10+", "value": 10.5 }, { "name": "10", "value": 10 },]
+const versions = [{ "name": "All", "value": 0 }, { "name": "w/o Latest", "value": 1 }, { "name": "Verse", "value": 2 }, { "name": "Luminous Plus", "value": 3 }, { "name": "Luminous", "value": 4 }, { "name": "Sun Plus", "value": 5 }, { "name": "Sun", "value": 6 }, { "name": "New Plus", "value": 7 }, { "name": "New", "value": 8 }, { "name": "Paradise Lost", "value": 9 }, { "name": "Paradise", "value": 10 }, { "name": "Crystal Plus", "value": 11 }, { "name": "Crystal", "value": 12 },]
+
 const tableRowsNumbers = [
     { name: "All", value: -1 }, { name: "30", value: 30 }, { name: "100", value: 100 }, { name: "200", value: 200 }, { name: "500", value: 500 },
 ]
@@ -36,7 +38,7 @@ const cache = new CellMeasurerCache({
 
 export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoading = () => { }, isOtherUser = false }:
     { recentRatingList: Rating[], isLoading?: boolean, setLoading?: React.Dispatch<React.SetStateAction<boolean>>, isOtherUser?: boolean }) => {
-    const [showTable, setShowTable] = useState(false)
+    const [showTable, setShowTable] = useState(true)
     const { data: session, status } = useSession()
     const { register, handleSubmit, formState: { errors }, } = useForm<ChunithmNetLogin>()
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -77,15 +79,6 @@ export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoad
                 <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="recent" >Recent Songs</label>
             </div>
             <div className="absolute right-8 flex mb-4">
-                <button onClick={async () => {
-                    if (query.get("ver") == "jp") {
-                        router.replace("/home")
-                    } else {
-                        router.replace("/home?ver=jp")
-                    }
-                }}
-                    className='btn btn-secondary grid-center btn-icon mx-1'>
-                    {query.get("ver") == "jp" ? "Intl" : "JP"}</button>
                 {!isOtherUser && <button onClick={async () => {
                     await updateRecord()
                 }}
@@ -165,6 +158,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         setTempScoreRange(scoreRange)
     }, [itemList, scoreRange])
     const [selectedLevel, setSelectedLevel] = useState(levels[0])
+    const [selectedVersion, setSelectedVersion] = useState(versions[0])
     const [searchText, setSearchText] = useState('')
     const router = useRouter()
     const [selectedTableRowsNumber, setSelectedTableRowsNumber] = useState(tableRowsNumbers[3])
@@ -180,14 +174,20 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         if (selectedLevel.value > 0) {
             orderedList = ratingList.filter(k => scoreRule(k.score) && k.internalRate >= selectedLevel.value && k.internalRate < selectedLevel.value + 0.5)
         }
+
         else {
             orderedList = ratingList.filter(k => scoreRule(k.score))
         }
 
+        if (selectedVersion.value == 1) {
+            orderedList = orderedList.filter(k => k.version != CURRENT_VERSION)
+        } else if (selectedVersion.value > 0) {
+            orderedList = orderedList.filter(k => k.version == selectedVersion.name)
+        }
+
         if (sortingPref[0] === 'rating') {
             orderedList = _.orderBy(orderedList, ["rating"], [sortingPref[1]])
-        }
-        else {
+        } else {
             orderedList = _.orderBy(orderedList, [sortingPref[0], "rating"], [sortingPref[1], "desc"])
         }
         if (searchText)
@@ -199,7 +199,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 else return k.song.toUpperCase().includes(searchText.toUpperCase())
             })
         else return orderedList
-    }, [searchText, sortingPref, selectedLevel, scoreRange, ratingList])
+    }, [searchText, sortingPref, selectedLevel, scoreRange, ratingList, selectedVersion])
 
     const updatedIdSet = useMemo(() => {
         const set = new Set<number>()
@@ -334,21 +334,31 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                 setSearchText(e.target.value)
             }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Base Rate'></input>
         </div>
-        <div className='flex justify-around items-center mb-4 form-check'>
-            <div className="flex items-center">
-                <span>No. of rows: </span>
-                <ListBox className="w-[5rem] ml-2" source={tableRowsNumbers} selected={selectedTableRowsNumber} setSelected={setSelectedTableRowsNumber} />
+        <div className="flex justify-between items-center mb-4">
+            <div className='flex flex-wrap items-center justify-around form-check'>
+                <div className="flex items-center m-2">
+                    <span>No. of rows: </span>
+                    <ListBox className="w-[5rem] ml-2" source={tableRowsNumbers} selected={selectedTableRowsNumber} setSelected={setSelectedTableRowsNumber} />
+                </div>
+                <div className="flex items-center m-2">
+                    <span>Versions: </span>
+                    <ListBox className="w-[8rem] ml-2" source={versions} selected={selectedVersion} setSelected={setSelectedVersion} />
+                </div>
+                <div className="flex items-center m-2">
+                    <span>Levels: </span>
+                    <ListBox className="w-[5rem] ml-2" source={levels} selected={selectedLevel} setSelected={setSelectedLevel} />
+                </div>
+
+            </div >
+            <div>
+                <button onClick={() => {
+                    setIsModalOpen(true)
+                }}
+                    className='btn btn-secondary grid-center btn-icon'>
+                    <IoMdSettings size={"1.25rem"} /></button>
             </div>
-            <div className="flex items-center">
-                <span>Levels: </span>
-                <ListBox className="w-[5rem] ml-2" source={levels} selected={selectedLevel} setSelected={setSelectedLevel} />
-            </div>
-            <button onClick={() => {
-                setIsModalOpen(true)
-            }}
-                className='btn btn-secondary grid-center btn-icon'>
-                <IoMdSettings size={"1.25rem"} /></button>
-        </div >
+        </div>
+
 
         <div className='rating-table box box-shadow'>
             {ratingList.length > 0 ?

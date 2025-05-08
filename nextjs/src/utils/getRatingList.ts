@@ -2,7 +2,7 @@ import Records from "db/model/records";
 import Songs from "db/model/songs";
 import Users from "db/model/users";
 import { calculateSingleSongRating, getGradeOfScore, toFixedTrunc } from "./calculateRating";
-import { Rating, Song } from "types";
+import { ChunithmVersion, CURRENT_VERSION, Rating, Song } from "types";
 import _ from "lodash";
 import { promises as fs } from 'fs';
 import axios from "axios";
@@ -11,20 +11,14 @@ import { getJPSongData } from "./api";
 
 
 
-export async function getRatingList(data: Users | null, isJP : boolean = false) {
-    let jpData : Songs[] = []
-    if (isJP) {
-        jpData = (await getJPSongData()).data
-    }
+export async function getRatingList(data: Users | null) {
     let group = _.groupBy(data?.records, k => k.type)
     const bestRatingList =
         _.map<Rating, Rating>(_.orderBy(_.flatMap(group['best'], function (o) {
             let song = o.song[o.difficulty]
-            let jpSongData = isJP ? _.find(jpData, k => {
-                return k.name == o.song.name
-            }) : null
-            const songRate = isJP && jpSongData ? jpSongData[o.difficulty]?.rate : song?.rate
+            const songRate = song?.rate
             if (!songRate) return []
+            
             let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(songRate, o.score), 2))
             let result: Rating = {
                 song: o.song.display_name,
@@ -36,18 +30,19 @@ export async function getRatingList(data: Users | null, isJP : boolean = false) 
                 score: o.score,
                 difficulty: o.difficulty,
                 updatedAt: o.updatedAt.toISOString(),
-                scriptUrl: song?.scriptUrl ?? ""
+                scriptUrl: song?.scriptUrl ?? "",
+                version: song?.version || null
             }
             return result
         }), ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } })
     const recentRatingList =
-        _.flatMap(group['recent'], function (o) {
+        _.map<Rating, Rating>(_.orderBy(_.flatMap(group['recent'], function (o) {
             let song = o.song[o.difficulty]
-            let jpSongData = isJP ? _.find(jpData, k => {
-                return k.name == o.song.name
-            }) : null
-            const songRate = isJP && jpSongData ? jpSongData[o.difficulty]?.rate : song?.rate
+            const songRate = song?.rate
+
             if (!songRate) return []
+            if (song?.version != CURRENT_VERSION) return []
+
             let rating = parseFloat(toFixedTrunc(calculateSingleSongRating(songRate, o.score), 2))
             let result: Rating = {
                 song: o.song.display_name,
@@ -58,10 +53,11 @@ export async function getRatingList(data: Users | null, isJP : boolean = false) 
                 truncatedRating: toFixedTrunc(rating, 2),
                 score: o.score,
                 difficulty: o.difficulty,
-                scriptUrl: song?.scriptUrl ?? ""
+                scriptUrl: song?.scriptUrl ?? "",
+                version: song?.version
             }
             return result
-        });
+        }), ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } })
 
     return [bestRatingList, recentRatingList]
 }

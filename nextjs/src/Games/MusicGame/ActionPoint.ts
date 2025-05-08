@@ -1,3 +1,4 @@
+import { Canvas, GameConfig, GameType } from "./musicGameTypes"
 import { MusicNote } from "./MusicNote"
 
 /**

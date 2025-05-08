@@ -35,6 +35,7 @@ async function handler(
     let result = ""
 
     if (song?.youtube_link) {
+        console.log("already have youtube link in db", song.youtube_link)
         res.status(200).json(song.youtube_link)
         return
     }

@@ -80,10 +80,11 @@ async function updateGameScript() {
                     let song = _.omit({ ...songs[index].dataValues,}, "updatedAt")
                     let count = 0
                     diffculty.forEach(k => {
-                        if (song[k] && obj[k] && !song[k].scriptUrl) {
+                        if (song[k] && obj[k] && (!song[k].scriptUrl || !song[k].version)) {
                             song[k] = {
                                 ...song[k],
-                                scriptUrl: obj[k]
+                                scriptUrl: obj[k].script,
+                                version: obj[k].version
                             }
                             count++
                         }
@@ -116,5 +117,5 @@ async function updateGameScript() {
 }
 
 
-createSchedule()
-// updateGameScript()
+// createSchedule()
+updateGameScript()

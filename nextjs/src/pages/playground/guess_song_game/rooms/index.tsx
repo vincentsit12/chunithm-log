@@ -1,12 +1,7 @@
 import axios from 'axios';
 import LayoutWrapper from 'components/LayoutWrapper'
-import { Game } from 'Games/Game'
-import { isArray } from 'lodash'
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import Modal from 'react-modal';
-import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
 import _, { isInteger, isString } from 'lodash'
 
 interface Room {

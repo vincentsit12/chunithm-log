@@ -1,4 +1,4 @@
-import { GuessSongGameRoom } from "./socket";
+import GuessSongGameRoom from "Games/GuessSongGame/Room";
 
 class Shared {
   rooms: Map<string, GuessSongGameRoom>
