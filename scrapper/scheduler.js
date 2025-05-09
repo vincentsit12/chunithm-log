@@ -117,5 +117,9 @@ async function updateGameScript() {
 }
 
 
-// createSchedule()
-updateGameScript()
+async function main() {
+    // await createSchedule()
+    await updateGameScript()
+}
+
+main()

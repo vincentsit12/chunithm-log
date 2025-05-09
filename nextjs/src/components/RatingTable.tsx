@@ -3,7 +3,7 @@ import _, { isNumber } from "lodash"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { Fragment, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { ChunithmNetLogin, CURRENT_VERSION, Rating, SortingKeys, TableHeader } from "types"
+import { ChunithmNetLogin, ChunithmVersion, CURRENT_VERSION, Rating, SortingKeys, TableHeader } from "types"
 import { AutoSizer, CellMeasurer, CellMeasurerCache, Column, List, Table, WindowScroller } from 'react-virtualized';
 import { toFixedTrunc } from "utils/calculateRating"
 import { useWindowResize } from "utils/hooks/useWindowResize"
@@ -26,8 +26,29 @@ import { useParams, usePathname, useSearchParams } from "next/navigation"
 const defaultHideHeader: TableHeader[] = ["Youtube", "Grade"];
 const defaultDisplayHeader: TableHeader[] = ["Rank", "Name", "Script", "Base", "Score", "Rate"];
 const levels = [{ "name": "All", "value": 0 }, { "name": "15", "value": 15 }, { "name": "14+", "value": 14.5 }, { "name": "14", "value": 14 }, { "name": "13+", "value": 13.5 }, { "name": "13", "value": 13 }, { "name": "12+", "value": 12.5 }, { "name": "12", "value": 12 }, { "name": "11+", "value": 11.5 }, { "name": "11", "value": 11 }, { "name": "10+", "value": 10.5 }, { "name": "10", "value": 10 },]
-const versions = [{ "name": "All", "value": 0 }, { "name": "w/o Latest", "value": 1 }, { "name": "Verse", "value": 2 }, { "name": "Luminous Plus", "value": 3 }, { "name": "Luminous", "value": 4 }, { "name": "Sun Plus", "value": 5 }, { "name": "Sun", "value": 6 }, { "name": "New Plus", "value": 7 }, { "name": "New", "value": 8 }, { "name": "Paradise Lost", "value": 9 }, { "name": "Paradise", "value": 10 }, { "name": "Crystal Plus", "value": 11 }, { "name": "Crystal", "value": 12 },]
-
+const versions: { name: string, value: number }[] = [
+    { name: "All", value: 0 },
+    { name: "w/o Latest", value: 1 },
+    { name: "Verse", value: 2 },
+    { name: "Luminous Plus", value: 3 },
+    { name: "Luminous", value: 4 },
+    { name: "Sun Plus", value: 5 },
+    { name: "Sun", value: 6 },
+    { name: "New Plus", value: 7 },
+    { name: "New", value: 8 },
+    { name: "Paradise Lost", value: 9 },
+    { name: "Paradise", value: 10 },
+    { name: "Crystal Plus", value: 11 },
+    { name: "Crystal", value: 12 },
+    { name: "Amazon Plus", value: 13 },
+    { name: "Amazon", value: 14 },
+    { name: "Star Plus", value: 15 },
+    { name: "Star", value: 16 },
+    { name: "Air Plus", value: 17 },
+    { name: "Air", value: 18 },
+    { name: "Chunithm Plus", value: 19 },
+    { name: "Chunithm", value: 20 },
+];
 const tableRowsNumbers = [
     { name: "All", value: -1 }, { name: "30", value: 30 }, { name: "100", value: 100 }, { name: "200", value: 200 }, { name: "500", value: 500 },
 ]

@@ -82,7 +82,20 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
 
   const [average, recentAverage, recent] = useMemo(() => {
     const additions = 0.00000001
-    const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']).filter(k => k.version != CURRENT_VERSION), 30)
+    let recentRatingListSongName: Set<string> = new Set()
+    recentRatingList.forEach(k => { recentRatingListSongName.add(k.song) })
+    const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']).filter(
+      k => {
+        if (k.version != CURRENT_VERSION) {
+          return true
+        } else {
+          if (recentRatingListSongName.has(k.song)) {
+            return false
+          } else {
+            return true
+          }
+        }
+      }), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
     const top30Avg = top30Total / 30 + additions
     const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
@@ -90,7 +103,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
     const recent = (top30Total + recentTotal) / 50 + additions
     return [top30Avg, recentAvg, recent]
   }, [bestRatingList, recentRatingList])
-  
+
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   return (
@@ -125,13 +138,13 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
             </span>
           </div>
           <div className="fixed bottom-8 right-8 z-50">
-            <Tooltip 
-              overlay="Play Guess Song Game!" 
+            <Tooltip
+              overlay="Play Guess Song Game!"
               placement="left"
               overlayClassName={'fadeIn'}
               showArrow={true}
             >
-              <button 
+              <button
                 className="btn btn-secondary grid-center btn-icon shadow-lg hover:shadow-xl transition-all"
                 onClick={() => router.push('/playground/guess_song_game/rooms')}
               >
