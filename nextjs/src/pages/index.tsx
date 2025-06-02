@@ -35,7 +35,7 @@ export default function Blank() {
             <span className='bouncing text-6xl delay-7'>O</span>
             <span className='bouncing text-6xl delay-8'>G</span>
             <div className='relative bouncing  delay-9 h-24 w-14'>
-                <Image alt='loading' src={loadingPic} fill style={{ "objectFit": "contain" }} />
+                <Image loading='eager' alt='loading' src={loadingPic} fill style={{ "objectFit": "contain" }} />
             </div>
 
         </div>

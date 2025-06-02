@@ -2,7 +2,7 @@ import axios from 'axios'
 import type { NextPage, NextPageContext } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
-import { Rating, Song } from 'types'
+import { CURRENT_VERSION, Rating, Song } from 'types'
 import _, { isString } from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
@@ -37,16 +37,28 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
     // }, [searchText, ratingList])
 
 
-    const [average, max, recentAverage, recent] = useMemo(() => {
-        const additons = 0.00000001
-        const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']), 30)
+    const [average, recentAverage, recent] = useMemo(() => {
+        const additions = 0.00000001
+        let recentRatingListSongName: Set<string> = new Set()
+        recentRatingList.forEach(k => { recentRatingListSongName.add(k.song) })
+        const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']).filter(
+          k => {
+            if (k.version != CURRENT_VERSION) {
+              return true
+            } else {
+              if (recentRatingListSongName.has(k.song)) {
+                return false
+              } else {
+                return true
+              }
+            }
+          }), 30)
         const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
-        const top30Avg = top30Total / 30 + additons
-        const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0) 
-        const recentAvg =  recentRatingList.length > 0 ? (recentTotal / recentRatingList.length) + additons : 0
-        const maxRate = top30.length > 1 ? (top30Total + top30[0].rating * 10) / 40 + additons : 0
-        const recent = (top30Total + recentTotal) / (30 + recentRatingList.length) + additons
-        return [top30Avg, maxRate,recentAvg, recent]
+        const top30Avg = top30Total / 30 + additions
+        const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
+        const recentAvg = recentRatingList.length > 0 ? (recentTotal / 20) + additions : 0
+        const recent = (top30Total + recentTotal) / 50 + additions
+        return [top30Avg, recentAvg, recent]
       }, [bestRatingList, recentRatingList])
 
 
@@ -61,9 +73,6 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
                     <div className="space-x-5">
                         <span >
                             {`Top 30 Average : ${toFixedTrunc(average, 4)}`}
-                        </span>
-                        <span>
-                            {`Max : ${toFixedTrunc(max, 2)}`}
                         </span>
                     </div>
                     <div className="space-x-5">
