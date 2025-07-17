@@ -106,7 +106,7 @@
     }
 
     #guess-song-game-player-scorebox {
-        @apply lg:mx-2 lg:my-0 mx-0 my-2 w-[300px] h-[300px] overflow-hidden overflow-y-scroll
+        @apply lg:mx-2 lg:my-0 mx-0 my-2 w-[300px] h-[400px] overflow-hidden overflow-y-scroll
     }
 
     #guess-song-game-host-chatbox {
@@ -114,6 +114,19 @@
     }
 
     #guess-song-game-host-scorebox {
-        @apply lg:my-0 mx-0 my-2 w-[300px] h-[300px] overflow-hidden overflow-y-scroll
+        @apply lg:my-0 mx-0 my-2 w-[300px] h-[400px] overflow-hidden overflow-y-scroll
+    }
+
+
+    .guess-song-game-gradient {
+        background: linear-gradient(135deg, #1E1E2E 0%, rgba(45, 45, 68, 0.5) 100%);
+    }
+
+    .guess-song-game-input {
+        @apply guess-song-game-gradient rounded-xl border border-gray-600/30 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none transition-colors
+    }
+
+    .guess-song-game-box {
+        @apply rounded-2xl border border-gray-600/30 shadow-2xl guess-song-game-gradient
     }
 }

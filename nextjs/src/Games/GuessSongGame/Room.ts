@@ -1,6 +1,7 @@
 import _ from "lodash"
 import shared from "../../../src/pages/api/shared"
-import { GuessGameSong, GuessSongGameType, Player, RoomInfo } from "./guessSongGameTypes"
+import { GuessGameSong, GuessSongGameType, RoomInfo } from "./types"
+import { Player } from "./Player"
 
 class GuessSongGameRoom {
     roomID: string

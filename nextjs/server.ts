@@ -8,7 +8,7 @@ import next from "next";
 import { Server } from "socket.io"
 import Fuse from 'fuse.js'
 import _ from "lodash"
-import { GuessGameSong, GuessSongGameOption, GuessSongGameType, Player, RoomEvent } from './src/Games/GuessSongGame/guessSongGameTypes';
+import { GuessGameSong, GuessSongGameOption, GuessSongGameType, Player, RoomEvent } from './src/Games/GuessSongGame/types';
 
 
 const dev = process.env.NODE_ENV !== "production";

@@ -6,17 +6,33 @@ import _, { uniqBy, values } from 'lodash'
 import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube';
 import Songs, { MaimaiSongs } from 'db/model/songs';
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
-import LayoutWrapper from 'components/LayoutWrapper';
 import { useRouter } from 'next/router';
 import { Bounce, Id, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaFlag, FaRobot } from "react-icons/fa6";
+import { FaFlag, FaRobot, FaArrowLeft, FaHome } from "react-icons/fa";
+import { MdMusicNote, MdChatBubble, MdCheck, MdGamepad, MdPeople, MdSettings, MdPlayArrow, MdVisibility, MdVisibilityOff, MdShuffle, MdReplay, MdTimer, MdSkipNext, MdStar, MdCancel } from "react-icons/md";
 
 import ListBox from 'components/ListBox';
 import { MessageDetails } from 'types';
 import classNames from 'classnames';
 import Modal, { ModalProps } from 'components/Modal';
-import { CustomSong, GuessGameSong, GuessSongGameOption, RoomInfo } from 'Games/GuessSongGame/guessSongGameTypes';
+import { CustomSong, GuessGameSong, GuessSongGameOption, RoomInfo } from 'Games/GuessSongGame/types';
+
+// Message types enum matching Flutter design
+enum MessageType {
+    CORRECT = 'correct',
+    WRONG = 'wrong',
+    JOIN_LEAVE = 'joinLeave', 
+    ANSWER = 'answer',
+    NORMAL = 'normal'
+}
+
+// Message interface with type information
+interface ChatMessage {
+    content: string;
+    type: MessageType;
+    timestamp?: number;
+}
 enum GuessSongGameType {
     chunithm = 1,
     maimai,
@@ -33,26 +49,26 @@ function useSocketClient() {
 
         fetch('/api/socket').then(res => {
             let socketRef = io();
-            
-    
+
+
             socketRef.on("connect", () => {
                 console.log("connected", socketRef.id);
                 setState(true)
             })
-    
+
             socketRef.on("disconnect", () => {
                 console.log("Disconnected")
                 setState(false)
             })
-    
+
             socketRef.on("connect_error", async (err: any) => {
                 console.log(`connect_error due to ${err.description}`);
                 // await fetch('/api/socket');
             });
-    
+
             socket.current = socketRef
         })
-       
+
         return () => {
             socket.current?.disconnect()
         }
@@ -64,7 +80,7 @@ function useSocketClient() {
 
 const LoadingView = () => {
     return <div role="status">
-        <svg aria-hidden="true" className="mx-auto w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg aria-hidden="true" className="mx-auto w-6 h-6 text-gray-400 animate-spin fill-purple-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
             <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
         </svg>
@@ -105,10 +121,131 @@ const answerChoices = generateChoices()
 const chunithmDefaulLevelRange: [number, number] = [14.0, 15.4]
 const maimaiDefaulLevelRange: [number, number] = [14.0, 15]
 
+// Section Header Component (matching Flutter design)
+const SectionHeader = ({ title, icon, iconColor = 'purple' }: { title: string; icon: React.ReactNode; iconColor?: 'purple' | 'red' }) => (
+    <div className="flex items-center mb-6">
+        <div className={`bg-gradient-to-r p-2 rounded-xl shadow-lg ${
+            iconColor === 'red' 
+                ? 'from-red-500 to-red-600' 
+                : 'from-purple-600 to-purple-700'
+        }`}>
+            {icon}
+        </div>
+        <h2 className="text-xl font-bold text-white ml-3">{title}</h2>
+    </div>
+);
+
+// Chat Header Component (matching Flutter chat header)
+const ChatHeader = ({ messageCount }: { messageCount: number }) => (
+    <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4 rounded-t-2xl">
+        <div className="flex items-center justify-between">
+            <div className="flex items-center">
+                <div className="bg-white/20 p-2 rounded-lg">
+                    <MdChatBubble className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-white font-bold text-lg ml-3">Game Chat</span>
+            </div>
+            <div className="bg-white/20 px-3 py-1 rounded-lg">
+                <span className="text-white font-bold text-sm">{messageCount}</span>
+            </div>
+        </div>
+    </div>
+);
+
+// Message Component with different styles for different types
+const ChatMessageComponent = ({ message }: { message: ChatMessage }) => {
+    const getMessageStyle = (type: MessageType) => {
+        switch (type) {
+            case MessageType.CORRECT:
+                return {
+                    bgColor: 'bg-emerald-500/20',
+                    borderColor: 'border-emerald-500/30',
+                    textColor: 'text-emerald-300',
+                    icon: <MdCheck className="w-4 h-4 text-emerald-400" />
+                };
+            case MessageType.WRONG:
+                return {
+                    bgColor: 'bg-red-500/20',
+                    borderColor: 'border-red-500/30', 
+                    textColor: 'text-red-300',
+                    icon: <MdCancel className="w-4 h-4 text-red-400" />
+                };
+            case MessageType.JOIN_LEAVE:
+                return {
+                    bgColor: 'bg-cyan-500/20',
+                    borderColor: 'border-cyan-500/30',
+                    textColor: 'text-cyan-300',
+                    icon: <MdPeople className="w-4 h-4 text-cyan-400" />
+                };
+            case MessageType.ANSWER:
+                return {
+                    bgColor: 'bg-purple-500/20',
+                    borderColor: 'border-purple-500/30',
+                    textColor: 'text-purple-300',
+                    icon: <MdMusicNote className="w-4 h-4 text-purple-400" />
+                };
+            case MessageType.NORMAL:
+            default:
+                return {
+                    bgColor: 'bg-gray-700/20',
+                    borderColor: 'border-gray-600/30',
+                    textColor: 'text-gray-200',
+                    icon: <MdChatBubble className="w-4 h-4 text-gray-400" />
+                };
+        }
+    };
+
+    const style = getMessageStyle(message.type);
+
+    return (
+        <div className={`${style.bgColor} ${style.borderColor} border rounded-lg p-3 mb-2 flex items-start gap-2`}>
+            <div className="flex-shrink-0 mt-0.5">
+                {style.icon}
+            </div>
+            <p className={`${style.textColor} text-sm leading-relaxed flex-1`}>
+                {message.content}
+            </p>
+        </div>
+    );
+};
+
+// Helper function to determine message type based on content
+const determineMessageType = (message: string): MessageType => {
+    const lowerMessage = message.toLowerCase();
+    
+    // Check for correct answers
+    if (lowerMessage.includes('correct') || lowerMessage.includes('right') || 
+        lowerMessage.includes('✓') || lowerMessage.includes('✅')) {
+        return MessageType.CORRECT;
+    }
+    
+    // Check for wrong answers
+    if (lowerMessage.includes('wrong') || lowerMessage.includes('incorrect') || 
+        lowerMessage.includes('failed') || lowerMessage.includes('✗') || 
+        lowerMessage.includes('❌')) {
+        return MessageType.WRONG;
+    }
+    
+    // Check for join/leave messages
+    if (lowerMessage.includes('joined') || lowerMessage.includes('left') || 
+        lowerMessage.includes('disconnected') || lowerMessage.includes('connected') ||
+        lowerMessage.includes('enter') || lowerMessage.includes('exit')) {
+        return MessageType.JOIN_LEAVE;
+    }
+    
+    // Check for answer-related messages
+    if (lowerMessage.includes('answered') || lowerMessage.includes('guessed') || 
+        lowerMessage.includes('solution') || lowerMessage.includes('answer is')) {
+        return MessageType.ANSWER;
+    }
+    
+    return MessageType.NORMAL;
+};
+
 const GuessSongGame = () => {
 
     // State to store the messages
-    const [messages, setMessages] = useState<string[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     // State to store the current message
     const [currentMessage, setCurrentMessage] = useState('');
 
@@ -288,7 +425,17 @@ const GuessSongGame = () => {
             onlyPlayer: false, withNotification: false
         }) => {
             if (messageDetails.onlyPlayer && isHost) { return }
-            setMessages((prevMessages) => [...prevMessages, message]);
+            
+            // Determine message type based on content
+            const messageType = determineMessageType(message);
+            
+            const chatMessage: ChatMessage = {
+                content: message,
+                type: messageType,
+                timestamp: Date.now()
+            };
+            
+            setMessages((prevMessages) => [...prevMessages, chatMessage]);
             if (messageDetails.withNotification) {
                 showMessage(message, messageDetails)
             }
@@ -755,305 +902,511 @@ const GuessSongGame = () => {
     }, [roomInfo, socket, state])
 
     return (
-        <LayoutWrapper>
-            <div className='flex flex-wrap justify-center'>
-                <div id={`guess-song-game-${isHost ? 'host' : 'player'}-space`} className={classNames({ 'min-h-[800px]': !isHost })}>
-                    <h1 className='tc mb-5'>{roomID}</h1>
-                    <div id={`guess-song-game-${isHost ? 'host' : 'player'}-chatbox`}>
-                        <div className='flex-1'>
-                            {/* Display the messages */}
-                            <div ref={chatBoxRef} className="box box-shadow p-2 h-[300px] overflow-y-scroll">
-                                {messages.map((message, index) => (
-                                    <p key={index}>{message}</p>
-                                ))}
-                            </div>
-
-                            {/* Input field for sending new messages */}
-                            {isJoined && <><div className='flex my-5'>
-                                <input value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)}
-                                    className='px-4 py-2 box box-shadow w-full' placeholder='Chat'></input>
-                                <button disabled={currentMessage.length == 0} className='btn btn-secondary ml-2' onClick={sendMessage}>Send</button>
-                            </div>
-                                {gameOption.answerRaceChoices.length <= 0 ? <div className='flex my-5'>
-                                    <ReactSearchAutocomplete<GuessGameSong>
-                                        inputSearchString={answer}
-                                        items={filteredSongList}
-                                        onSearch={handleOnSearch}
-                                        onClear={() => { setAnswer(undefined) }}
-                                        // onHover={handleOnHover}
-                                        onSelect={handleOnSelect}
-                                        // onFocus={handleOnFocus}
-                                        fuseOptions={{ keys: ["display_name"] }}
-                                        resultStringKeyName='display_name'
-                                        placeholder='Answer'
-                                        key={"display_name"}
-                                        // formatResult={formatResult}
-                                        showIcon={false}
-                                        styling={{
-                                            borderRadius: '10px',
-                                            height: "auto",
-                                            boxShadow: "0 1px 5px rgba(0, 0, 0, 0.3)",
-                                            backgroundColor: "#d9e9ee",
-                                            fontFamily: "inherit",
-                                            fontSize: 'inherit',
-                                            zIndex: 99
-                                        }}
-                                        className='flex-1 auto-search'
-                                    />
-                                    <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary ml-2' onClick={sendAnswer}>Answer</button>
-                                </div>
-                                    : <div className='my-5 box box-shadow w-full flex p-4 flex-wrap'>
-                                        {_.map(gameOption.answerRaceChoices, (k, i) => {
-                                            return <button disabled={isAnswered || playerInfo?.isSurrendered == true} key={i} className='btn m-1 answer-race bg-master' onClick={
-                                                () => {
-                                                    setIsAnswered(true)
-                                                    socket?.emit('send-answer', { roomID, playerID: socket.id }, k, true);
-                                                }
-                                            }>{k}</button>
-                                        })}
-                                    </div>}
-                                <div className='my-5 flex justify-between flex-wrap items-center'>
-                                    <div className='flex flex-wrap items-center'>
-                                        <span className='bold'>Request: </span>
-                                        <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary ml-2 my-1 !min-w-fit' onClick={() => makeRequest("replay")}>Replay</button>
-                                        <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary ml-2 my-1 !min-w-fit' onClick={() => makeRequest("longer")}>Longer</button>
-                                        <button disabled={playerInfo?.isSurrendered} className='btn btn-secondary mx-2 my-1 !min-w-fit' onClick={() => makeRequest("anotherSection")}>Section</button>
-                                    </div>
-                                    <button disabled={playerInfo?.isSurrendered} className='btn bg-red text-white my-1' onClick={surrender}>Surrender</button>
-                                </div>
-                            </>}
-                            {!isJoined && <button className='btn btn-secondary my-5' onClick={joinGame}>Join</button>}
+        <div id='container' style={{
+            background: 'linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%)'
+        }}>
+            {/* Navigation Bar */}
+            <div className='mb-2 w-fit mx-auto'>
+                <div className='flex justify-center items-center mb-12'>
+                    <div className='cursor-pointer flex items-center' onClick={() => router.push('/playground/guess_song_game/rooms')}>
+                        <div className='bg-gradient-to-r from-purple-600 to-purple-700 p-4 rounded-2xl shadow-lg'>
+                            <MdMusicNote className='w-8 h-8 text-white' />
                         </div>
-                        <div id={`guess-song-game-${isHost ? 'host' : 'player'}-scorebox`} className='box box-shadow'>
-                            {roomInfo && roomInfo.players.map((k, i) => {
-                                return <ul key={i} className='even:bg-[#eab058] odd:bg-[#ea8b58]'>
-                                    <li className='px-5 py-3 text-white'>
-                                        <div className='flex justify-between'>
-                                            <div className='flex items-center'>
-                                                <div className='mr-1'>{k.name}</div>
-                                                {k.isHost && <FaRobot className='mr-1' />}
-                                                {k.isSurrendered && <FaFlag />}
-                                            </div>
-                                            {(!k.isHost || (k.isHost && k.isJoined)) && <span>{`score: ${k.score}`}</span>}
-                                        </div>
-                                    </li>
-                                </ul>
-                            })}
-                        </div>
+                        <h1 className='text-4xl font-bold text-white ml-4 tracking-wide'>Song Guesser</h1>
                     </div>
                 </div>
-                {isHost &&
-                    <div id="guess-song-game-host" className=''>
-                        <h1 className='tc mb-5'>Host</h1>
-                        <div className="flex items-center justify-between px-4">
-                            <div className=''>
-                                <div className='ml-2 mb-2'>Game Type: </div>
-                                <ListBox className="w-[7.5rem]" source={guessSongGameType} selected={selectedGameType} setSelected={setSelectedGameType} />
+            </div>
+
+            <div className='flex flex-wrap justify-center'>
+                <div id={`guess-song-game-${isHost ? 'host' : 'player'}-space`} className={classNames({ 'min-h-[800px]': !isHost })}>
+                    <h1 className='text-center mb-8 text-3xl font-bold text-white tracking-wide'>{roomID}</h1>
+                    <div id={`guess-song-game-${isHost ? 'host' : 'player'}-chatbox`} className='mb-4'>
+                        <div className='flex-1'>
+                            {/* Game Chat Section */}
+                            <div className='mb-8 overflow-hidden guess-song-game-box'
+                                style={{
+                                    backdropFilter: 'blur(10px)'
+                                }}>
+                                <ChatHeader messageCount={messages.length} />
+
+                                {/* Chat Messages */}
+                                <div ref={chatBoxRef} className="p-4 overflow-y-scroll h-[300px]">
+                                    {messages.map((message, index) => (
+                                        <ChatMessageComponent key={index} message={message} />
+                                    ))}
+                                </div>
                             </div>
-                            {selectedGameType.value != GuessSongGameType.playlist && selectedGameType.value != GuessSongGameType.custom &&
-                                <div className=''>
-                                    <div className='ml-2 mb-2'>Level: </div>
-                                    <div className="flex justify-between items-center">
-                                        <ListBox className="w-[5.5rem]" source={level.filter(k => {
-                                            return k.value <= upperLevelRange.value
-                                        })} selected={lowerLevelRange} setSelected={setLowerLevelRange} />
-                                        <span className="text-lg mx-2 bold"> ー </span>
-                                        <ListBox className="w-[5.5rem]" source={level.filter(k => {
-                                            return k.value >= lowerLevelRange.value
-                                        })} selected={upperLevelRange} setSelected={setUpperLevelRange} />
+                            {/* End Gaem Chat section */}
+
+                            {!isJoined && (
+                                <div className='my-4'>
+                                    <button
+                                        className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105'
+                                        onClick={joinGame}
+                                    >
+                                        Join Game
+                                    </button>
+                                </div>
+                            )}
+                            {/* Chat Input */}
+                            {isJoined && (
+                                <div className='my-5 border-t border-gray-600/30'>
+                                    <div className='flex'>
+                                        <input
+                                            value={currentMessage}
+                                            onChange={(e) => setCurrentMessage(e.target.value)}
+                                            className='guess-song-game-input px-4 py-3 w-full'
+                                            placeholder='Type a meessage'
+                                        />
+                                        <button
+                                            disabled={currentMessage.length == 0}
+                                            className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl ml-3 font-semibold transition-all duration-200 shadow-lg'
+                                            onClick={sendMessage}
+                                        >
+                                            Send
+                                        </button>
                                     </div>
-                                </div>}
+                                </div>
+                            )}
+
+                            {/* Answer Section */}
+                            {isJoined && (
+                                <div className='mb-8'>
+                                    {gameOption.answerRaceChoices.length <= 0 ? (
+                                        <div className='flex'>
+                                            <ReactSearchAutocomplete<GuessGameSong>
+                                                inputSearchString={answer}
+                                                items={filteredSongList}
+                                                onSearch={handleOnSearch}
+                                                onClear={() => { setAnswer(undefined) }}
+                                                onSelect={handleOnSelect}
+                                                fuseOptions={{ keys: ["display_name"] }}
+                                                resultStringKeyName='display_name'
+                                                placeholder='Answer'
+                                                key={"display_name"}
+                                                showIcon={false}
+                                                styling={{
+                                                    borderRadius: '12px',
+                                                    height: "auto",
+                                                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+                                                    backgroundColor: "#1E1E2E",
+                                                    border: "1px solid rgba(75, 85, 99, 0.3)",
+                                                    color: "#ffffff",
+                                                    hoverBackgroundColor : 'gray',
+                                                    fontFamily: "inherit",
+                                                    fontSize: 'inherit',
+                                                    zIndex: 99,
+                                                }}
+                                                className='flex-1 auto-search'
+                                            />
+                                            <button
+                                                disabled={playerInfo?.isSurrendered}
+                                                className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl ml-3 font-semibold transition-all duration-200 shadow-lg'
+                                                onClick={sendAnswer}
+                                            >
+                                                Answer
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className='flex flex-wrap gap-3'>
+                                            {_.map(gameOption.answerRaceChoices, (k, i) => {
+                                                return (
+                                                    <button
+                                                        disabled={isAnswered || playerInfo?.isSurrendered == true}
+                                                        key={i}
+                                                        className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105'
+                                                        onClick={() => {
+                                                            setIsAnswered(true)
+                                                            socket?.emit('send-answer', { roomID, playerID: socket.id }, k, true);
+                                                        }}
+                                                    >
+                                                        {k}
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Game Controls Section */}
+                            {isJoined && (
+                                <div className='mb-8 p-6 guess-song-game-box'>
+                                    <SectionHeader
+                                        title="Game Controls"
+                                        icon={<MdGamepad className="w-5 h-5 text-white" />}
+                                    />
+
+                                    <div className='mb-4'>
+                                        <span className='text-gray-300 font-semibold text-sm mb-3 block'>Request Options:</span>
+                                        <div className='flex flex-wrap gap-3'>
+                                            <button
+                                                disabled={playerInfo?.isSurrendered}
+                                                className='bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg flex items-center gap-2'
+                                                onClick={() => makeRequest("replay")}
+                                            >
+                                                <MdReplay className="w-4 h-4" />
+                                                Replay
+                                            </button>
+                                            <button
+                                                disabled={playerInfo?.isSurrendered}
+                                                className='bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg flex items-center gap-2'
+                                                onClick={() => makeRequest("longer")}
+                                            >
+                                                <MdTimer className="w-4 h-4" />
+                                                Longer
+                                            </button>
+                                            <button
+                                                disabled={playerInfo?.isSurrendered}
+                                                className='bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg flex items-center gap-2'
+                                                onClick={() => makeRequest("anotherSection")}
+                                            >
+                                                <MdSkipNext className="w-4 h-4" />
+                                                Section
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        disabled={playerInfo?.isSurrendered}
+                                        className='bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg w-full flex items-center justify-center gap-2'
+                                        onClick={surrender}
+                                    >
+                                        <FaFlag className="w-4 h-4" />
+                                        Surrender
+                                    </button>
+                                </div>
+                            )}
+
                         </div>
-                        <div className='flex items-center ml-2 my-5'>
-                            <div className='mr-2 bold'>Number of options: </div>
-                            <ListBox className="w-[4.25rem]" source={answerChoices} selected={answerRaceChoicesNumber} setSelected={setAnswerRaceChoicesNumber} />
-                        </div>
 
-                        {selectedGameType.value == GuessSongGameType.playlist && <div className='flex my-5'>
-                            <input value={playlist} onChange={(e) => {
-                                try {
-                                    let url = new URL(e.target.value)
-                                    let id: string
-                                    id = url.searchParams.get('list') ?? ""
-                                    setPlaylist(id)
-                                } catch (error) {
-                                    setPlaylist(e.target.value)
-                                }
 
-                            }}
-                                className='px-4 py-2 mr-2 box box-shadow w-full' placeholder='Youtube link'></input>
-                            <button disabled={(playlist.length <= 0)} className='btn btn-secondary ml-2' onClick={() => {
-                                getPlaylist()
-                            }
-                            }>{isLoadingSongList ? <LoadingView /> : "Load"}</button>
-                        </div>}
-                        {selectedGameType.value == GuessSongGameType.custom && <div className='flex my-5'>
-                            <input value={customYoutubeLink} onChange={(e) => {
-                                try {
-                                    let url = new URL(e.target.value)
-                                    let id: string
-                                    if (e.target.value.includes("youtu.be")) {
-                                        id = url.pathname.split("/")[1]
-                                    }
-                                    else {
-                                        id = url.searchParams.get('v') ?? ""
-                                    }
-                                    setCustomYoutubeLink(id)
-                                } catch (error) {
-                                    setCustomYoutubeLink(e.target.value)
-                                }
-
-                            }}
-                                className='px-4 py-2 mr-2 box box-shadow w-full' placeholder='Youtube link'></input>
-                            <button className='btn btn-secondary ml-2 ' onClick={() => {
-                                if (!customYoutubeLink) {
-                                    showMessage("Please input the link first!", {
-                                        type: "error"
-                                    })
-                                    return
-                                }
-                                setIsInputAnswerSetModalOpen(true)
-                            }
-                            }>Config</button>
-                            <button disabled={customSongList.length == 0 || !customYoutubeLink} className='btn btn-secondary ml-2' onClick={() => {
-
-                                setShouldSendBufferedSignal(false)
-                                setGameOption((gameOption) => {
-                                    return {
-                                        ...gameOption,
-                                        youtubeID: customYoutubeLink,
-                                    }
-                                })
-                                youtubeRef.current?.target.cueVideoById({
-                                    'videoId': customYoutubeLink,
-                                    'startSeconds': parseFloat(gameOption.startTime),
-                                    'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
-                                })
-                            }
-                            }>Load</button>
-                        </div>}
-                        <div className='mt-5'>
-                            <div className="flex justify-between items-center">
-                                <div className='p-2 bold'>Start Time</div>
-                                {selectedGameType.value != GuessSongGameType.custom && <div className="flex justify-center items-center">
-                                    <input onChange={(e) => {
-                                        setGameOption((gameOption) => {
-                                            return {
-                                                ...gameOption,
-                                                isFixedStartTime: e.target.checked
-                                            }
-                                        })
-                                    }} checked={gameOption.isFixedStartTime} id="game-fullscreen" className="checkbox" type="checkbox" />
-                                    <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen">Fixed Time</label>
-                                </div>}
+                        {/* Players Section */}
+                        <div id={`guess-song-game-${isHost ? 'host' : 'player'}-scorebox`} className='guess-song-game-box overflow-hidden'>
+                            <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <div className="bg-white/20 p-2 rounded-lg">
+                                            <MdPeople className="w-4 h-4 text-white" />
+                                        </div>
+                                        <span className="text-white font-bold text-lg ml-3">Players</span>
+                                    </div>
+                                    <div className="bg-white/20 px-3 py-1 rounded-lg">
+                                        <span className="text-white font-bold text-sm">{roomInfo?.players?.length || 0}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className='flex '>
-                                <input value={gameOption.startTime} onChange={(e) => setGameOption((gameOption) => {
-                                    const re = /^(\d*)?(\.\d{0,1})?$/
-                                    if (re.test(e.target.value))
-                                        return {
-                                            ...gameOption,
-                                            startTime: e.target.value
-                                        }
-                                    return gameOption
+                            <div >
+                                {roomInfo && roomInfo.players.map((k, i) => {
+                                    const colors = [
+                                        'linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)', // Purple
+                                        'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)', // Cyan
+                                        'linear-gradient(135deg, #10B981 0%, #059669 100%)', // Emerald
+                                        'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', // Amber
+                                        'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', // Red
+                                        'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)', // Pink
+                                    ];
+                                    const playerColor = colors[i % colors.length];
+
+                                    return (
+                                        <div key={i} className="p-4 border-b border-gray-600/30 last:border-b-0">
+                                            <div className='flex justify-between items-center'>
+                                                <div className='flex items-center'>
+                                                    {/* <div
+                                                        className='w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold mr-3 shadow-lg'
+                                                        style={{ background: playerColor }}
+                                                    >
+                                                        {k.name.charAt(0).toUpperCase()}
+                                                    </div> */}
+                                                    <div>
+                                                        <div className='flex items-center gap-2'>
+                                                            <span className='text-white font-semibold'>{k.name}</span>
+                                                            {k.isHost && <FaRobot className='text-yellow-300' />}
+                                                            {k.isSurrendered && <FaFlag className='text-red-300' />}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {(!k.isHost || (k.isHost && k.isJoined)) && (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="bg-gray-700 px-3 py-1 rounded-lg flex items-center gap-1">
+                                                            <MdStar className="w-3 h-3 text-amber-400" />
+                                                            <span className='text-white font-semibold text-sm'>{k.score}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
                                 })}
-                                    className='px-4 py-2 box box-shadow w-full' placeholder='Start Time'></input>
-                                <button className='btn btn-secondary ml-2' onClick={() => getRandomTime()}>Random</button>
                             </div>
-                        </div>
-                        <div className='mb-5'>
-                            <div className='p-2 bold'>Duration</div>
-                            <div className='flex'>
-                                <input value={gameOption.duration} onChange={(e) => setGameOption((gameOption) => {
-                                    const re = /^(\d*)?(\.\d{0,1})?$/
-                                    if (re.test(e.target.value))
-                                        return {
-                                            ...gameOption,
-                                            duration: e.target.value
-                                        }
-                                    return gameOption
-                                })}
-                                    className='px-4 py-2 box box-shadow w-full' placeholder='Duration'></input>
-                            </div>
-                        </div>
-                        {!canControlGamePanel && (!gameOption.duration || !gameOption.startTime) && <div className='text-red-500 bold'>Please input both start time and duration!</div>}
-                        <div className='flex flex-wrap my-5'>
-                            <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastConfig}>Start</button>
-                            <button disabled={!canControlGamePanel || (selectedGameType.value != GuessSongGameType.custom && !currentSong)} className='btn bg-red txt-white mr-2 my-1'
-                                onClick={() => { broadCastConfigWithRandomTime() }}>Start(R)</button>
-                            <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white mr-2 my-1' onClick={broadCastReplaySong}>Replay</button>
-                            <button disabled={!canControlGamePanel || !currentSong} className='btn bg-red txt-white my-1' onClick={showAnswer}>Reveal</button>
-                        </div>
-                        <div className='flex my-5 items-center'>
-                            <div className='flex flex-1 items-center'>
-                                <button disabled={!canControlGamePanel} className='btn btn-secondary mr-2 my-1' onClick={testSong}>Test</button>
-                                {selectedGameType.value != GuessSongGameType.custom && <button disabled={!canControlGamePanel} className='btn btn-secondary my-1' onClick={getNextSong}>
-                                    {isLoadingNextSong ? <LoadingView /> : "Next"}</button>}
-                            </div>
-                            <button className='btn btn-secondary' onClick={() => {
-                                setIsShowVideo(!isShowVideo)
-                            }}>{!isShowVideo ? "Show Video" : "Hide Video"}</button>
                         </div>
                     </div>
-                }
 
-            </div>
-            <div className='relative inner inner-p20 inner-540'>
-                <YouTube videoId="69plnXaTTnE" opts={{
-                    height: '100%',
-                    width: '100%',
-                    playerVars: {
-                        // https://developers.google.com/youtube/player_parameters
-                        // playsinline: 1,
-                        controls: 1,
-                        disablekb: 1,
-                        fs: 0,
-                        // start: gameOption.startTime,
-                        // end: gameOption.startTime + gameOption.duration
-                    },
-                }} style={(isHost && isShowVideo) ? { opacity: 1, aspectRatio: 16 / 9 } : { opacity: 0, position: "absolute", top: -999, height: 100, width: 100 }}
-                    onReady={youtubeVideoOnReady} onPlay={() => {
-                        if (selectedGameType.value == GuessSongGameType.custom) {
-                            timer.current = setTimeout(() => {
-                                youtubeRef.current?.target.pauseVideo()
-                            }, parseFloat(gameOption?.duration) * 1000)
-                        }
-                    }} onError={youtubeVideoOnError} onStateChange={(e: any) => {
-                        console.log("video time : ", youtubeRef.current?.target.getCurrentTime(), e.data)
-                        if (e.data == 5) {
-                            console.log("finish buffer")
-                            // youtubeRef.current?.target.playVideo()
-                            if (shouldSendBufferedSignal) {
-                                console.log("finish buffer", "emit")
-                                socket?.emit('finish-buffer-music', { roomID, playerID: socket.id });
-                            } else {
-                                setShouldSendBufferedSignal(true)
-                                if (customYoutubeLink && customSongList.length > 0) {
-                                    setSongList(customSongList)
-                                    showMessage("Loaded custom video successfully")
+                </div>
+
+                {isHost && (
+                    <div id="guess-song-game-host">
+                        <div className="p-6 mb-6 guess-song-game-box" >
+                            <SectionHeader
+                                title="Game Settings"
+                                icon={<MdSettings className="w-5 h-5 text-white" />}
+                            />
+
+                            <div className="flex items-center justify-between px-4 mb-6">
+                                <div className=''>
+                                    <div className='ml-2 mb-2 text-purple-300 font-semibold'>Game Type: </div>
+                                    <ListBox className="w-[7.5rem]" source={guessSongGameType} selected={selectedGameType} setSelected={setSelectedGameType} />
+                                </div>
+                                {selectedGameType.value != GuessSongGameType.playlist && selectedGameType.value != GuessSongGameType.custom &&
+                                    <div className=''>
+                                        <div className='ml-2 mb-2 text-purple-300 font-semibold'>Level: </div>
+                                        <div className="flex justify-between items-center">
+                                            <ListBox className="w-[5.5rem]" source={level.filter(k => {
+                                                return k.value <= upperLevelRange.value
+                                            })} selected={lowerLevelRange} setSelected={setLowerLevelRange} />
+                                            <span className="text-lg mx-2 font-bold text-purple-300"> ー </span>
+                                            <ListBox className="w-[5.5rem]" source={level.filter(k => {
+                                                return k.value >= lowerLevelRange.value
+                                            })} selected={upperLevelRange} setSelected={setUpperLevelRange} />
+                                        </div>
+                                    </div>}
+                            </div>
+                            <div className='flex items-center ml-2 my-5'>
+                                <div className='mr-2 font-bold text-purple-300'>Number of options: </div>
+                                <ListBox className="w-[4.25rem]" source={answerChoices} selected={answerRaceChoicesNumber} setSelected={setAnswerRaceChoicesNumber} />
+                            </div>
+
+                            {selectedGameType.value == GuessSongGameType.playlist && <div className='flex my-5'>
+                                <input value={playlist} onChange={(e) => {
+                                    try {
+                                        let url = new URL(e.target.value)
+                                        let id: string
+                                        id = url.searchParams.get('list') ?? ""
+                                        setPlaylist(id)
+                                    } catch (error) {
+                                        setPlaylist(e.target.value)
+                                    }
+
+                                }}
+                                    className='px-4 py-3 mr-2 guess-song-game-gradient rounded-xl w-full border border-gray-600/30 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none transition-colors'
+                                    placeholder='Youtube link'></input>
+                                <button disabled={(playlist.length <= 0)} className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl ml-2 font-semibold transition-all duration-200 shadow-lg' onClick={() => {
+                                    getPlaylist()
                                 }
-                            }
-                            if (shouldGetNewRandomStartTime) {
-                                console.log("shouldGetNewRandomStartTime", "youtube")
-                                getRandomTime()
-                                setShouldGetNewRandomStartTime(false)
-                            }
+                                }>{isLoadingSongList ? <LoadingView /> : "Load"}</button>
+                            </div>}
+                            {selectedGameType.value == GuessSongGameType.custom && <div className='flex my-5'>
+                                <input value={customYoutubeLink} onChange={(e) => {
+                                    try {
+                                        let url = new URL(e.target.value)
+                                        let id: string
+                                        if (e.target.value.includes("youtu.be")) {
+                                            id = url.pathname.split("/")[1]
+                                        }
+                                        else {
+                                            id = url.searchParams.get('v') ?? ""
+                                        }
+                                        setCustomYoutubeLink(id)
+                                    } catch (error) {
+                                        setCustomYoutubeLink(e.target.value)
+                                    }
 
-                            if (selectedGameType.value == GuessSongGameType.custom) {
-                                youtubeRef.current?.target.mute()
-                                youtubeRef.current?.target.seekTo(0, true)
-                                youtubeRef.current?.target.playVideo()
-                            }
-                        }
-                    }} />
+                                }}
+                                    className='px-4 py-3 mr-2 guess-song-game-input w-full'
+                                    placeholder='Youtube link'></input>
+                                <button className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-3 rounded-xl ml-2 font-semibold transition-all duration-200 shadow-lg' onClick={() => {
+                                    if (!customYoutubeLink) {
+                                        showMessage("Please input the link first!", {
+                                            type: "error"
+                                        })
+                                        return
+                                    }
+                                    setIsInputAnswerSetModalOpen(true)
+                                }
+                                }>Config</button>
+                                <button disabled={customSongList.length == 0 || !customYoutubeLink} className='bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl ml-2 font-semibold transition-all duration-200 shadow-lg' onClick={() => {
+
+                                    setShouldSendBufferedSignal(false)
+                                    setGameOption((gameOption) => {
+                                        return {
+                                            ...gameOption,
+                                            youtubeID: customYoutubeLink,
+                                        }
+                                    })
+                                    youtubeRef.current?.target.cueVideoById({
+                                        'videoId': customYoutubeLink,
+                                        'startSeconds': parseFloat(gameOption.startTime),
+                                        'endSeconds': parseFloat(gameOption.startTime) + parseFloat(gameOption.duration)
+                                    })
+                                }
+                                }>Load</button>
+                            </div>}
+                            <div className='mt-5'>
+                                <div className="flex justify-between items-center">
+                                    <div className='p-2 font-bold text-purple-300'>Start Time</div>
+                                    {selectedGameType.value != GuessSongGameType.custom && <div className="flex justify-center items-center">
+                                        <input onChange={(e) => {
+                                            setGameOption((gameOption) => {
+                                                return {
+                                                    ...gameOption,
+                                                    isFixedStartTime: e.target.checked
+                                                }
+                                            })
+                                        }} checked={gameOption.isFixedStartTime} id="game-fullscreen" className="w-4 h-4 text-purple-600 bg-gray-700 border border-gray-600 rounded focus:ring-purple-500 focus:ring-2" type="checkbox" />
+                                        <label className="ml-2 text-sm font-medium text-gray-300" htmlFor="game-fullscreen">Fixed Time</label>
+                                    </div>}
+                                </div>
+                                <div className='flex '>
+                                    <input value={gameOption.startTime} onChange={(e) => setGameOption((gameOption) => {
+                                        const re = /^(\d*)?(\.\d{0,1})?$/
+                                        if (re.test(e.target.value))
+                                            return {
+                                                ...gameOption,
+                                                startTime: e.target.value
+                                            }
+                                        return gameOption
+                                    })}
+                                        className='px-4 py-3 guess-song-game-gradient rounded-xl w-full border border-gray-600/30 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none transition-colors'
+                                        placeholder='Start Time'></input>
+                                    <button className='bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-6 py-3 rounded-xl ml-2 font-semibold transition-all duration-200 shadow-lg flex items-center gap-2' onClick={() => getRandomTime()}>
+                                        <MdShuffle className="w-4 h-4" />
+                                        Random
+                                    </button>
+                                </div>
+                            </div>
+                            <div className='mb-5'>
+                                <div className='p-2 font-bold text-purple-300'>Duration</div>
+                                <div className='flex'>
+                                    <input value={gameOption.duration} onChange={(e) => setGameOption((gameOption) => {
+                                        const re = /^(\d*)?(\.\d{0,1})?$/
+                                        if (re.test(e.target.value))
+                                            return {
+                                                ...gameOption,
+                                                duration: e.target.value
+                                            }
+                                        return gameOption
+                                    })}
+                                        className='px-4 py-3 guess-song-game-input w-full'
+                                        placeholder='Duration'></input>
+                                </div>
+                            </div>
+                            {!canControlGamePanel && (!gameOption.duration || !gameOption.startTime) && <div className='text-red-400 font-bold'>Please input both start time and duration!</div>}
+                            <div className='flex flex-wrap my-5 gap-3'>
+                                <button disabled={!canControlGamePanel || !currentSong} className='bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg' onClick={broadCastConfig}>Start</button>
+                                <button disabled={!canControlGamePanel || (selectedGameType.value != GuessSongGameType.custom && !currentSong)} className='bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg'
+                                    onClick={() => { broadCastConfigWithRandomTime() }}>Start(R)</button>
+                                <button disabled={!canControlGamePanel || !currentSong} className='bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg' onClick={broadCastReplaySong}>Replay</button>
+                                <button disabled={!canControlGamePanel || !currentSong} className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg' onClick={showAnswer}>Reveal</button>
+                            </div>
+                            <div className='flex my-5 items-center gap-3'>
+                                <button disabled={!canControlGamePanel} className='bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg' onClick={testSong}>Test</button>
+                                {selectedGameType.value != GuessSongGameType.custom && <button disabled={!canControlGamePanel} className='bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg' onClick={getNextSong}>
+                                    {isLoadingNextSong ? <LoadingView /> : "Next"}</button>}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
-            <InputAnswerSetModal youtube_link={customYoutubeLink} isOpen={isInputAnswerSetModalOpen} setIsOpen={setIsInputAnswerSetModalOpen} callBack={(songs: CustomSong[]) => {
-                setCustomSongList(songs.sort((a, b) => a.startTime - b.startTime))
-                setIsInputAnswerSetModalOpen(false)
-            }} />
-            <ToastContainer
-            />
-        </LayoutWrapper >
+
+
+            {/* YouTube Video Section with Toggle Button */}
+            <div className='inner inner-540' style={{
+                position: isHost ? "relative" : "absolute",
+                top: isHost ? "0" : "-9999px",
+                left: isHost ? "0" : "-9999px",
+            }}>
+                <div className="p-6 guess-song-game-box">
+                    <div className='flex justify-between items-center'>
+                        <SectionHeader
+                            title="Music Player"
+                            icon={<MdPlayArrow className="w-5 h-5 text-white" />}
+                            iconColor="red"
+                        />
+                        <button
+                            className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 flex items-center gap-2 mb-6'
+                            onClick={() => setIsShowVideo(!isShowVideo)}
+                        >
+                            {isShowVideo ? (
+                                <MdVisibilityOff className="w-4 h-4" />
+                            ) : (
+                                <MdVisibility className="w-4 h-4" />
+                            )}
+                            {isShowVideo ? 'Hide Video' : 'Show Video'}
+                        </button>
+                    </div>
+                    <div className="relative" style={{ aspectRatio: 16 / 9 }}>
+                        <YouTube videoId="69plnXaTTnE" opts={{
+                            height: '100%',
+                            width: '100%',
+                            playerVars: {
+                                // https://developers.google.com/youtube/player_parameters
+                                // playsinline: 1,
+                                controls: 1,
+                                disablekb: 1,
+                                fs: 0,
+                                // start: gameOption.startTime,
+                                // end: gameOption.startTime + gameOption.duration
+                            },
+                        }} style={isHost ? { aspectRatio: 16 / 9 } : { opacity: 0 }}
+                            onReady={youtubeVideoOnReady} onPlay={() => {
+                                if (selectedGameType.value == GuessSongGameType.custom) {
+                                    timer.current = setTimeout(() => {
+                                        youtubeRef.current?.target.pauseVideo()
+                                    }, parseFloat(gameOption?.duration) * 1000)
+                                }
+                            }} onError={youtubeVideoOnError} onStateChange={(e: any) => {
+                                console.log("video time : ", youtubeRef.current?.target.getCurrentTime(), e.data)
+                                if (e.data == 5) {
+                                    console.log("finish buffer")
+                                    // youtubeRef.current?.target.playVideo()
+                                    if (shouldSendBufferedSignal) {
+                                        console.log("finish buffer", "emit")
+                                        socket?.emit('finish-buffer-music', { roomID, playerID: socket.id });
+                                    } else {
+                                        setShouldSendBufferedSignal(true)
+                                        if (customYoutubeLink && customSongList.length > 0) {
+                                            setSongList(customSongList)
+                                            showMessage("Loaded custom video successfully")
+                                        }
+                                    }
+                                    if (shouldGetNewRandomStartTime) {
+                                        console.log("shouldGetNewRandomStartTime", "youtube")
+                                        getRandomTime()
+                                        setShouldGetNewRandomStartTime(false)
+                                    }
+
+                                    if (selectedGameType.value == GuessSongGameType.custom) {
+                                        youtubeRef.current?.target.mute()
+                                        youtubeRef.current?.target.seekTo(0, true)
+                                        youtubeRef.current?.target.playVideo()
+                                    }
+                                }
+                            }} />
+                        
+                        {/* Overlay when video is hidden (only for hosts) */}
+                        {isHost && !isShowVideo && (
+                            <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600/30 flex items-center justify-center">
+                                <div className="text-center">
+                                    <div className="bg-gray-700/50 p-4 rounded-xl mb-4 inline-block">
+                                        <MdVisibilityOff className="w-8 h-8 text-gray-400 mx-auto" />
+                                    </div>
+                                    <h3 className="text-white font-semibold text-lg mb-2">Video Hidden</h3>
+                                    <p className="text-gray-400 text-sm">
+                                        Click &quot;Show Video&quot; to display video
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <InputAnswerSetModal youtube_link={customYoutubeLink} isOpen={isInputAnswerSetModalOpen} setIsOpen={setIsInputAnswerSetModalOpen} callBack={(songs: CustomSong[]) => {
+                        setCustomSongList(songs.sort((a, b) => a.startTime - b.startTime))
+                        setIsInputAnswerSetModalOpen(false)
+                    }} />
+                    <ToastContainer
+                    />
+                </div>
+            </div>
+        </div >
     );
 };
 
@@ -1069,25 +1422,25 @@ const InputAnswerSetModal: React.FC<Omit<ModalProps, "children"> & {
 }) => {
         const [answerSetText, setAnswerSetText] = useState(
             `Season 1
-00:00 - Hishoku no Sora「Mami Kawada」
-04:15 - Yoake Umarekuru Shoujo「Youko Takahashi」
-08:27 - being「KOTOKO」
-13:14 - Aka no Seijaku「Yoko Ishida」
-__________________________________
-Season 2
-18:25 - JOINT「Mami Kawada」
-22:25 - triangle「Mami Kawada」
-27:14 - BLAZE「KOTOKO」
-32:19 - Sociometry「KOTOKO」
-37:03 - sense「Mami Kawada」
-__________________________________
-Season 3
-41:16 - Light My Fire「KOTOKO」
-45:02 - I'll believe「Altima」- Rest in peace Maon Kurosaki
-50:42 - Serment「Mami Kawada」
-54:50 - ONE「Altima」
-59:58 - u/n「Mami Kawada」
-1:04:06 - Koubou「Mami Kawada`)
+            00:00 - Hishoku no Sora「Mami Kawada」
+            04:15 - Yoake Umarekuru Shoujo「Youko Takahashi」
+            08:27 - being「KOTOKO」
+            13:14 - Aka no Seijaku「Yoko Ishida」
+            __________________________________
+            Season 2
+            18:25 - JOINT「Mami Kawada」
+            22:25 - triangle「Mami Kawada」
+            27:14 - BLAZE「KOTOKO」
+            32:19 - Sociometry「KOTOKO」
+            37:03 - sense「Mami Kawada」
+            __________________________________
+            Season 3
+            41:16 - Light My Fire「KOTOKO」
+            45:02 - I'll believe「Altima」- Rest in peace Maon Kurosaki
+            50:42 - Serment「Mami Kawada」
+            54:50 - ONE「Altima」
+            59:58 - u/n「Mami Kawada」
+            1:04:06 - Koubou「Mami Kawada`)
 
         return <Modal title={"Please Input the answer set"} positiveBtnText={"Convert"} rightBtnCallBack={() => {
             let answerSetTextArray = answerSetText.split("\n")
@@ -1121,7 +1474,8 @@ Season 3
             <div className='px-5'>
                 <textarea value={answerSetText} onChange={e => setAnswerSetText(e.target.value)}
                     placeholder={`Song Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\n`}
-                    className='box box-shadow h-[300px] w-full p-3'>
+                    className='guess-song-game-input h-[300px] w-full p-4'
+                  >
 
                 </textarea>
             </div>

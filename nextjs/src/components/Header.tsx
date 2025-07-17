@@ -11,7 +11,9 @@ const Header = (props: Props) => {
     const { data: session, status } = useSession()
     const router = useRouter()
     const haveSession = (session && router.pathname !== '/login' && router.pathname !== '/signup')
+    const shouldShowHeader = !router.pathname.startsWith('/playground/guess_song_game')
     return (
+        shouldShowHeader ?
         <header id='header'>
             <div className={classNames('header-menu', { 'active': active })}>
                 <div className='menu-trigger' onClick={() => {
@@ -55,6 +57,8 @@ const Header = (props: Props) => {
                 </ul>
             </nav>
         </header>
+        :
+        <></>
     )
 }
 

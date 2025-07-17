@@ -655,6 +655,7 @@ button {
   background-color: transparent;
   padding: 0;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 /* button:focus, button:active, .btn:focus, .btn:active {

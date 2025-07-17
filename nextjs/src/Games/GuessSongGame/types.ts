@@ -1,17 +1,5 @@
 import Songs, { MaimaiSongs } from "db/model/songs";
-
-export interface Player {
-    name: string;
-    id: string;
-    isReady: boolean;
-    isHost: boolean;
-    isJoined: boolean;
-    score: number;
-    isAnswered: boolean;
-    isSurrendered: boolean;
-    isRequestedLonger: boolean;
-    isRequestedAnotherSection: boolean;
-}
+import { Player } from "./Player";
 
 export interface RoomEvent {
     roomID: string;

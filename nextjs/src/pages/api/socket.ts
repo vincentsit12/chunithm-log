@@ -1,12 +1,12 @@
-import { GuessGameSong } from 'Games/GuessSongGame/guessSongGameTypes';
+import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent, RoomInfo } from 'Games/GuessSongGame/types';
 import { NextApiResponseWithSocket } from './apiTypes';
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Server } from "socket.io"
 import shared from "./shared"
 import Fuse from 'fuse.js'
-import Songs, { MaimaiSongs } from "db/model/songs"
 import _ from "lodash"
 import { MessageDetails } from 'types';
+import { Player } from 'Games/GuessSongGame/Player';
 
 
 const PORT = 3000
@@ -46,7 +46,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
               io.in(room.roomID).emit("delete-room")
             } else if (player.isJoined) {
               io.in(room.roomID).emit("update-room-info", room.getRoomInfo())
-              io.in(room.roomID).emit("message", player.name + " leaved room")
+              io.in(room.roomID).emit("message", player.getPlayerName() + " leaved room")
             }
             console.log("delete ", room.players)
           }
@@ -59,7 +59,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let room = shared.rooms.get(roomID)
       let player = room?.players.get(socket.id)
       if (player) {
-        io.in(roomID).emit("message", player.name + " say: " + message)
+        io.in(roomID).except(socket.id).emit("message", player.getPlayerName() +  + " : " + message)
+        io.in(socket.id).emit("message", "You : " + message)
       }
     })
 
@@ -71,18 +72,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       if (shared.rooms.has(roomID)) {
 
         let room = shared.rooms.get(roomID)!
-        let player: Player = {
-          id: socket.id, //use socket id first
-          name: data.playerName ?? "Guest - " + socket.id.substring(0, 5),
-          isHost: false,
-          isJoined: false,
-          isReady: false,
-          score: 0,
-          isAnswered: false,
-          isSurrendered: false,
-          isRequestedLonger: false,
-          isRequestedAnotherSection: false,
-        }
+        let player = new Player(data.playerName ?? "Guest - " + socket.id.substring(0, 5), socket.id, false)
         room.players.set(socket.id, player)
 
         console.log("joins ", room.players)
@@ -90,18 +80,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         return
       }
 
-      let player: Player = {
-        id: socket.id, //use socket id first
-        name: data.playerName ?? "Guest - " + socket.id.substring(0, 5),
-        isHost: true,
-        isReady: false,
-        isJoined: false,
-        score: 0,
-        isAnswered: false,
-        isSurrendered: false,
-        isRequestedLonger: false,
-        isRequestedAnotherSection: false,
-      }
+      let player = new Player(data.playerName ?? "Host - " + socket.id.substring(0, 5), socket.id, true)
 
       let room = new GuessSongGameRoom(roomID)
       room.players.set(socket.id, player)
@@ -119,7 +98,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       if (room && player) {
         player.isJoined = true
         io.in(roomID).emit("update-room-info", room.getRoomInfo())
-        io.in(roomID).emit("message", (player.isHost ? "Host" : player.name) + " joined game")
+        io.in(roomID).emit("message", player.getPlayerName() + " joined game")
         io.in(socket.id).emit('change-song-list', room.currentSongList)
       }
     })
@@ -201,7 +180,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let room = shared.rooms.get(roomID)
       let player = room?.players.get(data.playerID)
       if (room && player) {
-        io.in(roomID).emit("message", player.name + " answer: " + answer)
+        io.in(roomID).emit("message", player.getPlayerName() + " answered: " + answer)
 
         if (room.currentSongName && answer) {
           let fuse = new Fuse([room.currentSongName], { includeScore: true })
@@ -209,8 +188,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
           if (answer == room.currentSongName || (answerMatchingResult.length > 0 && answerMatchingResult[0].score && answerMatchingResult[0].score <= 0.3)) {
             player.score += 1
             let details: MessageDetails = { withNotification: true, type: 'success' }
-            io.in(roomID).emit("message", `${player.name} is correct`, details)
-            io.in(roomID).emit("message", `${player.name} score : ${player.score}`)
+            io.in(roomID).emit("message", `${player.getPlayerName()} is correct`, details)
+            io.in(roomID).emit("message", `${player.getPlayerName()} score : ${player.score}`)
             room.endThisRound()
           } else {
             player.isAnswered = onlyOnce
@@ -265,8 +244,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
           io.in(socket.id).emit("message", `Please wait the next round start!`, details)
           return
         }
-        io.in(roomID).emit("request-replay", player.name)
-        io.in(roomID).emit("message", `${player.name} requested replay music`)
+        io.in(roomID).emit("request-replay", player.getPlayerName())
+        io.in(roomID).emit("message", `${player.getPlayerName()} requested replay music`)
       }
     })
 
@@ -506,54 +485,4 @@ export class GuessSongGameRoom {
     return roomInfo
 
   }
-}
-
-interface Player {
-  name: string,
-  id: string,
-  isReady: boolean,
-  isHost: boolean,
-  isJoined: boolean,
-  score: number,
-  isAnswered: boolean,
-  isSurrendered: boolean
-  isRequestedLonger: boolean
-  isRequestedAnotherSection: boolean
-}
-
-export interface RoomEvent {
-  roomID: string,
-  roomInfo?: RoomInfo
-  playerID: string,
-  playerName: string,
-}
-
-export interface RoomInfo {
-  roomID: string,
-  noOfRound: number,
-  gameType: number
-  players: Player[],
-}
-
-export interface GuessSongGameOption {
-  youtubeID: string,
-  startTime: string
-  duration: string
-  isFixedStartTime: boolean,
-  answerRaceChoices: string[],
-  answerRaceChoicesNumber: number,
-}
-
-export type CustomSong = {
-  id: number,
-  youtube_link: string,
-  display_name: string,
-  startTime: number
-}
-
-enum GuessSongGameType {
-  chunithm = 1,
-  maimai,
-  playlist,
-  custom,
 }
