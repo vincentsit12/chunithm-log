@@ -8,7 +8,8 @@ import next from "next";
 import { Server } from "socket.io"
 import Fuse from 'fuse.js'
 import _ from "lodash"
-import { GuessGameSong, GuessSongGameOption, GuessSongGameType, Player, RoomEvent } from './src/Games/GuessSongGame/types';
+import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent } from './src/Games/GuessSongGame/types';
+import { Player } from './src/Games/GuessSongGame/Player';
 
 
 const dev = process.env.NODE_ENV !== "production";
@@ -67,18 +68,7 @@ app.prepare().then(() => {
       if (shared.rooms.has(roomID)) {
 
         let room = shared.rooms.get(roomID)!
-        let player: Player = {
-          id: socket.id, //use socket id first
-          name: data.playerName ?? "Guest - " + socket.id.substring(0, 5),
-          isHost: false,
-          isJoined: false,
-          isReady: false,
-          score: 0,
-          isAnswered: false,
-          isSurrendered: false,
-          isRequestedLonger: false,
-          isRequestedAnotherSection: false,
-        }
+        let player: Player = new Player(data.playerName ?? "Guest - " + socket.id.substring(0, 5), socket.id, false)
         room.players.set(socket.id, player)
 
         console.log("joins ", room.players)
@@ -86,18 +76,7 @@ app.prepare().then(() => {
         return
       }
 
-      let player: Player = {
-        id: socket.id, //use socket id first
-        name: data.playerName ?? "Guest - " + socket.id.substring(0, 5),
-        isHost: true,
-        isReady: false,
-        isJoined: false,
-        score: 0,
-        isAnswered: false,
-        isSurrendered: false,
-        isRequestedLonger: false,
-        isRequestedAnotherSection: false,
-      }
+      let player: Player = new Player(data.playerName ?? "Host - " + socket.id.substring(0, 5), socket.id, true)
 
       let room = new GuessSongGameRoom(roomID)
       room.players.set(socket.id, player)
