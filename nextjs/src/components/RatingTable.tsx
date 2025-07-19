@@ -2,7 +2,7 @@ import classNames from "classnames"
 import _, { isNumber } from "lodash"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { Fragment, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Dispatch, Fragment, ReactNode, SetStateAction, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { ChunithmNetLogin, ChunithmVersion, CURRENT_VERSION, Rating, SortingKeys, TableHeader } from "types"
 import { AutoSizer, CellMeasurer, CellMeasurerCache, Column, List, Table, WindowScroller } from 'react-virtualized';
 import { toFixedTrunc } from "utils/calculateRating"
@@ -57,9 +57,10 @@ const cache = new CellMeasurerCache({
     defaultHeight: 42
 });
 
-export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoading = () => { }, isOtherUser = false }:
+export const RecentRatingTable = ({ recentRatingList, isOtherUser = false }:
     { recentRatingList: Rating[], isLoading?: boolean, setLoading?: React.Dispatch<React.SetStateAction<boolean>>, isOtherUser?: boolean }) => {
     const [showTable, setShowTable] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
     const { data: session, status } = useSession()
     const { register, handleSubmit, formState: { errors }, } = useForm<ChunithmNetLogin>()
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -67,14 +68,14 @@ export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoad
     const query = useSearchParams()
     const height = recentRatingList.length * 42
     const updateRecord = async (chunithmNetLogin?: ChunithmNetLogin) => {
-        setLoading(true)
+        setIsLoading(true)
         let body: ChunithmNetLogin | undefined = chunithmNetLogin
         let url = "/api/record/remoteUpdate/" + session?.user.id
         return axios.post(url, body).then(res => {
             router.reload()
         }).catch(e => {
 
-            setLoading(false)
+            setIsLoading(false)
             if (e.response.data.errorCode == 999) {
                 setIsModalOpen(true)
             }
@@ -92,6 +93,11 @@ export const RecentRatingTable = ({ recentRatingList, isLoading = false, setLoad
 
     const error: boolean = errors?.password?.type === 'required' || errors?.sid?.type === 'required'
     return <div className="relative">
+        {isLoading &&
+            <div className='bg-black/40 z-[9999] fixed h-full w-full top-0 left-0 fadeIn'>
+                <LoadingView />
+            </div>
+        }
         <div className='flex justify-center items-center mb-4 form-check'>
             <div className='flex flex-1 justify-center items-center form-check'>
                 <input onChange={(e) => {
@@ -163,21 +169,12 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
         "notSelected": defaultHideHeader,
         "selected": defaultDisplayHeader,
     }, "headerPref");
-    const [tempItemList, setTempItemList] = useState<DropList>({
-        "notSelected": itemList["notSelected"],
-        "selected": itemList["selected"],
-    });
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const ref = useRef<HTMLInputElement | null>(null);
 
     const [scoreRange, setScoreRange] = useState<[number, number]>([0, 1010000])
-    const [tempScoreRange, setTempScoreRange] = useState<[number, number]>(scoreRange)
 
-    useEffect(() => {
-        setTempItemList(itemList)
-        setTempScoreRange(scoreRange)
-    }, [itemList, scoreRange])
     const [selectedLevel, setSelectedLevel] = useState(levels[0])
     const [selectedVersion, setSelectedVersion] = useState(versions[0])
     const [searchText, setSearchText] = useState('')
@@ -185,7 +182,6 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
     const [selectedTableRowsNumber, setSelectedTableRowsNumber] = useState(tableRowsNumbers[3])
     const tableRowsNumber = selectedTableRowsNumber.value
     const [sortingPref, setSortingPref] = useState<[SortingKeys, "asc" | "desc"]>(['rating', "desc"])
-
     const sortedRatingList = useMemo(() => {
         let orderedList: Rating[]
         const scoreRule = (score: number) => {
@@ -295,6 +291,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                     }} className="w-[5.5rem]">{"Score"}{_renderArrow('score')}</div>
             }
         }
+
         const _renderContent = (key: TableHeader, data: Rating, index: number) => {
             switch (key) {
                 case "Base":
@@ -349,6 +346,7 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
             })}
         </>
     }
+
     return <>
         <div className='inner inner-720'  >
             <input value={searchText} onChange={(e) => {
@@ -395,74 +393,108 @@ export const BestRatingTable = ({ ratingList }: { ratingList: Rating[] }) => {
                         {`3. click the bookmark and wait for redirecting to this page`}
                     </p>
                 </div>}
-            <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen} rightBtnCallBack={() => {
-                setItemList(tempItemList)
-                let scoreRange: any = [...tempScoreRange]
-                if (isNaN(parseInt(scoreRange[0]))) {
-                    scoreRange[0] = 0
-                }
-                else if (parseInt(scoreRange[0]) > parseInt(scoreRange[1])) {
-                    scoreRange[0] = parseInt(scoreRange[1])
-                }
-                if (isNaN(parseInt(scoreRange[1]))) {
-                    scoreRange[1] = 1010000
-                }
-                else if (parseInt(scoreRange[0]) > parseInt(scoreRange[1])) {
-                    scoreRange[1] = parseInt(scoreRange[0])
-                }
-                setScoreRange(scoreRange)
-                setIsModalOpen(false)
-            }}
-                closeModal={() => {
-                    setTempItemList(itemList)
-                    setTempScoreRange(scoreRange)
-                    setIsModalOpen(false)
-                }}
-            >
-                <section className="p-5">
-                    <h4 className="text-left ml-1 bold">Score Range</h4>
-                    <Divider />
-                    <div className="flex justify-between items-center p-2">
-
-                        <input autoFocus={false} value={tempScoreRange[0]} onChange={(e) => {
-                            let number = parseInt(e.target.value)
-                            if (!isNaN(number)) {
-                                // if (number > scoreRange[1]) number = scoreRange[1]
-                                setTempScoreRange((p) => [number, p[1]])
-                            }
-                            else {
-                                setTempScoreRange((p) => [e.target.value as any, p[1]])
-                            }
-
-                        }} className='p-6 box box-shado w-full h-10' inputMode="numeric" placeholder='0'></input>
-
-                        <span className="text-lg mx-2 bold"> ー </span>
-
-                        <input autoFocus={false} value={tempScoreRange[1]} inputMode="numeric" onChange={(e) => {
-                            let number = parseInt(e.target.value)
-                            if (!isNaN(number)) {
-                                // if (number < scoreRange[0]) number = scoreRange[0]
-                                setTempScoreRange((p) => [p[0], number])
-                            }
-                            else {
-                                setTempScoreRange((p) => [p[0], e.target.value as any])
-                            }
-
-                        }} className='p-6 box w-full h-10' placeholder='1010000'></input>
-
-                    </div>
-                </section>
-                <section className="p-5">
-                    <h4 className="text-left ml-1 bold">Header</h4>
-                    <Divider />
-                    <DraggableList setItemList={setTempItemList} itemList={tempItemList} />
-                </section>
-            </Modal>
         </div>
+        <SettingModal isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} itemList={itemList} setItemList={setItemList}
+            scoreRange={scoreRange} setScoreRange={setScoreRange} />
     </>
 }
 
+const SettingModal = ({
+    isModalOpen,
+    setIsModalOpen,
+    itemList,
+    setItemList,
+    scoreRange,
+    setScoreRange
+}
+    : {
+        isModalOpen: boolean,
+        setIsModalOpen: Dispatch<SetStateAction<boolean>>,
+        itemList: DropList
+        setItemList: (value: DropList) => void
+        scoreRange: [number, number]
+        setScoreRange: Dispatch<SetStateAction<[number, number]>>,
+    }
+
+) => {
+    const [tempItemList, setTempItemList] = useState<DropList>({
+        "notSelected": itemList["notSelected"],
+        "selected": itemList["selected"],
+    });
+    const [tempScoreRange, setTempScoreRange] = useState<[number, number]>(scoreRange)
+
+    useEffect(() => {
+        setTempItemList(itemList)
+        setTempScoreRange(scoreRange)
+    }, [itemList, scoreRange])
+
+    return <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen} rightBtnCallBack={() => {
+        setItemList(tempItemList)
+        let scoreRange: any = [...tempScoreRange]
+        if (isNaN(parseInt(scoreRange[0]))) {
+            scoreRange[0] = 0
+        }
+        else if (parseInt(scoreRange[0]) > parseInt(scoreRange[1])) {
+            scoreRange[0] = parseInt(scoreRange[1])
+        }
+        if (isNaN(parseInt(scoreRange[1]))) {
+            scoreRange[1] = 1010000
+        }
+        else if (parseInt(scoreRange[0]) > parseInt(scoreRange[1])) {
+            scoreRange[1] = parseInt(scoreRange[0])
+        }
+        setScoreRange(scoreRange)
+        setIsModalOpen(false)
+    }}
+        closeModal={() => {
+            setTempItemList(itemList)
+            setTempScoreRange(scoreRange)
+            setIsModalOpen(false)
+        }}
+    >
+        <section className="p-5">
+            <h4 className="text-left ml-1 bold">Score Range</h4>
+            <Divider />
+            <div className="flex justify-between items-center p-2">
+
+                <input autoFocus={false} value={tempScoreRange[0]} onChange={(e) => {
+                    let number = parseInt(e.target.value)
+                    if (!isNaN(number)) {
+                        // if (number > scoreRange[1]) number = scoreRange[1]
+                        setTempScoreRange((p) => [number, p[1]])
+                    }
+                    else {
+                        setTempScoreRange((p) => [e.target.value as any, p[1]])
+                    }
+
+                }} className='p-6 box box-shado w-full h-10' inputMode="numeric" placeholder='0'></input>
+
+                <span className="text-lg mx-2 bold"> ー </span>
+
+                <input autoFocus={false} value={tempScoreRange[1]} inputMode="numeric" onChange={(e) => {
+                    let number = parseInt(e.target.value)
+                    if (!isNaN(number)) {
+                        // if (number < scoreRange[0]) number = scoreRange[0]
+                        setTempScoreRange((p) => [p[0], number])
+                    }
+                    else {
+                        setTempScoreRange((p) => [p[0], e.target.value as any])
+                    }
+
+                }} className='p-6 box w-full h-10' placeholder='1010000'></input>
+
+            </div>
+        </section>
+        <section className="p-5">
+            <h4 className="text-left ml-1 bold">Header</h4>
+            <Divider />
+            <DraggableList setItemList={setTempItemList} itemList={tempItemList} />
+        </section>
+    </Modal>
+}
+
 // Other Approaches, currently not using
+/*
 export const RatingTable = ({ ratingList, recentRatingList }: { ratingList: Rating[], recentRatingList: Rating[] }) => {
     const height = recentRatingList.length * 42
     const [searchText, setSearchText] = useState('')
@@ -623,4 +655,4 @@ export const RatingTable = ({ ratingList, recentRatingList }: { ratingList: Rati
     </div>
 
 }
-
+*/

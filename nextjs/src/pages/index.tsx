@@ -3,7 +3,6 @@ import e from 'cors';
 import { signIn, SignInResponse, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import React, { useEffect, useRef, useState } from 'react';
-import loadingPic from "../../public/pen_sleep_apng.png"
 
 import Image from 'next/image'
 
@@ -35,7 +34,7 @@ export default function Blank() {
             <span className='bouncing text-6xl delay-7'>O</span>
             <span className='bouncing text-6xl delay-8'>G</span>
             <div className='relative bouncing  delay-9 h-24 w-14'>
-                <Image loading='eager' alt='loading' src={loadingPic} fill style={{ "objectFit": "contain" }} />
+                <Image loading='eager' alt='loading' src={'/pen_sleep_apng.png'} width={100} height={100} style={{ "objectFit": "contain" }} />
             </div>
 
         </div>

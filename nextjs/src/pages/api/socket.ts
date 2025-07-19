@@ -59,7 +59,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       let room = shared.rooms.get(roomID)
       let player = room?.players.get(socket.id)
       if (player) {
-        io.in(roomID).except(socket.id).emit("message", player.getPlayerName() +  + " : " + message)
+        io.in(roomID).except(socket.id).emit("message", player.getPlayerName() + " : " + message)
         io.in(socket.id).emit("message", "You : " + message)
       }
     })

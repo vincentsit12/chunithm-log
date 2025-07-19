@@ -11,7 +11,7 @@ const Header = (props: Props) => {
     const { data: session, status } = useSession()
     const router = useRouter()
     const haveSession = (session && router.pathname !== '/login' && router.pathname !== '/signup')
-    const shouldShowHeader = !router.pathname.startsWith('/playground/guess_song_game')
+    const shouldShowHeader = !router.pathname.startsWith('/song_guesser')
     return (
         shouldShowHeader ?
         <header id='header'>
@@ -40,10 +40,10 @@ const Header = (props: Props) => {
                         onClick={(e) => {
                             setActive(false)
                         }}>Playground</Link></li>
-                    <li><Link href={'/playground/guess_song_game/rooms'}
+                    <li><Link href={'/song_guesser/rooms'}
                         onClick={(e) => {
                             setActive(false)
-                        }}>Guess Song Game</Link></li>
+                        }}>Song Guesser</Link></li>
 
                     {session?.user.isAdmin && <li><Link href={'/song/manage'}
                         onClick={(e) => {

@@ -905,10 +905,11 @@ const GuessSongGame = () => {
         <div id='container' style={{
             background: 'linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%)'
         }}>
+             <title>{`Song Guesser - ${roomID}`}</title>
             {/* Navigation Bar */}
             <div className='mb-2 w-fit mx-auto'>
                 <div className='flex justify-center items-center mb-12'>
-                    <div className='cursor-pointer flex items-center' onClick={() => router.push('/playground/guess_song_game/rooms')}>
+                    <div className='cursor-pointer flex items-center' onClick={() => router.push('/song_guesser/rooms')}>
                         <div className='bg-gradient-to-r from-purple-600 to-purple-700 p-4 rounded-2xl shadow-lg'>
                             <MdMusicNote className='w-8 h-8 text-white' />
                         </div>

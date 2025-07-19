@@ -79,7 +79,6 @@ const UserScript = ({ userId }: { userId: string }) => {
   </CopyToClipboard>
 }
 const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
-
   const [average, recentAverage, recent] = useMemo(() => {
     const additions = 0.00000001
     let recentRatingListSongName: Set<string> = new Set()
@@ -104,15 +103,9 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
     return [top30Avg, recentAvg, recent]
   }, [bestRatingList, recentRatingList])
 
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
   return (
     <LayoutWrapper>
-      {loading &&
-        <div className='bg-black/40 z-[9999] fixed h-full w-full top-0 left-0 fadeIn'>
-          <LoadingView />
-        </div>
-      }
       <div className='inner inner-720 tc' >
         {userName && <h1 className='mb-2'>{`User: ${userName}`}</h1>}
         <div className='flex box box-shadow mb20' >
@@ -146,7 +139,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
             >
               <button
                 className="btn btn-secondary grid-center btn-icon shadow-lg hover:shadow-xl transition-all"
-                onClick={() => router.push('/playground/guess_song_game/rooms')}
+                onClick={() => router.push('/song_guesser/rooms')}
               >
                 <MdOutlineGames size={"1.5rem"} />
               </button>
@@ -155,7 +148,7 @@ const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userN
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
 
-        <RecentRatingTable recentRatingList={recentRatingList} setLoading={setLoading} isLoading={loading} />
+        <RecentRatingTable recentRatingList={recentRatingList} />
 
         <BestRatingTable ratingList={bestRatingList} />
       </div >

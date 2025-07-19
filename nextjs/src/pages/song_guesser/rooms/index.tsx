@@ -63,6 +63,7 @@ const GameRoomList = () => {
         <div className='min-h-screen' style={{
             background: 'linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%)'
         }}>
+            <title>Song Guesser</title>
             <div className='inner inner-720 tc py-8' >
                 <div className='w-full my-8' >
                     {/* Header */}
@@ -85,11 +86,7 @@ const GameRoomList = () => {
                         Create Room
                     </button>
 
-                    <div className='rounded-2xl shadow-2xl overflow-hidden border border-gray-600/30'
-                        style={{
-                            background: 'linear-gradient(135deg, #1E1E2E 0%, rgba(45, 45, 68, 0.5) 100%)',
-                            backdropFilter: 'blur(10px)'
-                        }}>
+                    <div className='guess-song-game-box overflow-hidden'>
                         <div className='min-h-[500px] p-6'>
                             <table className='text-left w-full'>
                                 <thead>

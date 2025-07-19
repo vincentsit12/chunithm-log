@@ -1,6 +1,6 @@
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableLocation, resetServerContext } from "react-beautiful-dnd";
 import Image from 'next/image'
-import React, { Dispatch, SetStateAction, useEffect } from 'react'
+import React, { Dispatch, memo, SetStateAction, useEffect } from 'react'
 import { BiSolidUpArrow, BiLogoYoutube } from "react-icons/bi";
 import { TableHeader } from "types";
 import { GiMusicalScore } from "react-icons/gi";
@@ -11,7 +11,7 @@ type Props = {
 }
 export type DropList = { notSelected: TableHeader[], selected: TableHeader[] }
 
-export default function DraggableList({ itemList, setItemList }: Props) {
+export default memo(function DraggableList({ itemList, setItemList }: Props) {
     useEffect(() => {
         resetServerContext();
     }, [])
@@ -102,85 +102,83 @@ export default function DraggableList({ itemList, setItemList }: Props) {
         }
         return "selected"
     }
-    return (
-        <DragDropContext onDragEnd={onDragEnd} >
-            <Droppable droppableId="droppable" direction="horizontal"
-                renderClone={(provided, snapshot, rubric) => (
-                    <div
-                        className="item-container"
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        ref={provided.innerRef}
-                    >
-                        {renderItem(itemList["notSelected"][rubric.source.index])}
-                    </div>
-                )}
-            >
-                {(provided) => (
-                    <div>
-                        <h5 className="text-left ml-2">Hide</h5>
-                        <div
-                            className="list-container  mb-2"
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                        >
-                            {itemList['notSelected'].map((item, index) => (
-                                <Draggable key={item} draggableId={item} index={index}>
-                                    {(provided) => (
-                                        <div
-                                            className="item-container"
-                                            ref={provided.innerRef}
-                                            {...provided.dragHandleProps}
-                                            {...provided.draggableProps}
-                                        >
-                                            {renderItem(item)}
-                                        </div>
-                                    )}
-                                </Draggable>
-                            ))}
-                            <>{provided.placeholder}</>
-                        </div>
-                    </div>
-                )}
-            </Droppable>
-            <Droppable droppableId="droppable2" direction="horizontal" renderClone={(provided, snapshot, rubric) => (
+    return <DragDropContext onDragEnd={onDragEnd} >
+        <Droppable droppableId="droppable" direction="horizontal"
+            renderClone={(provided, snapshot, rubric) => (
                 <div
                     className="item-container"
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     ref={provided.innerRef}
                 >
-                    {renderItem(itemList["selected"][rubric.source.index])}
+                    {renderItem(itemList["notSelected"][rubric.source.index])}
                 </div>
-            )}>
-                {(provided) => (
-                    <div>
-                        <h5 className="text-left ml-2">Display</h5>
-
-                        <div
-                            className="list-container"
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                        >
-                            {itemList['selected'].map((item, index) => (
-                                <Draggable key={item} draggableId={item} index={index}>
-                                    {(provided) => (
-                                        <div
-                                            className="item-container"
-                                            ref={provided.innerRef}
-                                            {...provided.dragHandleProps}
-                                            {...provided.draggableProps}
-                                        >
-                                            {renderItem(item)}
-                                        </div>
-                                    )}
-                                </Draggable>
-                            ))}
-                            <>{provided.placeholder}</>
-                        </div>
+            )}
+        >
+            {(provided) => (
+                <div>
+                    <h5 className="text-left ml-2">Hide</h5>
+                    <div
+                        className="list-container  mb-2"
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                    >
+                        {itemList['notSelected'].map((item, index) => (
+                            <Draggable key={item} draggableId={item} index={index}>
+                                {(provided) => (
+                                    <div
+                                        className="item-container"
+                                        ref={provided.innerRef}
+                                        {...provided.dragHandleProps}
+                                        {...provided.draggableProps}
+                                    >
+                                        {renderItem(item)}
+                                    </div>
+                                )}
+                            </Draggable>
+                        ))}
+                        <>{provided.placeholder}</>
                     </div>
-                )}
-            </Droppable>
-        </DragDropContext>
-    )
-}
+                </div>
+            )}
+        </Droppable>
+        <Droppable droppableId="droppable2" direction="horizontal" renderClone={(provided, snapshot, rubric) => (
+            <div
+                className="item-container"
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}
+                ref={provided.innerRef}
+            >
+                {renderItem(itemList["selected"][rubric.source.index])}
+            </div>
+        )}>
+            {(provided) => (
+                <div>
+                    <h5 className="text-left ml-2">Display</h5>
+
+                    <div
+                        className="list-container"
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                    >
+                        {itemList['selected'].map((item, index) => (
+                            <Draggable key={item} draggableId={item} index={index}>
+                                {(provided) => (
+                                    <div
+                                        className="item-container"
+                                        ref={provided.innerRef}
+                                        {...provided.dragHandleProps}
+                                        {...provided.draggableProps}
+                                    >
+                                        {renderItem(item)}
+                                    </div>
+                                )}
+                            </Draggable>
+                        ))}
+                        <>{provided.placeholder}</>
+                    </div>
+                </div>
+            )}
+        </Droppable>
+    </DragDropContext>
+})
