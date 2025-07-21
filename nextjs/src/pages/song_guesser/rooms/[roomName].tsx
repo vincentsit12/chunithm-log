@@ -17,12 +17,13 @@ import { MessageDetails } from 'types';
 import classNames from 'classnames';
 import Modal, { ModalProps } from 'components/Modal';
 import { CustomSong, GuessGameSong, GuessSongGameOption, RoomInfo } from 'Games/GuessSongGame/types';
+import Head from 'next/head';
 
 // Message types enum matching Flutter design
 enum MessageType {
     CORRECT = 'correct',
     WRONG = 'wrong',
-    JOIN_LEAVE = 'joinLeave', 
+    JOIN_LEAVE = 'joinLeave',
     ANSWER = 'answer',
     NORMAL = 'normal'
 }
@@ -124,11 +125,10 @@ const maimaiDefaulLevelRange: [number, number] = [14.0, 15]
 // Section Header Component (matching Flutter design)
 const SectionHeader = ({ title, icon, iconColor = 'purple' }: { title: string; icon: React.ReactNode; iconColor?: 'purple' | 'red' }) => (
     <div className="flex items-center mb-6">
-        <div className={`bg-gradient-to-r p-2 rounded-xl shadow-lg ${
-            iconColor === 'red' 
-                ? 'from-red-500 to-red-600' 
+        <div className={`bg-gradient-to-r p-2 rounded-xl shadow-lg ${iconColor === 'red'
+                ? 'from-red-500 to-red-600'
                 : 'from-purple-600 to-purple-700'
-        }`}>
+            }`}>
             {icon}
         </div>
         <h2 className="text-xl font-bold text-white ml-3">{title}</h2>
@@ -166,7 +166,7 @@ const ChatMessageComponent = ({ message }: { message: ChatMessage }) => {
             case MessageType.WRONG:
                 return {
                     bgColor: 'bg-red-500/20',
-                    borderColor: 'border-red-500/30', 
+                    borderColor: 'border-red-500/30',
                     textColor: 'text-red-300',
                     icon: <MdCancel className="w-4 h-4 text-red-400" />
                 };
@@ -212,33 +212,33 @@ const ChatMessageComponent = ({ message }: { message: ChatMessage }) => {
 // Helper function to determine message type based on content
 const determineMessageType = (message: string): MessageType => {
     const lowerMessage = message.toLowerCase();
-    
+
     // Check for correct answers
-    if (lowerMessage.includes('correct') || lowerMessage.includes('right') || 
+    if (lowerMessage.includes('correct') || lowerMessage.includes('right') ||
         lowerMessage.includes('✓') || lowerMessage.includes('✅')) {
         return MessageType.CORRECT;
     }
-    
+
     // Check for wrong answers
-    if (lowerMessage.includes('wrong') || lowerMessage.includes('incorrect') || 
-        lowerMessage.includes('failed') || lowerMessage.includes('✗') || 
+    if (lowerMessage.includes('wrong') || lowerMessage.includes('incorrect') ||
+        lowerMessage.includes('failed') || lowerMessage.includes('✗') ||
         lowerMessage.includes('❌')) {
         return MessageType.WRONG;
     }
-    
+
     // Check for join/leave messages
-    if (lowerMessage.includes('joined') || lowerMessage.includes('left') || 
+    if (lowerMessage.includes('joined') || lowerMessage.includes('left') ||
         lowerMessage.includes('disconnected') || lowerMessage.includes('connected') ||
         lowerMessage.includes('enter') || lowerMessage.includes('exit')) {
         return MessageType.JOIN_LEAVE;
     }
-    
+
     // Check for answer-related messages
-    if (lowerMessage.includes('answered') || lowerMessage.includes('guessed') || 
+    if (lowerMessage.includes('answered') || lowerMessage.includes('guessed') ||
         lowerMessage.includes('solution') || lowerMessage.includes('answer is')) {
         return MessageType.ANSWER;
     }
-    
+
     return MessageType.NORMAL;
 };
 
@@ -425,16 +425,16 @@ const GuessSongGame = () => {
             onlyPlayer: false, withNotification: false
         }) => {
             if (messageDetails.onlyPlayer && isHost) { return }
-            
+
             // Determine message type based on content
             const messageType = determineMessageType(message);
-            
+
             const chatMessage: ChatMessage = {
                 content: message,
                 type: messageType,
                 timestamp: Date.now()
             };
-            
+
             setMessages((prevMessages) => [...prevMessages, chatMessage]);
             if (messageDetails.withNotification) {
                 showMessage(message, messageDetails)
@@ -905,7 +905,10 @@ const GuessSongGame = () => {
         <div id='container' style={{
             background: 'linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%)'
         }}>
-             <title>{`Song Guesser - ${roomID}`}</title>
+            <Head>
+                <title>{`Song Guesser - ${roomID}`}</title>
+            </Head>
+
             {/* Navigation Bar */}
             <div className='mb-2 w-fit mx-auto'>
                 <div className='flex justify-center items-center mb-12'>
@@ -993,7 +996,7 @@ const GuessSongGame = () => {
                                                     backgroundColor: "#1E1E2E",
                                                     border: "1px solid rgba(75, 85, 99, 0.3)",
                                                     color: "#ffffff",
-                                                    hoverBackgroundColor : 'gray',
+                                                    hoverBackgroundColor: 'gray',
                                                     fontFamily: "inherit",
                                                     fontSize: 'inherit',
                                                     zIndex: 99,
@@ -1383,7 +1386,7 @@ const GuessSongGame = () => {
                                     }
                                 }
                             }} />
-                        
+
                         {/* Overlay when video is hidden (only for hosts) */}
                         {isHost && !isShowVideo && (
                             <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600/30 flex items-center justify-center">
@@ -1476,7 +1479,7 @@ const InputAnswerSetModal: React.FC<Omit<ModalProps, "children"> & {
                 <textarea value={answerSetText} onChange={e => setAnswerSetText(e.target.value)}
                     placeholder={`Song Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\nSong Name - [mm:ss]\n`}
                     className='guess-song-game-input h-[300px] w-full p-4'
-                  >
+                >
 
                 </textarea>
             </div>

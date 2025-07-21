@@ -15,10 +15,7 @@ import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
 import 'rc-tooltip/assets/bootstrap_white.css';
 import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
-import { getRecommandList } from 'utils/api'
 import { getRatingList } from 'utils/getRatingList'
-import LoadingView from 'components/LoadingView'
-import { AnnouncementView } from 'components/AnnouncementView'
 import { useRouter } from 'next/router'
 
 

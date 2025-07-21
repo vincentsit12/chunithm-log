@@ -19,12 +19,6 @@ import classNames from "classnames";
 NProgress.configure({ showSpinner: false });
 
 
-// export const mplus1 = M_PLUS_1({
-//   subsets: ['latin'],
-//   weight: ['400', '500', '700'],
-//   display: 'swap',
-//   fallback: ['Arial'],
-// })
 const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.woff2', display: "swap", preload : true });
 
 export default function App({

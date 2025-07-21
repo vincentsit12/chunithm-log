@@ -210,6 +210,7 @@ const Playground = (props: Props) => {
         <LayoutWrapper>
             <Head>
                 <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+                <title>Chuni-log</title>
             </Head>
             <div className='flex w-full justify-center my-5' >
                 <button onClick={() => {
@@ -420,7 +421,7 @@ const Playground = (props: Props) => {
 
                         setModalIsOpen(false)
                         closeGame()
-                        
+
                         // game.current = null
                     }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
                     {/* </div> */}
@@ -434,4 +435,3 @@ const Playground = (props: Props) => {
 }
 
 export default Playground
-

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import _, { isInteger, isString } from 'lodash'
 import { MdMusicNote, MdGames } from 'react-icons/md'
+import Head from 'next/head';
 
 interface Room {
     roomID: string,
@@ -63,7 +64,9 @@ const GameRoomList = () => {
         <div className='min-h-screen' style={{
             background: 'linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%)'
         }}>
-            <title>Song Guesser</title>
+            <Head>
+                <title>Song Guesser</title>
+            </Head>
             <div className='inner inner-720 tc py-8' >
                 <div className='w-full my-8' >
                     {/* Header */}
