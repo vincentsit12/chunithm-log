@@ -10,11 +10,4 @@ nextjs/src/components/test.tsx
 /nginx
 
 # git rm -r --cached .
-/postgres/.env
-/postgres/data/pgdata
-/env.production
-/.env.production
-/nextjs/.env.development
-/nextjs/.env.production
-
-
+scrapper/config/config.json

@@ -1,166 +1,154 @@
-import axios from 'axios'
 import type { NextPage, NextPageContext } from 'next'
-import { Session } from 'next-auth'
-import { getSession, signOut, useSession } from 'next-auth/react'
-import Head from 'next/head'
-import Image from 'next/image'
-import { Rating, Song } from 'types'
-import { getRatingList } from 'utils/api'
+import { getSession } from 'next-auth/react'
+import { CURRENT_VERSION, Rating, Song } from 'types'
 import _, { isString } from 'lodash'
 import Users from 'db/model/users'
 import Records from 'db/model/records'
 import Songs from 'db/model/songs'
 import { MdOutlineContentCopy } from 'react-icons/md'
+import { MdOutlineGames } from 'react-icons/md'
 import { calculateSingleSongRating, generateScript, toFixedTrunc } from 'utils/calculateRating'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LayoutWrapper from 'components/LayoutWrapper'
-import classNames from 'classnames'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/router'
-import { hash } from 'bcryptjs'
-import Link from 'next/link'
+import { SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { decrypt } from 'utils/encrypt'
 import Tooltip from 'rc-tooltip'
 import 'rc-tooltip/assets/bootstrap_white.css';
-import { log } from 'console'
-import { Op } from 'sequelize'
+import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
+import { getRatingList } from 'utils/getRatingList'
+import { useRouter } from 'next/router'
+
 
 type Props = {
-  ratingList: Rating[];
-  userId: string
+  bestRatingList: Rating[],
+  recentRatingList: Rating[]
+  userId: string;
+  userName?: string
 };
 
+// const RecommadSongs = ({ avg }: { avg: number }) => {
+//   const [list, setList] = useState<Songs[]>([])
+//   const [isLoading, setIsLoading] = useState(false)
 
-const Home: NextPage<Props> = ({ ratingList, userId }) => {
+//   useEffect(() => {
+//     let upper = Math.max(avg + 0.1 - 2.15, 10)
+//     let lower = Math.max(avg - 2.15, 0)
+//     getRecommandList(lower, upper).then(d => {
+//       setList(d.data)
+//     }).catch((e) => {
+
+//     })
+
+//   }, [])
+
+//   return <ul>
+//     {_.map(list, (k, i) => {
+//       return <li>
+//         {`${i}. ${k.display_name} ${k.id}}`}
+//       </li>
+//     })}
+//   </ul>
+// }
+const UserScript = ({ userId }: { userId: string }) => {
   const [copied, setCopied] = useState(false)
   const timer = useRef<NodeJS.Timeout>()
-  const [searchText, setSearchText] = useState('')
-  const router = useRouter()
-  const ref = useRef(null)
-  // const sortedRatingList = useMemo(() => {
-  //   if (searchText)
-  //     return _.filter(_.orderBy(ratingList, ['rating'], ['desc']), k => k.song.toUpperCase().includes(searchText.toUpperCase()))
-  //   else return (_.orderBy(ratingList, ['rating'], ['desc']))
-  // }, [searchText, ratingList])
-  const sortedRatingList = useMemo(() => {
-    if (searchText)
-      return _.filter(_.orderBy(ratingList, ['master.rate'], ['desc']), k => {
-        if (parseFloat(searchText) > 0.0) {
-          let searchRate = parseFloat(searchText)
-          return k.song.toUpperCase().includes(searchText.toUpperCase()) || (k.internalRate === searchRate)
+  return <CopyToClipboard text={generateScript(userId)}>
+    <Tooltip onVisibleChange={(visible) => {
+      if (visible) {
+        timer.current = setTimeout(() => {
+          setCopied(false)
+        }, 3000)
+      }
+    }} visible={copied} overlayClassName={'fadeIn'} showArrow={false} overlayStyle={{ width: '6rem', textAlign: "center", }} placement='top' trigger={['click']} overlay={<span>Copied</span>}>
+      <button onClick={() => {
+        if (copied && timer.current) {
+          clearTimeout(timer.current)
+          timer.current = setTimeout(() => {
+            setCopied(false)
+          }, 3000)
         }
-        else return k.song.toUpperCase().includes(searchText.toUpperCase())
-      })
-    else return (_.orderBy(ratingList, ['rating'], ['desc']))
-  }, [searchText, ratingList])
+        else setCopied(true)
+      }}
+        className='btn btn-secondary grid-center btn-icon'>
+        <MdOutlineContentCopy size={"1.25rem"} /></button>
+    </Tooltip>
 
-  const [average, max] = useMemo(() => {
-    const top30 = _.take(_.orderBy(ratingList, ['rating'], ['desc']), 30)
+  </CopyToClipboard>
+}
+const Home: NextPage<Props> = ({ bestRatingList, recentRatingList, userId, userName }) => {
+  const [average, recentAverage, recent] = useMemo(() => {
+    const additions = 0.00000001
+    let recentRatingListSongName: Set<string> = new Set()
+    recentRatingList.forEach(k => { recentRatingListSongName.add(k.song) })
+    const top30 = _.take(_.orderBy(bestRatingList, ['rating'], ['desc']).filter(
+      k => {
+        if (k.version != CURRENT_VERSION) {
+          return true
+        } else {
+          if (recentRatingListSongName.has(k.song)) {
+            return false
+          } else {
+            return true
+          }
+        }
+      }), 30)
     const top30Total = top30.reduce((a: number, b: Rating) => a + b.rating, 0)
-    if (top30.length < 1) return [0, 0]
-    return [top30Total / 30, (top30Total + top30[0].rating * 10) / 40]
-  }, [ratingList])
+    const top30Avg = top30Total / 30 + additions
+    const recentTotal = recentRatingList.reduce((a: number, b: Rating) => a + b.rating, 0)
+    const recentAvg = recentRatingList.length > 0 ? (recentTotal / 20) + additions : 0
+    const recent = (top30Total + recentTotal) / 50 + additions
+    return [top30Avg, recentAvg, recent]
+  }, [bestRatingList, recentRatingList])
 
-  const renderRatingColor = (d: string) => {
-    switch (d) {
-      case 'master':
-        return 'bg-master'
-        break;
-
-      default:
-        break;
-    }
-  }
-  const _renderTableRow = () => {
-
-    return _.map(sortedRatingList, (k, i) => {
-      return <tr key={i} className={classNames("even:bg-gray-300/[.6]", 'hover:bg-gray-500/[.4]', 'hover:bg-gray-500/[.4]', { 'border-b': i === 29 && !searchText, 'border-b-red-700': i === 29 && !searchText })} >
-        <td>{k.order ?? '-'}</td>
-        <td className='song'>{k.song}</td>
-        <td>{k.internalRate}</td>
-        <td>{k.score}</td>
-        <td onClick={() => {
-          router.push(k.song)
-        }} className='txt-white cursor-pointer'><span className={classNames(`bg-${k.difficulty}`, 'rounded')}>{k.truncatedRating}</span></td>
-      </tr >
-    })
-  }
-
+  const router = useRouter()
   return (
     <LayoutWrapper>
-
       <div className='inner inner-720 tc' >
+        {userName && <h1 className='mb-2'>{`User: ${userName}`}</h1>}
         <div className='flex box box-shadow mb20' >
+
           <div id='script' >
             <p> {generateScript(userId)}</p>
           </div>
-          <CopyToClipboard text={generateScript(userId)}>
-            <Tooltip onVisibleChange={(visible) => {
-              if (visible) {
-                timer.current = setTimeout(() => {
-                  setCopied(false)
-                }, 3000)
-              }
-            }} visible={copied} overlayClassName={'fadeIn'} showArrow={false} overlayStyle={{ width: '6rem', textAlign: "center", }} placement='top' trigger={['click']} overlay={<span>Copied</span>}>
-              <button onClick={() => {
-                if (copied && timer.current) {
-                  clearTimeout(timer.current)
-                  timer.current = setTimeout(() => {
-                    setCopied(false)
-                  }, 3000)
-                }
-                else setCopied(true)
-              }}
-                className='btn btn-secondary icon grid-center'>
-                <MdOutlineContentCopy></MdOutlineContentCopy></button>
-            </Tooltip>
-
-          </CopyToClipboard>
-
-
-        </div>
+          <UserScript userId={userId} />
+        </div >
 
         <div className='mb20  items-center'>
           <div className="space-x-5">
             <span >
-              {`Top 30 Average : ${toFixedTrunc(average, 2)}`}
+              {`Top 30 Average : ${toFixedTrunc(average, 4)}`}
+            </span>
+          </div>
+          <div className="space-x-5">
+            <span>
+              {`Recent : ${toFixedTrunc(recentAverage, 2)}`}
             </span>
             <span>
-              {`Max : ${toFixedTrunc(max, 2)}`}
+              {`Now : ${toFixedTrunc(recent, 2)}`}
             </span>
+          </div>
+          <div className="fixed bottom-8 right-8 z-50">
+            <Tooltip
+              overlay="Play Guess Song Game!"
+              placement="left"
+              overlayClassName={'fadeIn'}
+              showArrow={true}
+            >
+              <button
+                className="btn btn-secondary grid-center btn-icon shadow-lg hover:shadow-xl transition-all"
+                onClick={() => router.push('/song_guesser/rooms')}
+              >
+                <MdOutlineGames size={"1.5rem"} />
+              </button>
+            </Tooltip>
           </div>
           {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
         </div>
-        <div className='inner inner-720'  >
-          <input value={searchText} onChange={(e) => {
-            setSearchText(e.target.value)
-          }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
-        </div>
-        <div id='rating-table' className='box box-shadow mb20'>
-          {ratingList.length > 0 ?
-            <table >
-              <tbody>
-                {_renderTableRow()}
-              </tbody>
-            </table>
-            : <div className='inner-p20 w-full h-full text-left'>
-              <p className='mb10'>
-                {`
-                  1. Save the following script into a browser bookmark:
-                `}
-              </p>
-              <p className='mb10'>
-                {`2. Open this page (required login) https://chunithm-net-eng.com/mobile/home/ or https://chunithm-net-eng.com/mobile/record/musicGenre/master`}
-              </p>
-              <p className='mb10'>
-                {`
-                  3. click the bookmark`
-                }
-              </p>
-            </div>}
-        </div>
-        {/* <button className="btn btn-secondary" onClick={() => { signOut() }}>Logout</button> */}
-      </div>
+
+        <RecentRatingTable recentRatingList={recentRatingList} />
+
+        <BestRatingTable ratingList={bestRatingList} />
+      </div >
     </LayoutWrapper >
   )
 }
@@ -168,10 +156,7 @@ const Home: NextPage<Props> = ({ ratingList, userId }) => {
 export default Home
 
 export async function getServerSideProps(context: NextPageContext) {
-  // context.res?.setHeader(
-  //   'Cache-Control',
-  //   'public, s-maxage=1, stale-while-revalidate=59'
-  // )
+  context.res?.setHeader('Cache-Control', 'public, s-maxage=10')
   try {
     let session = await getSession(context)
     if (!session) return {
@@ -187,25 +172,25 @@ export async function getServerSideProps(context: NextPageContext) {
     let data = (await Users.findOne({
       where: { id: parseInt(userID) }, include: {
         model: Records,
-
         include: [{
           model: Songs,
+          where: {
+            is_deleted: false
+          }
         }]
       }
     }))
 
-    const ratingList = _.map(data?.records, function (o) {
-      let song: Song = o.song[o.difficulty]
-      let rating = calculateSingleSongRating(song?.rate, o.score)
-      let result: Rating = { song: o.song.display_name, combo: song?.combo || 0, internalRate: song?.rate || 0, rating: rating, truncatedRating: toFixedTrunc(rating, 2), score: o.score, difficulty: o.difficulty, }
-      return result
-    });
+    const [bestRatingList, recentRatingList] = await getRatingList(data)
+
     // let average = _.take(ratingList, 30).reduce((a: number, b: Rating) => a + b.rating, 0) / 30
     return {
       props: {
-        ratingList: _.map(_.orderBy(ratingList, ['rating'], ['desc']), (k, i) => { return { ...k, order: i + 1 } }),
+        bestRatingList,
+        recentRatingList,
         // average
-        userId: encryptUserId
+        userId: encryptUserId,
+        userName: data?.username ?? ""
       },
     }
   }

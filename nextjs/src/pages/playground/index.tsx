@@ -1,5 +1,7 @@
+import { AnnouncementView } from 'components/AnnouncementView';
 import LayoutWrapper from 'components/LayoutWrapper'
-import { Game } from 'Games/Game'
+import { Game } from 'Games/MusicGame/Game';
+import { GameConfig, GameType } from 'Games/MusicGame/musicGameTypes';
 import { isArray } from 'lodash'
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -36,12 +38,21 @@ const Playground = (props: Props) => {
     const [speed, setSpeed] = useState<string>("6")
     const [modalIsOpen, setModalIsOpen] = useState(false)
     const youtubeRef = useRef()
-    const youtubeId = useMemo(() => {
+    const [isYoubleReady, setIsYoubleReady] = useState(false)
+    const [youtubeId, youtubeTime] = useMemo(() => {
+        let time = 0
         try {
             let url = new URL(youtubeLink)
-            return url.searchParams.get('v') ?? youtubeLink
+            let id
+            if (youtubeLink.includes("youtu.be")) {
+                id = url.pathname.split("/")[1]
+            }
+            else {
+                id = url.searchParams.get('v')
+            }
+            return [id ?? youtubeLink, url.searchParams.get('t') ?? 0]
         } catch (error) {
-            return youtubeLink
+            return [youtubeLink, time]
         }
     }, [youtubeLink])
     useEffect(() => {
@@ -123,10 +134,13 @@ const Playground = (props: Props) => {
                     RMG_CENTERLINE_RADIUS: vmin * .4,
                     RMG_OBJECT_RADIUS: vmin * .4 * (gameType === "maimai" ? .1 : .05),
                     BPM: parseInt(BPM),
-                    SPEED: parseInt(speed),
-                    DURATION: 3000 / parseInt(speed),
+                    SPEED: parseFloat(speed),
+                    DURATION: 3000 / parseFloat(speed),
                 }
-                game.current = new Game(canvasRef.current, gameType, (youtubeLink && youtubeRef.current) ? youtubeRef.current : music, timeline, config)
+                game.current = new Game(canvasRef.current, gameType, {
+                    ref: (youtubeLink && isYoubleReady) ? youtubeRef.current : music,
+                    startTime: youtubeTime,
+                }, timeline, config)
                 // // // // console.log("🚀 ~ file: maimai-simple.tsx ~ line 24 ~ useEffect ~ game", game)
             }
         } catch (e) {
@@ -148,6 +162,15 @@ const Playground = (props: Props) => {
         game.current?.reset()
     }
 
+    const openGamePanel = () => {
+        try {
+            let x = JSON.parse("[" + timelineString + "]")
+            setModalIsOpen(true)
+        } catch (e) {
+            alert('invalid timeline!')
+        }
+    }
+
 
     const youtubeVideoOnReady: YouTubeProps['onReady'] = (e) => {
 
@@ -156,6 +179,7 @@ const Playground = (props: Props) => {
             e.target.setVolume(20)
             e.target.unMute()
             youtubeRef.current = e.target;
+            setIsYoubleReady(true)
 
         }
     }
@@ -163,26 +187,32 @@ const Playground = (props: Props) => {
     const youtubeVideoOnError: YouTubeProps['onError'] = (e) => {
         console.log('youtube video error')
         youtubeRef.current = undefined;
+        setIsYoubleReady(false)
     }
 
-    const youtubeOpts: YouTubeProps['opts'] = {
-        height: '320',
-        width: '320',
-        playerVars: {
-            // https://developers.google.com/youtube/player_parameters
-            // autoplay: 1,
-            controls: 0,
-            disablekb: 1,
-            fs: 0
-        },
-    };
+    const youtubeOpts: YouTubeProps['opts'] = useMemo(() => {
+        return {
+            height: '320',
+            width: '320',
+            playerVars: {
+                // https://developers.google.com/youtube/player_parameters
+                // autoplay: 1,
+
+                controls: 0,
+                disablekb: 1,
+                fs: 0,
+                start: youtubeTime
+            },
+        };
+    }, [youtubeTime])
 
     return (
         <LayoutWrapper>
             <Head>
                 <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+                <title>Chuni-log</title>
             </Head>
-            <div className='flex w-full justify-center mb20' >
+            <div className='flex w-full justify-center my-5' >
                 <button onClick={() => {
                     if (!timelineString) {
                         alert('no notes!')
@@ -195,11 +225,11 @@ const Playground = (props: Props) => {
                                 .catch((err) =>
                                     console.log("err", err))
                                 .finally(() => {
-                                    setModalIsOpen(true)
+                                    openGamePanel()
                                 })
                         }
                         else {
-                            setModalIsOpen(true)
+                            openGamePanel()
                         }
 
 
@@ -210,15 +240,15 @@ const Playground = (props: Props) => {
 
                         dom.requestFullscreen({ navigationUI: "show" })
                             .then(() => {
-                                // setModalIsOpen(true)
+                                // openGamePanel()
                                 if (screen?.orientation) {
                                     screen.orientation?.lock("landscape-primary").catch((err) =>
                                         console.log("err", err)).finally(() => {
-                                            setModalIsOpen(true)
+                                            openGamePanel()
                                         })
                                 }
                                 else {
-                                    setModalIsOpen(true)
+                                    openGamePanel()
                                 }
                             })
                             .catch(function (error) {
@@ -227,9 +257,9 @@ const Playground = (props: Props) => {
 
                     }
                     else {
-                        setModalIsOpen(true)
+                        openGamePanel()
                     }
-                }} className='btn btn-secondary mx-5'>Start Game</button>
+                }} className='btn btn-secondary mx-5 cursor-not-allowed disabled:opacity-30' disabled={youtubeLink.length > 0 && !isYoubleReady}>Start Game</button>
                 <button onClick={() => {
                     closeGame()
                 }} className='btn btn-secondary mx-5'>Reset Game</button>
@@ -237,22 +267,22 @@ const Playground = (props: Props) => {
             <div className="flex justify-center items-center mb-4">
                 <input onChange={(e) => {
                     setEnalbleFullScreen(e.target.checked)
-                }} checked={enalbleFullScreen} id="game-fullscreen" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
-                <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-fullscreen"  >Full Screen</label>
+                }} checked={enalbleFullScreen} id="game-fullscreen" className="checkbox" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-fullscreen"  >Full Screen</label>
             </div>
             <div className="flex justify-center items-center mb-4 form-check">
                 <input onChange={(e) => {
                     if (e.target.checked) {
                         setGameType("maimai")
                     }
-                }} checked={gameType === 'maimai'} id="game-simai" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
-                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-simai" >simai</label>
+                }} checked={gameType === 'maimai'} id="game-jsmai" className="checkbox" type="checkbox" />
+                <label className="mr-2 ml-2 text-sm font-medium text-gray-900 " htmlFor="game-jsmai" >jsmai</label>
                 <input onChange={(e) => {
                     if (e.target.checked) {
                         setGameType("djmania")
                     }
-                }} checked={gameType === 'djmania'} id="game-4k" className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" type="checkbox" />
-                <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="game-4k"  >4k</label>
+                }} checked={gameType === 'djmania'} id="game-4k" className="checkbox" type="checkbox" />
+                <label className="ml-2 text-sm font-medium text-gray-900 " htmlFor="game-4k"  >4k</label>
             </div>
             <div className='inner inner-720'>
                 <input value={youtubeLink} onChange={(e) => {
@@ -268,7 +298,7 @@ const Playground = (props: Props) => {
                     }} />
                 <textarea value={timelineString} onChange={(e) => {
                     setTimelineString(e.target.value)
-                }} className='px-4 py-2 box box-shadow mb20 w-full h-40'
+                }} className='px-4 py-2 box box-shadow appearance-none mb20 w-full h-40'
                     placeholder={`input one bar of music note with a [ ], notes with "h" or "/" must include a double quotation\nnumber(d) => tap,\n{d}h{d}:{d} => hold,\nmix  => tap hold pattern split by "/"\ne.g tap : 1, each : 1/2 or 12, hold : "3h1:2", mixed : "3/4h1:2"`}></textarea>
                 <div className='flex w-full justify-center mb20 flex-wrap' >
                     <button onClick={() => {
@@ -370,6 +400,7 @@ const Playground = (props: Props) => {
                             onTouchMove={e => game.current?.ontouchmove(e)}
                             onTouchEnd={e => game.current?.ontouchend(e)}
                             className='w-full h-full' ref={canvasRef}></canvas>
+                        <div></div>
                     </div>
                     {/* <div className='w-full p-2 absolute bottom-0 flex justify-between'> */}
                     <button onClick={() => {
@@ -387,10 +418,9 @@ const Playground = (props: Props) => {
                             document.webkitExitFullscreen()
                         }
                         else if (document.exitFullscreen && enalbleFullScreen) document.exitFullscreen().catch(e => { })
-                        else {
-                            setModalIsOpen(false)
-                            closeGame()
-                        }
+
+                        setModalIsOpen(false)
+                        closeGame()
 
                         // game.current = null
                     }} className='btn btn-secondary absolute top-3 right-3'>Close Game</button>
@@ -398,9 +428,10 @@ const Playground = (props: Props) => {
                 </Modal>
 
             </div>
+
+
         </LayoutWrapper >
     )
 }
 
 export default Playground
-

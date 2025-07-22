@@ -1,9 +1,7 @@
 import axios from 'axios'
 import type { NextPage, NextPageContext } from 'next'
-import { Session } from 'next-auth'
-import { getSession, signOut, useSession } from 'next-auth/react'
-
 import _, { isInteger, isString } from 'lodash'
+import { CiCircleMore } from "react-icons/ci";
 
 import Songs from 'db/model/songs'
 
@@ -11,6 +9,7 @@ import LayoutWrapper from 'components/LayoutWrapper'
 import classNames from 'classnames'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
+import { sequelize } from 'db';
 
 type Props = {
   songList: Songs[];
@@ -23,43 +22,36 @@ const SongPage: NextPage<Props> = ({ songList }) => {
   const router = useRouter()
 
   const sortedRatingList = useMemo(() => {
+    let orderedList = _.orderBy(songList, ({ master, ultima, expert }) => master?.rate || ultima?.rate || expert?.rate || 0, ['desc'])
     if (searchText)
-    return _.filter(_.orderBy(songList, ['master.rate'], ['desc']), k => {
-      if (parseFloat(searchText) > 0.0) {
-        let searchRate = parseFloat(searchText)
-        return k.display_name.toUpperCase().includes(searchText.toUpperCase()) || (k.master?.rate === searchRate) || (k.expert?.rate === searchRate) || (k.ultima?.rate === searchRate)
-      }
-      else return k.display_name.toUpperCase().includes(searchText.toUpperCase())
-    })
-    else return (_.orderBy(songList, ['master.rate'], ['desc']))
+      return _.filter(orderedList, k => {
+        if (parseFloat(searchText) > 0.0) {
+          let searchRate = parseFloat(searchText)
+          return k.display_name.toUpperCase().includes(searchText.toUpperCase()) || (k.master?.rate === searchRate) || (k.expert?.rate === searchRate) || (k.ultima?.rate === searchRate)
+        }
+        else return k.display_name.toUpperCase().includes(searchText.toUpperCase())
+      })
+    else return orderedList
   }, [searchText, songList])
-  
 
-  const renderRatingColor = (d: string) => {
-    switch (d) {
-      case 'master':
-        return 'bg-master'
-      default:
-        break;
-    }
-  }
+
   const _renderTableRow = () => {
 
     return _.map(sortedRatingList, (k, i) => {
 
-      return <tr key={i} className='cursor-pointer even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' onClick={() => {
-        router.push(k.display_name)
-      }}>
+      return <tr key={i} className=' even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' >
         {/* <td className='w-10'>{k.id}</td> */}
-        <td>{k.display_name}</td>
+        <td className='p-2' >{k.display_name}</td>
         <td className='w-20'>{k.ultima?.rate ?? '-'}</td>
         <td className='w-20'>{k.master?.rate ?? '-'}</td>
         <td className='w-20'>{k.expert?.rate ?? '-'}</td>
+        <td className='px-4 cursor-pointer' onClick={() => {
+          router.push(`/song/${k.display_name}`)
+        }}><CiCircleMore size={"1.5rem"} /></td>
       </tr>
     })
   }
 
-  const { data: session, status } = useSession()
   return (
     <LayoutWrapper>
       <div className='inner inner-720 tc' >
@@ -80,6 +72,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
                   <th >Ultima</th>
                   <th >Master</th>
                   <th >Expert</th>
+                  <th ></th>
                 </tr>
               </thead>
               <tbody>
@@ -98,13 +91,17 @@ const SongPage: NextPage<Props> = ({ songList }) => {
 export default SongPage
 
 export async function getServerSideProps(context: NextPageContext) {
-  // context.res?.setHeader(
-  //   'Cache-Control',
-  //   'public, s-maxage=1, stale-while-revalidate=59'
-  // )
+  context.res?.setHeader('Cache-Control', 'public, s-maxage=600')
   try {
+    let data = await Songs.findAll({
+      where: {
+        is_deleted: false
+      },
+      attributes: {
+        exclude: ['user_id']
 
-    let data = await Songs.findAll({ attributes: { exclude: ['user_id'] } })
+      }
+    })
     // let x = await sequelize.query(`delete from songs WHERE not master::jsonb ? 'rate'`)
     // console.log("🚀 ~ file: song.tsx ~ line 116 ~ getServerSideProps ~ data", x)
 

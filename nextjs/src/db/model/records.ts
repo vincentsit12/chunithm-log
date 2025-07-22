@@ -1,5 +1,5 @@
 import { Association, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model, NonAttribute } from "sequelize";
-import { Difficulty } from "types";
+import { Difficulty, RecordType } from "types";
 import { sequelize } from "..";
 import Songs from "./songs";
 import Users from "./users";
@@ -14,10 +14,14 @@ type RecordAttributes = {
 };
 
 export default class Records extends Model<InferAttributes<Records>, InferCreationAttributes<Records>> {
+    declare id : number
     declare user_id: ForeignKey<number>;
     declare song_id: ForeignKey<number>;
     declare difficulty: Difficulty;
     declare score: number;
+    declare updatedAt : Date;
+    declare createdAt : Date
+    declare type : RecordType
     declare static associations: {
         songs: Association<Records, Songs>;
     };
@@ -28,6 +32,11 @@ export default class Records extends Model<InferAttributes<Records>, InferCreati
 
 Records.init({
     // Model attributes are defined here
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -45,7 +54,17 @@ Records.init({
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-
+    type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue : "best"
+    },
+    createdAt : {
+        type : DataTypes.DATE,   
+    },
+    updatedAt : {
+        type : DataTypes.DATE,
+    }
 
 }, {
     // Other model options go here

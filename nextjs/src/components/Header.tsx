@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 type Props = {}
 
@@ -11,37 +11,54 @@ const Header = (props: Props) => {
     const { data: session, status } = useSession()
     const router = useRouter()
     const haveSession = (session && router.pathname !== '/login' && router.pathname !== '/signup')
+    const shouldShowHeader = !router.pathname.startsWith('/song_guesser')
     return (
+        shouldShowHeader ?
         <header id='header'>
             <div className={classNames('header-menu', { 'active': active })}>
-                <a className='menu-trigger' onClick={() => {
+                <div className='menu-trigger' onClick={() => {
                     setActive(!active)
                 }}>
                     <span></span>
                     <span></span>
                     <span></span>
-                </a>
+                </div>
             </div>
             <nav className={classNames('nav-dropmenu', { animation: active })}>
                 <ul>
-                    <li><Link href={haveSession ? '/home' : '/login'}><a onClick={(e) => {
+                    <li><Link href={haveSession ? '/home' : '/login'} onClick={(e) => {
                         setActive(false)
-                    }}>{haveSession ? 'Home' : 'Login'}</a></Link></li>
-                    <li><Link href={'/song'}><a onClick={(e) => {
+                    }}>{haveSession ? 'Home' : 'Login'}</Link></li>
+                    <li><Link href={'/song'} onClick={(e) => {
                         setActive(false)
-                    }}>Song List</a></Link></li>
-                    <li><Link href={'/playground'}><a onClick={(e) => {
-                        // e.preventDefault()
-                        setActive(false)
-                    }}>Playground</a></Link></li>
-                    {haveSession && <li><Link href={'/'}><a onClick={(e) => {
+                    }}>Song List</Link></li>
+                    <li><Link href={'https://chuni-rt.io.kookiym.com/'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Stats</Link></li>
+                    <li><Link href={'/playground'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Playground</Link></li>
+                    <li><Link href={'/song_guesser/rooms'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Song Guesser</Link></li>
+
+                    {session?.user.isAdmin && <li><Link href={'/song/manage'}
+                        onClick={(e) => {
+                            setActive(false)
+                        }}>Song Management</Link></li>}
+                    {haveSession && <li><Link href={'/'} onClick={(e) => {
                         e.preventDefault()
                         setActive(false)
                         signOut()
-                    }}>Logout</a></Link></li>}
+                    }}>Logout</Link></li>}
                 </ul>
             </nav>
         </header>
+        :
+        <></>
     )
 }
 

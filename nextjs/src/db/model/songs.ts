@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
-import { Song } from "types";
+import { MaimaiSongGenre, Song, SongGenre } from "types";
 import { sequelize } from "..";
 
 
@@ -10,17 +10,29 @@ type SongAttributes = {
     master?: Song,
     expert?: Song,
     ultima?: Song,
+    youtube_link?: string
+    genre: SongGenre,
+    is_deleted : Boolean;
     // other attributes...
 };
+export interface MaimaiSongs extends Omit<SongAttributes, 'genre'> {
+    artist: string,
+    version: string,
+    genre : MaimaiSongGenre
+    remaster? : Song
+}
 type SongCreationAttributes = Optional<SongAttributes, 'id'>;
 
 export default class Songs extends Model<SongAttributes, SongCreationAttributes> {
     declare id: number;
     declare name: string;
     declare display_name: string;
-    declare master: Song;
-    declare expert: Song;
-    declare ultima: Song;
+    declare master?: Song;
+    declare expert?: Song;
+    declare ultima?: Song;
+    declare youtube_link?: string;
+    declare genre: SongGenre;
+    declare is_deleted : Boolean;
 }
 
 Songs.init({
@@ -45,7 +57,15 @@ Songs.init({
         type: DataTypes.JSONB,
     },
 
+    youtube_link: {
+        type: DataTypes.TEXT,
+    },
 
+    genre: {
+        type: DataTypes.TEXT,
+    },
+
+    is_deleted : { type : DataTypes.BOOLEAN },
 
 }, {
     // Other model options go here

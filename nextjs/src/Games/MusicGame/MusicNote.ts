@@ -2,6 +2,8 @@
  *@MusicNote
  * */
 
+import { Canvas, GameConfig, GameType, NoteInfo, NoteType, ReactionPoint } from "./musicGameTypes"
+
 export class MusicNote {
     canvas: Canvas
     type: NoteType

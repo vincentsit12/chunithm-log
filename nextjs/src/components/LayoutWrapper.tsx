@@ -2,7 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import logo from '../../public/logo2.png'
+import Head from 'next/head'
+
 type Props = {
     children: React.ReactNode
 }
@@ -10,20 +11,31 @@ type Props = {
 const LayoutWrapper: React.FC<Props> = ({ children }) => {
     const router = useRouter()
     return (
-        <div id='container'>
-            <div style={{ 'margin': '3.125rem auto' }}>
-                <div className='mb20 tc'>
-                    <div className=''>
-                        <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
-                            <a>
-                                <Image objectFit='contain'  alt='chunithm' src={logo} height={200} width={400} ></Image>
-                            </a>
-                        </Link>
-                    </div>
+        <>
+            <div id='container'>
+                <Head>
+                    <title>Chuni-log</title>
+                </Head>
+                <div className='mb-2 w-fit mx-auto'>
+                    <Link href={router.pathname === '/home' ? 'https://chunithm-net-eng.com/mobile/home' : '/home'}>
+                        <div className='relative mx-auto w-96 aspect-video' >
+                            <Image fill alt='chunithm-2' src={"/logo_art.webp"} style={{ objectFit: 'contain', }} ></Image>
+                            <div className='cursor-pointer absolute w-40 aspect-video' style={{
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                bottom: 0,
+                            }}>
+                                <Image fill style={{ objectFit: 'contain' }} alt='chunithm' src={"/logo_version.webp"} ></Image>
+                            </div>
+                        </div>
+
+                    </Link>
                 </div>
                 {children}
+
             </div>
-        </div>
+            <div className='chuni-log-bg'></div>
+        </>
     )
 }
 export default LayoutWrapper

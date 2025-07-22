@@ -1,22 +1,25 @@
 body,
 html {
-
-  min-height: 100vh;
+  height: 100%;
 }
 
 html {
   font-size: 16px;
-  overflow-x: hidden;
   /* -webkit-tap-highlight-color: rgba(0, 0, 0, 0); */
+  overflow-y: scroll;
+  /* overscroll-behavior-y: none; */
   -webkit-tap-highlight-color: transparent;
+  ;
 }
 
 body {
   color: #000000;
-  line-height: 1.6;
-  background-image: linear-gradient(.25turn, #24baff90, #d9ebee, #24baff90);
+  line-height: 1.5;
+  background-color: white;
+  /* font-family:  Arial, Helvetica, sans-serif; */
   min-width: 320px;
-  font-family: 'M PLUS 1', sans-serif;
+  height: 100%;
+  width: 100%;
 }
 
 @media screen and (max-width: 576px) {
@@ -119,9 +122,9 @@ header
   width: 100%;
   top: 0;
   padding: 0px 2.125rem;
-  -webkit-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
-  -moz-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
-  box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
+  -webkit-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.5);
+  -moz-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.5);
+  box-shadow: 0 3px 5px rgba(57, 63, 72, 0.5);
   z-index: 100;
 }
 
@@ -148,7 +151,7 @@ header
   cursor: pointer;
 }
 
-.header-menu a {
+.menu-trigger {
   position: relative;
   height: 100%;
   width: 100%;
@@ -162,7 +165,7 @@ header
   width: 100%;
   height: .125rem;
   background-color: #21618C;
-  border-radius: 2px;
+  /* border-radius: .5rem; */
   transition: all .3s;
   opacity: 1;
 }
@@ -314,14 +317,23 @@ container
 
 #container {
   position: relative;
-  margin: 3.125rem auto;
+  padding: 4rem 0px 40px;
+  min-height: 100vh;
 }
 
 @media screen and (max-width: 576px) {
   #container {
-    padding: 0px 20px;
+    padding: 4rem 20px 40px;
   }
 }
+
+/* @media screen and (min-width: 576px) {
+  #container {
+    background-attachment: fixed;
+  }
+} */
+
+
 
 /*------------------------------------------------------- 
 section
@@ -499,6 +511,7 @@ table
 table {
   width: 100%;
   border-collapse: collapse;
+  /* table-layout:auto; */
 }
 
 /* 
@@ -642,6 +655,7 @@ button {
   background-color: transparent;
   padding: 0;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 /* button:focus, button:active, .btn:focus, .btn:active {
@@ -677,7 +691,16 @@ button {
   padding: .75rem;
   cursor: pointer;
   border-radius: 10px;
-  min-width: 100px
+  min-width: 100px;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.btn:hover:disabled {
+  cursor: not-allowed;
 }
 
 .btn-primary {
@@ -687,7 +710,7 @@ button {
 }
 
 .btn-secondary {
-  background-color: rgb(0, 77, 153);
+  background-color: #004d99;
   color: white;
 }
 
@@ -771,12 +794,6 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* Firefox */
-
-input[type=number] {
-  -moz-appearance: textfield;
-}
-
 .form-control {
   margin-bottom: 5px;
   padding: 4px 6px;
@@ -789,6 +806,7 @@ input[type=number] {
   display: block;
   width: 100%;
   -webkit-box-shadow: none;
+  appearance: none;
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
@@ -937,9 +955,10 @@ animation
   }
 }
 
-.fadeIn {
-  animation: fadeIn linear .3s
+.collapsable {
+  transition: max-height ease-in-out .3s
 }
+
 
 @keyframes fadeIn {
   0% {
@@ -971,23 +990,89 @@ animation
   }
 }
 
+@keyframes spin {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes breaking {
+  0% {
+    transform: translate(-50%, -100px) scale(0)
+  }
+
+  10% {}
+
+  20% {}
+
+  30% {}
+
+  40% {}
+
+  50% {}
+
+  60% {
+    transform: translate(-50%, -50%) scale(1) rotate(360deg);
+    top: 50%;
+    opacity: 1;
+  }
+
+  70% {}
+
+  80% {}
+
+  90% {}
+
+  100% {
+    transform: translate(-50%, -50%) scale(8) rotate(-360deg);
+    top: 50%;
+    opacity: 0;
+  }
+}
+
+.breaking {
+  animation: breaking cubic-bezier(0.075, 0.82, 0.165, 1) 2s
+}
+
+.rotate {
+  transition: transform .2s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
 /*------------------------------------------------------- 
 custom
 --------------------------------------------------------*/
 .box {
-  background-image: linear-gradient(to bottom, #d9e9ee, #d9ebee);
-  /* background-color: #d9e9ee; */
-
-  border: 1px rgba(255, 255, 255, 0.1) solid;
+  background-color: #d9e9ee;
+  /* border: 4px rgba(0, 0, 0, 1) solid; */
   color: black;
   border-radius: 10px;
+
+  /* border : 0 */
+
+}
+
+input.box {
+  background-color: #d9e9ee;
+  /* border: 4px rgba(0, 0, 0, 1) solid; */
+  color: black;
+  border-radius: 10px;
+  -webkit-appearance: none;
+  /* border : 0 */
+}
+
+.chuni-log-bg {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+  background-image: linear-gradient(.25turn, #24baff, #d9ebee, #24baff);
 }
 
 #script {
   overflow-x: scroll;
   padding: 8px 10px 2px;
-  display: flex;
-  align-items: center;
+  flex: 1;
   position: relative;
 }
 
@@ -997,7 +1082,7 @@ custom
 
 .icon {
 
-  /* height: 100%; */
+  height: 40px;
   border-radius: 10px;
   padding: 4px;
   min-width: 40px;
@@ -1008,11 +1093,16 @@ custom
   width: 50%;
 }
 
-#rating-table {
+/* .rating-table table {
+  table-layout: fixed;
+} */
+
+.rating-table {
   min-height: 600px;
   z-index: 2;
   /* overflow-y: scroll; */
   overflow-x: hidden;
+  /* flex : 1; */
   border: none;
   text-align: center;
   position: relative;
@@ -1020,7 +1110,7 @@ custom
 }
 
 
-#rating-table th {
+.rating-table th {
   padding: 4px;
   top: 0;
   position: sticky;
@@ -1030,11 +1120,11 @@ custom
 
 
 @media screen and (max-width: 576px) {
-  #rating-table {
+  .rating-table {
     padding: 0;
   }
 
-  #rating-table td.song {
+  .rating-table td.song {
     width: 160px;
   }
 }
@@ -1057,30 +1147,48 @@ custom
 }
 
 @media screen and (min-width: 576px) {
-  #rating-table::-webkit-scrollbar {
+  .rating-table::-webkit-scrollbar {
     background-color: transparent;
     width: .4rem;
   }
 
-  #rating-table::-webkit-scrollbar-thumb {
+  .rating-table::-webkit-scrollbar-thumb {
     background-color: #A8B3AE;
     /* border-radius: 6px; */
     border-radius: 6px;
   }
 }
 
-#rating-table td {
+.rating-table-row,
+.rating-table-row-2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 8px;
 }
 
+.rating-table td {
+  padding: 8px;
+  min-height: 10px;
+  height: 40px;
+}
+
 @media screen and (max-width: 576px) {
-  #rating-table td {
+
+  .rating-table-row,
+  .rating-table-row-2,
+  .rating-table td {
     padding: 4px
   }
+
 }
 
 
 canvas {
   user-select: none;
   display: block;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

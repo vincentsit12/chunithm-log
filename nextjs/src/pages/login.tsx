@@ -1,4 +1,4 @@
-import { getSession, signIn, SignInResponse, useSession } from 'next-auth/react';
+import { getSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import React, { useEffect, useRef, useState } from 'react';
 // import { useUserContext } from '../../provider/UserProvider';
@@ -19,7 +19,6 @@ type Query = {
 export default function Login() {
     // const { login } = useUserContext()
     const router = useRouter()
-    const { data: session, status } = useSession()
     const { register, handleSubmit, formState: { errors }, } = useForm<FormData>()
     const [loading, setLoading] = useState(false)
     // const checkValid = () => {
@@ -56,7 +55,7 @@ export default function Login() {
         <LayoutWrapper>
             <form onSubmit={handleSubmitForm} >
                 <div className="inner-540 inner inner-p40 tc bg-white box-shadow relative" >
-                    <h1 className='tc mb20'>Chunithm Log</h1>
+                    <h1 className='tc mb20'>Chuni Log</h1>
                     <h4 className="bold">Login</h4>
                     <div className="inner inner-p20 ">
                         {error && <div className="bold txt-secondary tl  font14">Please check your username/password is input correctly.</div>}

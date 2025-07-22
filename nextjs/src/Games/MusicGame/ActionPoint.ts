@@ -1,3 +1,4 @@
+import { Canvas, GameConfig, GameType } from "./musicGameTypes"
 import { MusicNote } from "./MusicNote"
 
 /**
@@ -66,8 +67,8 @@ export class ActionPoint {
         this.timer = null
         this.kill = kill;
         this.answerSound = new Audio('/click.mp3')
-        // this.answerSound.load()
         this.answerSound.addEventListener('canplaythrough', this.setIsReady)
+        this.answerSound.load()
         // this.answer_sound.volume = 1
 
         //reaction music game
@@ -81,7 +82,7 @@ export class ActionPoint {
     }
 
     setIsReady = () => {
-            this.isReady = true
+        this.isReady = true
     }
     killMusicNote = (id: number) => {
         this.musicNotes = this.musicNotes.filter(k => k.id != id)
@@ -118,7 +119,8 @@ export class ActionPoint {
     onTouch = (color: string) => {
         if (this.answerSound.currentTime !== 0 && !this.answerSound.ended) {
             // console.log(this.answerSound.currentTime)
-            // this.answerSound.play()
+            this.answerSound.currentTime = 0
+            this.answerSound.play()
         }
         else if (this.answerSound.currentTime === 0 || this.answerSound.ended) {
             this.answerSound.play()
@@ -214,7 +216,6 @@ export class ActionPoint {
                 if (this.onTouched) {
                     ctx.beginPath();
                     ctx.fillStyle = this.onTouchColor.replace('%', this.alpha.toString());
-
                     ctx.arc(this.xInCanvs, this.yInCanvs, this.radius * 3, 0, 2 * Math.PI);
                     ctx.fill();
                     ctx.closePath()

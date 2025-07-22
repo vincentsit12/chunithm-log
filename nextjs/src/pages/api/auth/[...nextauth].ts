@@ -7,6 +7,7 @@ import TwitterProvider from "next-auth/providers/twitter"
 import CredentialsProvider from "next-auth/providers/credentials"
 import axios, { AxiosError } from "axios"
 import Users from "db/model/users"
+import { CustomAPIError } from "errors/CustomAPIError"
 
 // import EmailProvider from "next-auth/providers/email"
 // import AppleProvider from "next-auth/providers/apple"
@@ -51,9 +52,10 @@ export default NextAuth({
                     console.log("🚀 ~ file: [...nextauth].ts ~ line 53 ~ authorize ~ error", error)
 
                     const err = error as AxiosError
-                    let errMsg = err.response?.data as string
+                    let errObj = err.response?.data as CustomAPIError
+
                     // return null
-                    return Promise.reject(new Error(errMsg))
+                    return Promise.reject(new Error(errObj.message))
                 }
             }
         })
@@ -129,7 +131,6 @@ export default NextAuth({
         //     return token
         // },
         async jwt({ token, user, account, profile }) {
-
             user && (token.user = user)
             return token
         },

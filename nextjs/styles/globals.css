@@ -1,9 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@100;200;300;400;500;600;700;800;900&display=swap");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 
 .ReactModal__Body--open {
@@ -19,8 +19,114 @@
     border: none !important;
 }
 
+.absolute-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.auto-search .wrapper {
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3)
+}
+
+.auto-search input::placeholder {
+    color: #999 !important
+}
+
+:root {
+    --toastify-color-light: rgb(0, 77, 153) !important;
+    --toastify-text-color-light: #fff !important;
+    --toastify-color-info: #eab058 !important;
+    --toastify-font-family: inherit !important;
+}
+
 @layer components {
-    .test {
-        @apply !h-40
+    #__next {
+        @apply h-full;
+    }
+
+    .rating-table-row {
+        @apply even:bg-gray-300/[.6] hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
+    }
+
+    .rating-table-header {
+        @apply text-sm flex justify-center items-center p-2
+    }
+
+    .rating-table-header div {
+        @apply cursor-pointer flex items-center justify-center
+    }
+
+    .rating-table-row-2 {
+        @apply hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
+    }
+
+    .checkbox {
+        @apply w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600
+    }
+
+    .list-container {
+        @apply flex p-2 bg-[#21618C] rounded-md
+    }
+
+    .item-container {
+        @apply p-1.5 mx-1 bg-[#d9e9ee] rounded-md text-[0.75rem] select-none
+    }
+
+    .btn-icon {
+        @apply !min-w-[1rem] min-h-[1rem]
+    }
+
+    .auto-search {
+        @apply !h-full
+    }
+
+    .auto-search input {
+        @apply !py-2 !px-4 h-[2.8rem]
+    }
+
+    .answer-race.btn {
+        @apply min-w-fit text-white text-sm
+    }
+
+    #guess-song-game-player-space {
+        @apply xl:w-[1080px] w-full md:px-5 xl:px-10
+    }
+
+    #guess-song-game-host-space {
+        @apply xl:w-[720px] w-full md:px-5 xl:px-10
+    }
+
+    #guess-song-game-host {
+        @apply xl:w-[560px] w-full md:px-5 xl:px-10
+    }
+
+    #guess-song-game-player-chatbox {
+        @apply lg:flex block
+    }
+
+    #guess-song-game-player-scorebox {
+        @apply lg:mx-2 lg:my-0 mx-0 my-2 w-[300px] h-[400px] overflow-hidden overflow-y-scroll
+    }
+
+    #guess-song-game-host-chatbox {
+        @apply block
+    }
+
+    #guess-song-game-host-scorebox {
+        @apply lg:my-0 mx-0 my-2 w-[300px] h-[400px] overflow-hidden overflow-y-scroll
+    }
+
+
+    .guess-song-game-gradient {
+        background: linear-gradient(135deg, #1E1E2E 0%, rgba(45, 45, 68, 0.5) 100%);
+    }
+
+    .guess-song-game-input {
+        @apply guess-song-game-gradient rounded-xl border border-gray-600/30 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none transition-colors
+    }
+
+    .guess-song-game-box {
+        @apply rounded-2xl border border-gray-600/30 shadow-2xl guess-song-game-gradient
     }
 }
