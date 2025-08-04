@@ -126,8 +126,8 @@ const maimaiDefaulLevelRange: [number, number] = [14.0, 15]
 const SectionHeader = ({ title, icon, iconColor = 'purple' }: { title: string; icon: React.ReactNode; iconColor?: 'purple' | 'red' }) => (
     <div className="flex items-center mb-6">
         <div className={`bg-gradient-to-r p-2 rounded-xl shadow-lg ${iconColor === 'red'
-                ? 'from-red-500 to-red-600'
-                : 'from-purple-600 to-purple-700'
+            ? 'from-red-500 to-red-600'
+            : 'from-purple-600 to-purple-700'
             }`}>
             {icon}
         </div>
