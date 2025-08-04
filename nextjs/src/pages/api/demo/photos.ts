@@ -6,7 +6,7 @@ import Cors from 'cors'
 import { runMiddleware } from 'utils/runMiddleware'
 import { getToken } from 'next-auth/jwt'
 import _ from 'lodash'
-import { createApi } from 'unsplash-js';
+import { createApi, SearchOrderBy } from 'unsplash-js';
 
 // TypeScript interfaces for Unsplash API response
 interface UnsplashUser {
@@ -66,15 +66,15 @@ async function handler(
     });
 
     const page = req.query.page ? parseInt(req.query.page as string) : 1;
-
-    const query = req.query.query ? req.query.query as string : 'Famous place';
+    const query = req.query.query ? req.query.query as string : 'famous place';
+    const orderBy = req.query.sort ? req.query.sort as SearchOrderBy : "relevant";
 
     const result = await unsplash.search.getPhotos({
         query: query,
         perPage: 20,
-        page: page
+        page: page,
+        orderBy : orderBy,
     });
-
     if (result.type === 'error') {
         throw new BadRequestError('Failed to fetch photos from Unsplash');
     }
@@ -112,9 +112,6 @@ async function handler(
             },
         }))
     };
-
-    //set seom delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
     res.status(200).json(transformedResponse)
 }
