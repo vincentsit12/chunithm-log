@@ -18,7 +18,7 @@ const cors = Cors({
 
 interface PlaceDescriptionResponse {
     description: string;
-    map_link?: string;
+    place_name: string;
 }
 
 async function handler(
@@ -50,23 +50,32 @@ async function handler(
                     data: base64ImageData,
                 },
             },
-            { text: `
-                Help me to detect the place in this image. And describe that place (not the image) with few sentences.
-                If avaliable, give me the google map link that redirect to this place. 
-                If this is not a place or you can find the place, just suggest a place that may be related to the image.
-                return the result in { description, map_link }
-                ` }
+            {
+                text: `
+                Help me to detect the place in this image. 
+                Step 1: Write a sentence like 'This place seems to be....' in first row. 
+                Step 2: And then describe that place (not the image) with few sentences start from second row.
+                Step 3: If this is not a place or you can find the place, just ignore the step 1,2 and suggest a place that may be related to the image.
+                ****Please return the result only in json string like this: { description, place_name }. (without the json tag)****
+                `
+            }
         ],
     });
 
-    console.log(result.text);
-    const json = JSON.parse(result.text ?? "{}");
+    let response: PlaceDescriptionResponse
+    try {
+        const json = JSON.parse(result.text ?? "{}");
+        response = {
+            description: json.description ?? "",
+            place_name: json.place_name
+        };
+    } catch (error) {
+        response = {
+            description: result.text ?? "",
+            place_name: ""
+        };
+    }
 
-    const response: PlaceDescriptionResponse = {
-        description: json.description ?? "",
-        map_link: json.map_link
-    };
-    
     res.status(200).json(response);
 }
 
