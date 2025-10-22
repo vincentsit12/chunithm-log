@@ -64,7 +64,9 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
 
 
     return (
-        <LayoutWrapper>
+        <LayoutWrapper
+            title={userName}
+        >
 
             <div className='mx-auto flex w-full max-w-4xl flex-col gap-6 text-center' >
 
