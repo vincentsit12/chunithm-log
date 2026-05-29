@@ -8,7 +8,7 @@
 # EXPOSE 3000
 # CMD [ "yarn", "dev" ]
 FROM node:22-alpine3.22 as deps
-RUN apk add --no-cache g++ make py3-pip libc6-compat
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci 

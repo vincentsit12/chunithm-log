@@ -247,7 +247,7 @@ const Playground = (props: Props) => {
                 if (screen?.orientation) {
                   screen.orientation
                     ?.lock("landscape-primary")
-                    .catch((err) => console.log("err", err))
+                    .catch((err: any) => console.log("err", err))
                     .finally(() => {
                       openGamePanel();
                     });
@@ -264,7 +264,7 @@ const Playground = (props: Props) => {
                     if (screen?.orientation) {
                       screen.orientation
                         ?.lock("landscape-primary")
-                        .catch((err) => console.log("err", err))
+                        .catch((err: any) => console.log("err", err))
                         .finally(() => {
                           openGamePanel();
                         });
