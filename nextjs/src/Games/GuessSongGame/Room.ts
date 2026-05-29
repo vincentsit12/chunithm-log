@@ -1,5 +1,5 @@
 import _ from "lodash"
-import shared from "../../../src/pages/api/shared"
+import shared from "@/server/socket/shared"
 import { GuessGameSong, GuessSongGameType, RoomInfo } from "./types"
 import { Player } from "./Player"
 

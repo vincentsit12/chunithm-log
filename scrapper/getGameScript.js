@@ -62,6 +62,7 @@ const getGameScript = async () => {
                     "exp": "expert",
                 }
                 const versionMapping = {
+                    '/chunithm/chfiles/chverse+logo.png': 'X-Verse',
                     '/chunithm/chfiles/chverselogo.png': 'Verse',
                     '/chunithm/chfiles/chluminous+logo.png': 'Luminous Plus',
                     '/chunithm/chfiles/chluminouslogo.png': 'Luminous',

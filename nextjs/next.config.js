@@ -3,6 +3,9 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["info"] } : false
   },
+  turbopack: {
+    root: __dirname,
+  },
   async redirects() {
     return [
       // Basic redirect

@@ -6,10 +6,12 @@ import { CiCircleMore } from "react-icons/ci";
 import Songs from 'db/model/songs'
 
 import LayoutWrapper from 'components/LayoutWrapper'
-import classNames from 'classnames'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { sequelize } from 'db';
+import { Button } from '@/components/ui/Button'
+import { Surface } from '@/components/ui/Surface'
+import { TextField } from '@/components/ui/TextField'
 
 type Props = {
   songList: Songs[];
@@ -39,40 +41,41 @@ const SongPage: NextPage<Props> = ({ songList }) => {
 
     return _.map(sortedRatingList, (k, i) => {
 
-      return <tr key={i} className=' even:bg-gray-300/[.6] hover:bg-gray-500/[.4] active:bg-gray-500/[.4]' >
+      return <tr key={i} className='border-t border-white/5 text-slate-100 transition-colors even:bg-slate-300/10 hover:bg-violet-500/15 active:bg-violet-500/15' >
         {/* <td className='w-10'>{k.id}</td> */}
-        <td className='p-2' >{k.display_name}</td>
-        <td className='w-20'>{k.ultima?.rate ?? '-'}</td>
-        <td className='w-20'>{k.master?.rate ?? '-'}</td>
-        <td className='w-20'>{k.expert?.rate ?? '-'}</td>
-        <td className='px-4 cursor-pointer' onClick={() => {
+        <td className='px-4 py-3 font-medium text-white' >{k.display_name}</td>
+        <td className='w-20 px-4 py-3 text-center text-slate-200'>{k.ultima?.rate ?? '-'}</td>
+        <td className='w-20 px-4 py-3 text-center text-slate-200'>{k.master?.rate ?? '-'}</td>
+        <td className='w-20 px-4 py-3 text-center text-slate-200'>{k.expert?.rate ?? '-'}</td>
+        <td className='px-4 py-3 text-right'>
+          <Button className='text-slate-300 hover:text-cyan-200' size='icon-sm' variant='ghost' onClick={() => {
           router.push(`/song/${k.display_name}`)
-        }}><CiCircleMore size={"1.5rem"} /></td>
+        }}><CiCircleMore size={"1.35rem"} /></Button></td>
       </tr>
     })
   }
 
   return (
     <LayoutWrapper>
-      <div className='inner inner-720 tc' >
-
-
-        <div className='inner inner-720'  >
-          <input value={searchText} onChange={(e) => {
+      <div className='mx-auto flex w-full max-w-4xl flex-col gap-6 text-center' >
+        <Surface className='px-6 py-5'>
+          <p className='mb-2 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-300'>Library</p>
+          <h1 className='mb-5 text-3xl font-bold text-white'>Song List</h1>
+          <TextField value={searchText} onChange={(e) => {
             setSearchText(e.target.value)
-          }} className='p-6 box box-shadow mb20 w-full h-10' placeholder='Song Title / Rate'></input>
-        </div>
-        <div id='rating-table' className='box box-shadow mb20 '>
+          }} placeholder='Song Title / Rate' />
+        </Surface>
+        <Surface id='rating-table' className='overflow-hidden px-2 py-2'>
           {songList.length > 0 &&
-            <table >
+            <table className='w-full overflow-hidden text-left text-sm text-slate-200 sm:text-base' >
               <thead>
-                <tr >
+                <tr className='border-b border-white/10 bg-white/5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300 sm:text-sm' >
                   {/* <th >id</th> */}
-                  <th className='song'>Name</th>
-                  <th >Ultima</th>
-                  <th >Master</th>
-                  <th >Expert</th>
-                  <th ></th>
+                  <th className='px-4 py-3'>Name</th>
+                  <th className='px-4 py-3 text-center'>Ultima</th>
+                  <th className='px-4 py-3 text-center'>Master</th>
+                  <th className='px-4 py-3 text-center'>Expert</th>
+                  <th className='px-4 py-3 text-right'>Open</th>
                 </tr>
               </thead>
               <tbody>
@@ -81,7 +84,7 @@ const SongPage: NextPage<Props> = ({ songList }) => {
               </tbody>
             </table>
           }
-        </div>
+        </Surface>
 
       </div>
     </LayoutWrapper >

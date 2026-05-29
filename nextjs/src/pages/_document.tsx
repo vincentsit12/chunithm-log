@@ -10,7 +10,7 @@ class MyDocument extends Document {
                     {/* <meta name="viewport" content="width=device-width"></meta> */}
                     <meta name='description' content="Chunithm international ver score viewer"></meta>
                     {/* <meta name="theme-color" content="rgb(20, 49, 123)"></meta> */}
-                    <link rel="icon" href="/logo.png" />
+                    <link rel="icon" href="/icon.png" />
                     {/* <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700&display=swap" rel="stylesheet"/> */}
                 </Head>
                 <body>

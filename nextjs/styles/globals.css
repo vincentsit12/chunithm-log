@@ -4,129 +4,417 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --primary-color: #7c3aed;
+    --secondary-color: #22d3ee;
+    --toastify-color-light: rgb(76, 29, 149) !important;
+    --toastify-text-color-light: #fff !important;
+    --toastify-color-info: #22d3ee !important;
+    --toastify-font-family: inherit !important;
+  }
 
+  html,
+  body {
+    height: 100%;
+  }
 
-.ReactModal__Body--open {
-    /* height: 100vh; */
-    /* overflow: hidden; */
-    /* pointer-events: none; */
+  html {
+    font-size: 16px;
+    overflow-y: scroll;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-width: 320px;
+    width: 100%;
+    color: #e5e7eb;
+    line-height: 1.5;
+    background-color: #090d1d;
+  }
+
+  a {
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    border: none;
+    background-color: transparent;
+    padding: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  canvas {
+    user-select: none;
+    display: block;
+  }
+
+  @media screen and (max-width: 576px) {
+    html {
+      font-size: 12px;
+    }
+
+    body {
+      word-break: break-all;
+    }
+  }
 }
 
 .rc-tooltip-inner {
-    background-color: var(--primary-color) !important;
-    color: white !important;
-    text-align: center !important;
-    border: none !important;
-}
-
-.absolute-center {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  text-align: center !important;
+  border: none !important;
 }
 
 .auto-search .wrapper {
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3)
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
 }
 
 .auto-search input::placeholder {
-    color: #999 !important
-}
-
-:root {
-    --toastify-color-light: rgb(0, 77, 153) !important;
-    --toastify-text-color-light: #fff !important;
-    --toastify-color-info: #eab058 !important;
-    --toastify-font-family: inherit !important;
+  color: #999 !important;
 }
 
 @layer components {
-    #__next {
-        @apply h-full;
-    }
+  #__next {
+    @apply h-full;
+  }
 
-    .rating-table-row {
-        @apply even:bg-gray-300/[.6] hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
-    }
+  .rating-table-row {
+    background-color: transparent;
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+  }
 
-    .rating-table-header {
-        @apply text-sm flex justify-center items-center p-2
-    }
+  .rating-table-row:nth-child(even) {
+    background-color: rgba(148, 163, 184, 0.16);
+  }
 
-    .rating-table-header div {
-        @apply cursor-pointer flex items-center justify-center
-    }
+  .rating-table-header {
+    @apply text-sm flex justify-center items-center p-2;
+  }
 
-    .rating-table-row-2 {
-        @apply hover:bg-gray-500/[.4] hover:bg-gray-500/[.4]
-    }
+  .rating-table-header div {
+    @apply cursor-pointer flex items-center justify-center;
+  }
 
-    .checkbox {
-        @apply w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600
-    }
+  .rating-table-row-2 {
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+  }
 
-    .list-container {
-        @apply flex p-2 bg-[#21618C] rounded-md
-    }
+  .rating-table-row:hover,
+  .rating-table-row-2:hover {
+    background-color: rgba(124, 58, 237, 0.18);
+  }
 
-    .item-container {
-        @apply p-1.5 mx-1 bg-[#d9e9ee] rounded-md text-[0.75rem] select-none
-    }
+  .checkbox {
+    @apply w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600;
+  }
 
-    .btn-icon {
-        @apply !min-w-[1rem] min-h-[1rem]
-    }
+  .list-container {
+    @apply flex p-2 bg-[#21618C] rounded-md;
+  }
 
-    .auto-search {
-        @apply !h-full
-    }
+  .item-container {
+    @apply p-1.5 mx-1 bg-[#d9e9ee] rounded-md text-[0.75rem] select-none;
+  }
 
-    .auto-search input {
-        @apply !py-2 !px-4 h-[2.8rem]
-    }
+  .btn-icon {
+    @apply !min-w-[1rem] min-h-[1rem];
+  }
 
-    .answer-race.btn {
-        @apply min-w-fit text-white text-sm
-    }
+  .auto-search {
+    @apply !h-full;
+  }
 
-    #guess-song-game-player-space {
-        @apply xl:w-[1080px] w-full md:px-5 xl:px-10
-    }
+  .auto-search input {
+    @apply !py-2 !px-4 h-[2.8rem];
+  }
 
-    #guess-song-game-host-space {
-        @apply xl:w-[720px] w-full md:px-5 xl:px-10
-    }
+  .answer-race.btn {
+    @apply min-w-fit text-white text-sm;
+  }
 
-    #guess-song-game-host {
-        @apply xl:w-[560px] w-full md:px-5 xl:px-10
-    }
+  .guess-song-game-gradient {
+    background: linear-gradient(135deg, rgba(17, 21, 43, 0.92) 0%, rgba(26, 33, 66, 0.82) 100%);
+  }
 
-    #guess-song-game-player-chatbox {
-        @apply lg:flex block
-    }
+  .guess-song-game-input {
+    @apply guess-song-game-gradient rounded-xl border border-white/10 text-slate-100 placeholder-slate-400 focus:border-fuchsia-400/60 focus:outline-none transition-colors ring-1 ring-white/5;
+  }
 
-    #guess-song-game-player-scorebox {
-        @apply lg:mx-2 lg:my-0 mx-0 my-2 w-[300px] h-[400px] overflow-hidden overflow-y-scroll
-    }
+  .guess-song-game-box {
+    @apply rounded-[2rem] border border-violet-400/20 shadow-glow guess-song-game-gradient ring-1 ring-white/10 backdrop-blur-xl;
+  }
+}
 
-    #guess-song-game-host-chatbox {
-        @apply block
-    }
+.inner {
+  margin: 0 auto;
+}
 
-    #guess-song-game-host-scorebox {
-        @apply lg:my-0 mx-0 my-2 w-[300px] h-[400px] overflow-hidden overflow-y-scroll
-    }
+.inner-540 {
+  width: 540px;
+}
 
+.inner-720 {
+  width: 720px;
+}
 
-    .guess-song-game-gradient {
-        background: linear-gradient(135deg, #1E1E2E 0%, rgba(45, 45, 68, 0.5) 100%);
-    }
+.inner-p20 {
+  padding: 20px;
+}
 
-    .guess-song-game-input {
-        @apply guess-song-game-gradient rounded-xl border border-gray-600/30 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none transition-colors
-    }
+.inner-p40 {
+  padding: 40px;
+}
 
-    .guess-song-game-box {
-        @apply rounded-2xl border border-gray-600/30 shadow-2xl guess-song-game-gradient
-    }
+.btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  min-width: 6.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background-image: linear-gradient(90deg, #7c3aed 0%, #c026d3 100%);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(91, 33, 182, 0.28);
+}
+
+.btn-secondary:hover {
+  background-image: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%);
+}
+
+.box {
+  border-radius: 1.25rem;
+  background-color: rgba(17, 21, 43, 0.86);
+  color: #f8fafc;
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  box-shadow: 0 24px 80px rgba(37, 18, 77, 0.35);
+}
+
+.box-shadow {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  height: 2.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: #f8fafc;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #c084fc;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.12);
+}
+
+.rating-table {
+  min-height: 600px;
+  z-index: 2;
+  overflow-x: hidden;
+  border: none;
+  text-align: center;
+  position: relative;
+}
+
+.rating-table th {
+  padding: 4px;
+  top: 0;
+  position: sticky;
+  background-color: rgba(17, 21, 43, 0.96);
+}
+
+.rating-table td {
+  padding: 8px;
+  min-height: 10px;
+  height: 40px;
+}
+
+.font14 {
+  font-size: 0.875em;
+}
+
+.mb10 {
+  margin-bottom: 10px;
+}
+
+.mb20 {
+  margin-bottom: 20px;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.tc {
+  text-align: center;
+}
+
+.tl {
+  text-align: left;
+}
+
+.txt-secondary {
+  color: #fb7185;
+}
+
+.txt-white {
+  color: #fff;
+}
+
+.bg-red {
+  background-color: red;
+}
+
+.bg-master {
+  background-color: #8200dc90;
+}
+
+.bg-expert {
+  background-color: #a00a5090;
+}
+
+.bg-ultima {
+  background-color: #8a8a8a90;
+}
+
+.absolute-center,
+.absolute_center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.collapsable,
+.collapse {
+  transition: max-height ease-in-out 0.3s;
+}
+
+.rotate {
+  transition: transform 0.2s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+#script {
+  overflow-x: scroll;
+  padding: 8px 10px 2px;
+  flex: 1;
+  position: relative;
+}
+
+#script p {
+  white-space: nowrap;
+}
+
+#script::-webkit-scrollbar {
+  background-color: transparent;
+  border-radius: 6px;
+  height: 0.6em;
+}
+
+#script::-webkit-scrollbar-thumb {
+  background-color: #a8b3ae;
+  border-radius: 6px;
+}
+
+#script::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 6px;
+}
+
+@media screen and (min-width: 576px) {
+  .rating-table::-webkit-scrollbar {
+    background-color: transparent;
+    width: 0.4rem;
+  }
+
+  .rating-table::-webkit-scrollbar-thumb {
+    background-color: #a8b3ae;
+    border-radius: 6px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .inner-540,
+  .inner-720 {
+    width: auto;
+  }
+
+  .inner-p20 {
+    padding: 10px;
+  }
+
+  .inner-p40 {
+    padding: 20px;
+  }
+
+  .rating-table {
+    padding: 0;
+  }
+
+  .rating-table td.song {
+    width: 160px;
+  }
+
+  .rating-table-row,
+  .rating-table-row-2,
+  .rating-table td {
+    padding: 4px;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

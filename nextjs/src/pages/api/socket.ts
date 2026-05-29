@@ -1,12 +1,12 @@
-import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent, RoomInfo } from 'Games/GuessSongGame/types';
-import { NextApiResponseWithSocket } from './apiTypes';
+import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent, RoomInfo } from '@/games/GuessSongGame/types';
+import { NextApiResponseWithSocket } from '@/server/socket/apiTypes';
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Server } from "socket.io"
-import shared from "./shared"
+import shared from "@/server/socket/shared"
 import Fuse from 'fuse.js'
 import _ from "lodash"
 import { MessageDetails } from 'types';
-import { Player } from 'Games/GuessSongGame/Player';
+import { Player } from '@/games/GuessSongGame/Player';
 
 
 const PORT = 3000
