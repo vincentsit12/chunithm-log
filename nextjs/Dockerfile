@@ -7,20 +7,20 @@
 # ENV NODE_ENV=development
 # EXPOSE 3000
 # CMD [ "yarn", "dev" ]
-FROM node:18-alpine3.18 as deps
+FROM node:22-alpine3.22 as deps
 RUN apk add --no-cache g++ make py3-pip libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci 
 
-FROM node:18-alpine3.18 as builder
+FROM node:22-alpine3.22 as builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 COPY .env.production .env.production
 RUN npm run build
 
-FROM node:18-alpine3.18 as runner
+FROM node:22-alpine3.22 as runner
 WORKDIR /app
 ENV HOST=0.0.0.0
 ENV PORT=3000
