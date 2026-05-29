@@ -16,6 +16,7 @@ import { useRouter } from 'next/router'
 import { Op } from 'sequelize'
 import { BestRatingTable, RecentRatingTable } from 'components/RatingTable'
 import { getRatingList } from 'utils/getRatingList'
+import { Surface } from '@/components/ui/Surface'
 
 type Props = {
     bestRatingList: Rating[],
@@ -65,17 +66,17 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
     return (
         <LayoutWrapper>
 
-            <div className='inner inner-720 tc' >
+            <div className='mx-auto flex w-full max-w-4xl flex-col gap-6 text-center' >
 
-                <h1 className='mb-2'>{`User: ${userName}`}</h1>
+                <h1 className='text-3xl font-bold text-white'>{`User: ${userName}`}</h1>
 
-                <div className='mb20  items-center'>
-                    <div className="space-x-5">
+                <Surface className='px-6 py-5'>
+                    <div className="space-x-5 text-lg font-semibold text-white">
                         <span >
                             {`Top 30 Average : ${toFixedTrunc(average, 4)}`}
                         </span>
                     </div>
-                    <div className="space-x-5">
+                    <div className="mt-2 space-x-5 text-sm text-slate-300 sm:text-base">
                         <span>
                             {`Recent : ${toFixedTrunc(recentAverage, 2)}`}
                         </span>
@@ -83,8 +84,7 @@ const User: NextPage<Props> = ({ bestRatingList, recentRatingList, userName }) =
                             {`Now : ${toFixedTrunc(recent, 2)}`}
                         </span>
                     </div>
-                    {/* <button className="btn btn-secondary" onClick={() => { router.push('/song') }}>SONG LIST</button> */}
-                </div>
+                </Surface>
                 <RecentRatingTable recentRatingList={recentRatingList} isOtherUser/>
                 <BestRatingTable ratingList={bestRatingList} />
             </div>

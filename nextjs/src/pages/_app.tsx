@@ -1,25 +1,13 @@
 import "../../styles/globals.css"
-// import "../../styles/clear.css"
-import "../../styles/utils.css"
-import "../../styles/common.css"
-
-import localFont from 'next/font/local';
-
-
-import { SessionProvider } from "next-auth/react"
 
 import type { AppProps } from 'next/app'
-import Head from "next/head"
-import Header from "components/Header"
 import { Router } from "next/router"
 import NProgress from 'nprogress'
 import { useEffect } from "react"
 import { Session } from "next-auth"
-import classNames from "classnames";
+import { AppShell } from "@/features/layout/AppShell"
+import { AppProviders } from "@/lib/providers/AppProviders"
 NProgress.configure({ showSpinner: false });
-
-
-const myFont = localFont({ src: '../fonts/MPLUS1-VariableFont_wght.woff2', display: "swap", preload : true });
 
 export default function App({
   Component,
@@ -28,23 +16,29 @@ export default function App({
   session: Session;
 }>) {
   useEffect(() => {
-    Router.events.on("routeChangeStart", (url) => {
+    const handleRouteChangeStart = () => {
       NProgress.start()
-    });
-    Router.events.on("routeChangeComplete", (url) => {
+    }
+    const handleRouteChangeComplete = () => {
       NProgress.done(false)
-    });
+    }
+
+    Router.events.on("routeChangeStart", handleRouteChangeStart)
+    Router.events.on("routeChangeComplete", handleRouteChangeComplete)
+    Router.events.on("routeChangeError", handleRouteChangeComplete)
+
+    return () => {
+      Router.events.off("routeChangeStart", handleRouteChangeStart)
+      Router.events.off("routeChangeComplete", handleRouteChangeComplete)
+      Router.events.off("routeChangeError", handleRouteChangeComplete)
+    }
   }, [])
 
-
-
-
   return (
-    <SessionProvider session={session}>
-      <main className={classNames(myFont.className)}>
-        <Header />
+    <AppProviders session={session}>
+      <AppShell>
         <Component  {...pageProps} />
-      </main>
-    </SessionProvider>
+      </AppShell>
+    </AppProviders>
   )
 }

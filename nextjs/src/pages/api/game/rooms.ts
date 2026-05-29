@@ -11,9 +11,9 @@ import _, { values } from 'lodash'
 import { Op } from 'sequelize'
 import axios from 'axios'
 
-import shared from '../shared'
-import GuessSongGameRoom from 'Games/GuessSongGame/Room'
-import { NextApiResponseWithSocket } from '../apiTypes'
+import shared from '@/server/socket/shared'
+import GuessSongGameRoom from '@/games/GuessSongGame/Room'
+import { NextApiResponseWithSocket } from '@/server/socket/apiTypes'
 // var corsOptions = {
 //   origin: 'https://chunithm-net-eng.com.com',
 //   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204

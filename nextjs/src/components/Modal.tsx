@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import classNames from 'classnames'
+import { Button } from '@/components/ui/Button'
 
 export type ModalProps = {
     isOpen: boolean,
@@ -39,10 +40,10 @@ export default function Modal(props: ModalProps) {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="fixed top-0 left-0 w-full h-full inset-0 bg-black bg-opacity-25" />
+                        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm" />
                     </Transition.Child>
 
-                    <div className={classNames("fixed overflow-y-auto inset-0", { "absolute-center w-full h-full": true })}>
+                    <div className={classNames("fixed inset-0 overflow-y-auto")}>
                         <div className="flex min-h-full items-center justify-center p-4 text-center">
                             <Transition.Child
                                 as={Fragment}
@@ -53,34 +54,33 @@ export default function Modal(props: ModalProps) {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-full md:max-w-xl transform overflow-hidden rounded-2xl bg-white py-6 text-center align-middle shadow-xl transition-all">
+                                <Dialog.Panel className="w-full max-w-full md:max-w-xl transform overflow-hidden rounded-[2rem] border border-violet-400/20 bg-brand-panel/90 py-6 text-center align-middle text-slate-100 shadow-glow ring-1 ring-white/10 backdrop-blur transition-all">
                                     {title && <Dialog.Title
                                         as="h3"
-                                        className="text-lg font-medium leading-6 text-gray-900"
+                                        className="text-lg font-semibold leading-6 text-white"
                                     >
                                         {title}
                                     </Dialog.Title>}
                                     <div ref={ref} className="mt-2 relative">
                                         {children}
                                     </div>
-                                    {showButton && <div className='w-full flex justify-around items-center'>
-                                        <div className="mt-10">
-                                            <button
+                                    {showButton && <div className='mt-10 flex w-full flex-wrap items-center justify-center gap-4 px-6'>
+                                        <div>
+                                            <Button
                                                 type="button"
-                                                className="btn btn-secondary"
+                                                variant='secondary'
                                                 onClick={props.closeModal ?? closeModal}
                                             >
                                                 Close
-                                            </button>
+                                            </Button>
                                         </div>
-                                        <div className="mt-10">
-                                            <button
+                                        <div>
+                                            <Button
                                                 type="button"
-                                                className="btn btn-secondary"
                                                 onClick={props.rightBtnCallBack ?? closeModal}
                                             >
                                                 {positiveBtnText ?? "Save"}
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>}
                                 </Dialog.Panel>

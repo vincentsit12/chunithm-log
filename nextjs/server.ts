@@ -1,15 +1,15 @@
 // For testing new nextjs server with socket.io
 
 import { MessageDetails } from './src/types';
-import GuessSongGameRoom from './src/Games/GuessSongGame/Room';
-import shared from './src/pages/api/shared';
+import GuessSongGameRoom from './src/games/GuessSongGame/Room';
+import shared from './src/server/socket/shared';
 import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io"
 import Fuse from 'fuse.js'
 import _ from "lodash"
-import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent } from './src/Games/GuessSongGame/types';
-import { Player } from './src/Games/GuessSongGame/Player';
+import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent } from './src/games/GuessSongGame/types';
+import { Player } from './src/games/GuessSongGame/Player';
 
 
 const dev = process.env.NODE_ENV !== "production";

@@ -6,6 +6,9 @@ import React, { useEffect, useRef, useState } from 'react';
 // import { useUserContext } from '../../provider/UserProvider';
 import { useForm } from 'react-hook-form';
 import { signUp } from 'utils/api';
+import { Button } from '@/components/ui/Button';
+import { Surface } from '@/components/ui/Surface';
+import { TextField } from '@/components/ui/TextField';
 
 
 type FormData = {
@@ -57,21 +60,26 @@ export default function SignUp() {
     const lenthError: boolean = errors?.username?.type === 'minLength' || errors?.username?.type === 'maxLengh' || errors?.password?.type === 'minLength'
     return (
         <LayoutWrapper>
-            <form autoComplete="off" className="inner-540 inner inner-p40 tc bg-white box-shadow relative" onSubmit={handleSubmitForm}>
+            <form autoComplete="off" className="mx-auto max-w-xl" onSubmit={handleSubmitForm}>
+                <Surface className='relative overflow-hidden px-6 py-8 text-center sm:px-10'>
                 {loading &&
-                    <div className='bg-black/40	 absolute h-full w-full top-0 left-0 fadeIn'>
+                    <div className='absolute inset-0 bg-slate-950/35 backdrop-blur-sm'>
                         <LoadingView />
                     </div>
                 }
-                <h4 className="font-bold">Sign Up</h4>
-                <div className="inner inner-p20 ">
-                    {lenthError && <div className="bold txt-secondary tl mb10 font14">Please input your username/password at least 6 characters</div>}
-                    {error && <div className="bold txt-secondary tl mb10 font14">Please check your username/password is input correctly.</div>}
-                    <input  {...register('username', { required: true, minLength: 6, maxLength: 12 })} className="form-control" type="text" placeholder={"Username"}></input>
-                    <input  {...register('password', { required: true, minLength: 6 })} className="form-control" type="password" autoComplete='new-password' placeholder={"Password"}></input>
-                    <button className="btn btn-secondary mt10" type='submit' onClick={() => { }}>Submit</button>
+                <p className='mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-300'>New Account</p>
+                <h1 className="text-3xl font-bold text-white">Create your Chuni-Log profile</h1>
+                <div className="mt-8 space-y-4 text-left">
+                    {lenthError && <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">Please use 6 to 12 characters for your username and password.</div>}
+                    {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">Please complete both fields before submitting.</div>}
+                    <TextField {...register('username', { required: true, minLength: 6, maxLength: 12 })} type="text" placeholder={"Username"} />
+                    <TextField {...register('password', { required: true, minLength: 6 })} type="password" autoComplete='new-password' placeholder={"Password"} />
+                    <div className='pt-2 text-center'>
+                        <Button type='submit'>Create Account</Button>
+                    </div>
 
                 </div>
+                </Surface>
 
 
             </form>

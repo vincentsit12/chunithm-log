@@ -9,6 +9,9 @@ import LoadingView from 'components/LoadingView';
 import LayoutWrapper from 'components/LayoutWrapper';
 import { NextPage } from 'next';
 import axios from 'axios';
+import { Button } from '@/components/ui/Button';
+import { Surface } from '@/components/ui/Surface';
+import { TextField } from '@/components/ui/TextField';
 
 type FormData = {
     name: string;
@@ -68,35 +71,47 @@ const AdminPage = () => {
     const error: boolean = errors?.name?.type === 'required'
     return (
         <LayoutWrapper>
-           {session.data?.user.isAdmin && <form onSubmit={handleSubmitForm} >
-                <div className="inner-540 inner inner-p40 bg-white box-shadow relative" >
-                    <h4 className="bold text-left">Add Song</h4>
-                    <div className="inner  ">
-                        {error && <div className="bold txt-secondary tl  font14">Please check your username/password is input correctly.</div>}
-                        <input  {...register('name', { required: true })} className="form-control" type="text" placeholder={"Song Name"}></input>
-                        <h4 className="bold text-left">Master</h4>
-                        <input  {...register('masterRate', { valueAsNumber : true })} className="form-control" placeholder={"Rate"}></input>
-                        <input  {...register('masterCombo', { valueAsNumber: true })} className="form-control" type="number" placeholder={"Combo"}></input>
-                        <h4 className="bold text-left">Ultima</h4>
-                        <input  {...register('ultimaRate', { valueAsNumber: true })} className="form-control" type="number" placeholder={"Rate"}></input>
-                        <input  {...register('ultimaCombo', { valueAsNumber: true })} className="form-control" type="number" placeholder={"Combo"}></input>
-                        <h4 className="bold text-left">Expert</h4>
-                        <input  {...register('expertRate', { valueAsNumber: true })} className="form-control" type="number" placeholder={"Rate"}></input>
-                        <input  {...register('expertCombo', { valueAsNumber: true })} className="form-control" type="number" placeholder={"Combo"}></input>
-                        <div className='tc'>
-                            <button type='button' className="btn btn-secondary sm:m-5 m-3   " onClick={(e) => {
-                                // e.preventDefault();
+           {session.data?.user.isAdmin && <form onSubmit={handleSubmitForm} className='mx-auto max-w-xl'>
+                <Surface className="relative overflow-hidden px-6 py-8 sm:px-10" >
+                    <p className='mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-300'>Admin</p>
+                    <h4 className="text-left text-3xl font-bold text-white">Add Song</h4>
+                    <div className="mt-8 space-y-5">
+                        {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">Song name is required before submission.</div>}
+                        <TextField  {...register('name', { required: true })} type="text" placeholder={"Song Name"} />
+                        <div className='rounded-[1.5rem] border border-white/10 bg-white/5 p-4'>
+                            <h4 className="mb-3 text-left text-lg font-semibold text-white">Master</h4>
+                            <div className='space-y-3'>
+                                <TextField  {...register('masterRate', { valueAsNumber : true })} inputMode='decimal' placeholder={"Rate"} />
+                                <TextField  {...register('masterCombo', { valueAsNumber: true })} type="number" placeholder={"Combo"} />
+                            </div>
+                        </div>
+                        <div className='rounded-[1.5rem] border border-white/10 bg-white/5 p-4'>
+                            <h4 className="mb-3 text-left text-lg font-semibold text-white">Ultima</h4>
+                            <div className='space-y-3'>
+                                <TextField  {...register('ultimaRate', { valueAsNumber: true })} type="number" placeholder={"Rate"} />
+                                <TextField  {...register('ultimaCombo', { valueAsNumber: true })} type="number" placeholder={"Combo"} />
+                            </div>
+                        </div>
+                        <div className='rounded-[1.5rem] border border-white/10 bg-white/5 p-4'>
+                            <h4 className="mb-3 text-left text-lg font-semibold text-white">Expert</h4>
+                            <div className='space-y-3'>
+                                <TextField  {...register('expertRate', { valueAsNumber: true })} type="number" placeholder={"Rate"} />
+                                <TextField  {...register('expertCombo', { valueAsNumber: true })} type="number" placeholder={"Combo"} />
+                            </div>
+                        </div>
+                        <div className='flex flex-col gap-3 pt-2 sm:flex-row sm:justify-center'>
+                            <Button type='button' variant='secondary' onClick={() => {
                                 router.push('/signup')
-                            }}>Sign Up</button>
-                            <button type="submit" className=" btn btn-secondary sm:m-5 m-3 " onClick={(e) => { }}>Submit</button>
+                            }}>Go To Signup</Button>
+                            <Button type="submit">Save Song</Button>
                         </div>
                     </div>
                     {loading &&
-                        <div className='bg-black/40	 absolute h-full w-full top-0 left-0 fadeIn'>
+                        <div className='absolute inset-0 bg-slate-950/35 backdrop-blur-sm'>
                             <LoadingView />
                         </div>
                     }
-                </div>
+                </Surface>
 
             </form>}
         </LayoutWrapper>
