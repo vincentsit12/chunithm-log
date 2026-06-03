@@ -16,7 +16,6 @@ async function signup(
 
   if (req.method === 'POST') {
 
-    // Store hash in your password DB.
     const hashedPassword = await hash(req.body.password, saltRounds)
 
     const user = await Users.findOne({ where: { username: req.body.username, } })

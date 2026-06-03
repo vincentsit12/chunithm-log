@@ -142,7 +142,7 @@
   }
 
   .auto-search input {
-    @apply !py-2 !px-4 h-[2.8rem];
+    @apply guess-song-game-input !py-2 !px-4 !text-sm;
   }
 
   .answer-race.btn {
@@ -160,6 +160,21 @@
   .guess-song-game-box {
     @apply rounded-[2rem] border border-violet-400/20 shadow-glow guess-song-game-gradient ring-1 ring-white/10 backdrop-blur-xl;
   }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }
 
 .inner {

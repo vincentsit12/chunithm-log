@@ -3,7 +3,7 @@
 import { Disclosure, Transition } from "@headlessui/react";
 import classNames from "classnames";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import { signOut, useSession } from "next-auth/react";
 import { Fragment } from "react";
 import { Button } from "@/components/ui/Button";
@@ -17,9 +17,10 @@ const navigationLinks = [
 export function Header() {
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = router?.pathname ?? "";
   const haveSession =
-    session && router.pathname !== "/login" && router.pathname !== "/signup";
-  const shouldShowHeader = !router.pathname.startsWith("/song_guesser");
+    session && pathname !== "/login" && pathname !== "/signup";
+  const shouldShowHeader = !pathname.startsWith("/song_guesser");
 
   if (!shouldShowHeader) {
     return null;
