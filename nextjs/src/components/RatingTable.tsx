@@ -32,7 +32,7 @@ import {
   WindowScroller,
 } from "react-virtualized";
 import { toFixedTrunc } from "utils/calculateRating";
-import { useWindowResize } from "utils/hooks/useWindowResize";
+import { useWindowResize } from "@/hooks/useWindowResize";
 import { GiMusicalScore } from "react-icons/gi";
 import {
   BiSolidUpArrow,
@@ -49,7 +49,7 @@ import Modal from "./Modal";
 import { IoMdSettings, IoMdRefresh } from "react-icons/io";
 import { Divider } from "./Divider";
 import { Button } from "@/components/ui/Button";
-import { useLocalStorage } from "utils/hooks/useLocalStorage";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { useForm } from "react-hook-form";

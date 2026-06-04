@@ -19,7 +19,8 @@ const getGameScript = async () => {
                 "https://sdvx.in/chunithm/sort/14.htm",
                 "https://sdvx.in/chunithm/sort/14+.htm",
                 "https://sdvx.in/chunithm/sort/15.htm",
-                "https://sdvx.in/chunithm/sort/15+.htm"
+                "https://sdvx.in/chunithm/sort/15+.htm",
+                "https://sdvx.in/chunithm/sort/16.htm",
             ]
 
 
@@ -37,7 +38,7 @@ const getGameScript = async () => {
 
         const browser = await puppeteer.launch(
             {
-                // headless : false,
+                headless: false,
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox'

@@ -1,6 +1,11 @@
 import classNames from "classnames";
 import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from "react";
-import { MdChevronLeft, MdChevronRight, MdPlayArrow, MdVisibility, MdVisibilityOff } from "react-icons/md";
+import {
+  MdChevronLeft,
+  MdChevronRight,
+  MdClose,
+  MdPlayArrow,
+} from "react-icons/md";
 import { Button } from "@/components/ui/Button";
 
 type Position = { x: number; y: number } | null;
@@ -8,10 +13,10 @@ type Position = { x: number; y: number } | null;
 interface HostYouTubeDockProps {
   position: Position;
   dockRef: RefObject<HTMLDivElement>;
+  isVisible: boolean;
   isExpanded: boolean;
-  isShowVideo: boolean;
   onToggleExpanded: () => void;
-  onToggleShowVideo: () => void;
+  onDismiss: () => void;
   onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => void;
@@ -21,10 +26,10 @@ interface HostYouTubeDockProps {
 const HostYouTubeDock = ({
   position,
   dockRef,
+  isVisible,
   isExpanded,
-  isShowVideo,
   onToggleExpanded,
-  onToggleShowVideo,
+  onDismiss,
   onPointerDown,
   onPointerMove,
   onPointerUp,
@@ -34,6 +39,7 @@ const HostYouTubeDock = ({
     <div
       className={classNames(
         "fixed z-30 pointer-events-none",
+        !isVisible && "hidden",
         !position && "bottom-20 left-2 md:left-4",
       )}
       style={
@@ -68,17 +74,8 @@ const HostYouTubeDock = ({
                 <MdChevronLeft className="w-4 h-4" />
               )}
             </Button>
-            <Button
-              variant="secondary"
-              size="icon-sm"
-              onClick={onToggleShowVideo}
-              disabled={!isExpanded}
-            >
-              {isShowVideo ? (
-                <MdVisibilityOff className="w-4 h-4" />
-              ) : (
-                <MdVisibility className="w-4 h-4" />
-              )}
+            <Button variant="secondary" size="icon-sm" onClick={onDismiss}>
+              <MdClose className="w-4 h-4" />
             </Button>
           </div>
         </div>

@@ -8,7 +8,7 @@ import next from "next";
 import { Server } from "socket.io"
 import Fuse from 'fuse.js'
 import _ from "lodash"
-import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent } from './src/games/GuessSongGame/types';
+import { GuessGameSong, GuessSongGameOption, RoomEvent } from './src/games/GuessSongGame/types';
 import { Player } from './src/games/GuessSongGame/Player';
 
 
@@ -209,14 +209,14 @@ app.prepare().then(() => {
       }
 
     })
-    socket.on("change-game-type", (data: RoomEvent, gameType: GuessSongGameType, gameTypeName: string) => {
+    socket.on("change-playlist", (data: RoomEvent, playlistId: string, playlistName: string) => {
       let roomID = data.roomID
       let room = shared.rooms.get(roomID)
       let details: MessageDetails = { withNotification: true, onlyPlayer: true, type: 'info' }
       if (room) {
-        room.gameType = gameType
+        room.playlistId = playlistId
         io.in(roomID).emit("update-room-info", room.getRoomInfo())
-        io.in(roomID).emit("message", `Host changed the game type to ${gameTypeName}`, details)
+        io.in(roomID).emit("message", `Host changed the playlist to ${playlistName}`, details)
       }
     })
 

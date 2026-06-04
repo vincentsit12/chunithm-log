@@ -1,6 +1,6 @@
 import _ from "lodash"
 import shared from "@/server/socket/shared"
-import { GuessGameSong, GuessSongGameType, RoomInfo } from "./types"
+import { GuessGameSong, RoomInfo } from "./types"
 import { Player } from "./Player"
 
 class GuessSongGameRoom {
@@ -10,7 +10,7 @@ class GuessSongGameRoom {
     currentSongList: GuessGameSong[]
     currentChoices: string[]
     currentRound: number
-    gameType: GuessSongGameType
+    playlistId: string
 
     constructor(roomID: string) {
         this.roomID = roomID
@@ -18,7 +18,7 @@ class GuessSongGameRoom {
         this.currentSongList = []
         this.currentChoices = []
         this.currentRound = 0
-        this.gameType = GuessSongGameType.chunithm
+        this.playlistId = "system:chunithm"
     }
 
     // Return player that is host or is joined to the game
@@ -148,7 +148,7 @@ class GuessSongGameRoom {
             roomID: this.roomID,
             noOfRound: this.currentRound,
             players: Array.from(joinedPlayer.values()),
-            gameType: this.gameType
+            playlistId: this.playlistId
         }
 
         return roomInfo

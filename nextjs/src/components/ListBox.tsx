@@ -14,18 +14,13 @@ import classNames from "classnames";
 type Props = {
   source: {
     name: string;
-    value: number;
+    value: string | number;
   }[];
   selected: {
     name: string;
-    value: number;
+    value: string | number;
   };
-  setSelected: React.Dispatch<
-    SetStateAction<{
-      name: string;
-      value: number;
-    }>
-  >;
+  setSelected: React.Dispatch<SetStateAction<any>>;
 } & HtmlHTMLAttributes<HTMLDivElement>;
 
 export default function ListBox({

@@ -1,5 +1,6 @@
 import Songs, { MaimaiSongs } from "db/model/songs";
 import { Player } from "./Player";
+import { PlaylistSourceType } from "@/db/model/playlists";
 
 export interface RoomEvent {
     roomID: string;
@@ -11,8 +12,17 @@ export interface RoomEvent {
 export interface RoomInfo {
     roomID: string;
     noOfRound: number;
-    gameType: number;
+    playlistId: string;
     players: Player[];
+}
+
+export interface PlaylistSummary {
+    id: string;
+    name: string;
+    creator: string;
+    source_type: PlaylistSourceType;
+    source_ref?: string;
+    metadata?: Record<string, unknown>;
 }
 
 export interface GuessSongGameOption {
@@ -29,13 +39,6 @@ export interface CustomSong {
     youtube_link: string;
     display_name: string;
     startTime: number;
-}
-
-export enum GuessSongGameType {
-    chunithm = 1,
-    maimai,
-    playlist,
-    custom,
 }
 
 export type GuessGameSong = Songs | MaimaiSongs | CustomSong; 

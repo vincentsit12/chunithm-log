@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { useScoreCalculator } from "utils/hooks/useScoreCalculator";
-import { usePrevious } from "utils/hooks/usePrevious";
+import { useScoreCalculator } from "@/hooks/useScoreCalculator";
+import { usePrevious } from "@/hooks/usePrevious";
 import { useSession } from "next-auth/react";
 import { AiFillPlusCircle, AiFillMinusCircle } from "react-icons/ai";
 import { isNumber } from "lodash";

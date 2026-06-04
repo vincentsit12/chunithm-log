@@ -1,9 +1,14 @@
 import classNames from 'classnames'
-import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { ButtonHTMLAttributes, forwardRef, useId } from 'react'
+import { Tooltip, type PlacesType, type VariantType } from 'react-tooltip'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'warning' | 'violet'
   size?: 'md' | 'sm' | 'icon' | 'icon-sm'
+  tooltip?: string
+  tooltipPlace?: PlacesType
+  tooltipVariant?: VariantType
+  tooltipOpenOnClick?: boolean
 }
 
 const variantStyles: Record<NonNullable<ButtonProps['variant']>, string> = {
@@ -23,20 +28,45 @@ const sizeStyles: Record<NonNullable<ButtonProps['size']>, string> = {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { className, size = 'md', variant = 'primary', type = 'button', ...props },
+  {
+    className,
+    size = 'md',
+    variant = 'primary',
+    type = 'button',
+    tooltip,
+    tooltipPlace = 'top',
+    tooltipVariant = 'dark',
+    tooltipOpenOnClick = false,
+    ...props
+  },
   ref,
 ) {
+  const tooltipId = useId()
+  const hasTooltip = Boolean(tooltip)
+
   return (
-    <button
-      ref={ref}
-      type={type}
-      className={classNames(
-        'inline-flex items-center justify-center gap-2 font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 disabled:cursor-not-allowed disabled:opacity-50',
-        variantStyles[variant],
-        sizeStyles[size],
-        className,
-      )}
-      {...props}
-    />
+    <>
+      <button
+        ref={ref}
+        type={type}
+        data-tooltip-id={hasTooltip ? tooltipId : undefined}
+        data-tooltip-content={hasTooltip ? tooltip : undefined}
+        className={classNames(
+          'inline-flex items-center justify-center gap-2 font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 disabled:cursor-not-allowed disabled:opacity-50',
+          variantStyles[variant],
+          sizeStyles[size],
+          className,
+        )}
+        {...props}
+      />
+      {hasTooltip ? (
+        <Tooltip
+          id={tooltipId}
+          place={tooltipPlace}
+          variant={tooltipVariant}
+          openOnClick={tooltipOpenOnClick}
+        />
+      ) : null}
+    </>
   )
 })

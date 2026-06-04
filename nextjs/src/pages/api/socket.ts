@@ -1,4 +1,4 @@
-import { GuessGameSong, GuessSongGameOption, GuessSongGameType, RoomEvent, RoomInfo } from '@/games/GuessSongGame/types';
+import { GuessGameSong, GuessSongGameOption, RoomEvent, RoomInfo } from '@/games/GuessSongGame/types';
 import { NextApiResponseWithSocket } from '@/server/socket/apiTypes';
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Server } from "socket.io"
@@ -213,14 +213,14 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       }
 
     })
-    socket.on("change-game-type", (data: RoomEvent, gameType: GuessSongGameType, gameTypeName: string) => {
+    socket.on("change-playlist", (data: RoomEvent, playlistId: string, playlistName: string) => {
       let roomID = data.roomID
       let room = shared.rooms.get(roomID)
       let details: MessageDetails = { withNotification: true, onlyPlayer: true, type: 'info' }
       if (room) {
-        room.gameType = gameType
+        room.playlistId = playlistId
         io.in(roomID).emit("update-room-info", room.getRoomInfo())
-        io.in(roomID).emit("message", `Host changed the game type to ${gameTypeName}`, details)
+        io.in(roomID).emit("message", `Host changed the playlist to ${playlistName}`, details)
       }
     })
 
@@ -341,7 +341,7 @@ export class GuessSongGameRoom {
   currentSongList: GuessGameSong[]
   currentChoices: string[]
   currentRound: number
-  gameType: GuessSongGameType
+  playlistId: string
 
   constructor(roomID: string) {
     this.roomID = roomID
@@ -349,7 +349,7 @@ export class GuessSongGameRoom {
     this.currentSongList = []
     this.currentChoices = []
     this.currentRound = 0
-    this.gameType = GuessSongGameType.chunithm
+    this.playlistId = "system:chunithm"
   }
 
   // Return player that is host or is joined to the game
@@ -479,7 +479,7 @@ export class GuessSongGameRoom {
       roomID: this.roomID,
       noOfRound: this.currentRound,
       players: Array.from(joinedPlayer.values()),
-      gameType: this.gameType
+      playlistId: this.playlistId
     }
 
     return roomInfo

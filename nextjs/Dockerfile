@@ -1,12 +1,3 @@
-# FROM node:16.15.0-alpine3.14 AS development
-# RUN apk add --no-cache libc6-compat
-# WORKDIR /app
-# COPY . .
-# ENV HOST=0.0.0.0
-# ENV PORT=3000
-# ENV NODE_ENV=development
-# EXPOSE 3000
-# CMD [ "yarn", "dev" ]
 FROM node:22-alpine3.22 as deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app

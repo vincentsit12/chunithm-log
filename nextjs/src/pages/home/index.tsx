@@ -16,8 +16,6 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import LayoutWrapper from "components/LayoutWrapper";
 import { SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { decrypt } from "utils/encrypt";
-import Tooltip from "rc-tooltip";
-import "rc-tooltip/assets/bootstrap_white.css";
 import { BestRatingTable, RecentRatingTable } from "components/RatingTable";
 import { getRatingList } from "utils/getRatingList";
 import { useRouter } from "next/router";
@@ -59,38 +57,24 @@ const UserScript = ({ userId }: { userId: string }) => {
   const timer = useRef<NodeJS.Timeout>();
   return (
     <CopyToClipboard text={generateScript(userId)}>
-      <Tooltip
-        onVisibleChange={(visible) => {
-          if (visible) {
-            timer.current = setTimeout(() => {
-              setCopied(false);
-            }, 3000);
+      <Button
+        onClick={() => {
+          if (timer.current) {
+            clearTimeout(timer.current);
           }
+          setCopied(true);
+          timer.current = setTimeout(() => {
+            setCopied(false);
+          }, 3000);
         }}
-        visible={copied}
-        overlayClassName={"fadeIn"}
-        showArrow={false}
-        overlayStyle={{ width: "6rem", textAlign: "center" }}
-        placement="top"
-        trigger={["click"]}
-        overlay={<span>Copied</span>}
+        className="text-white"
+        size="icon"
+        variant="secondary"
+        tooltip={copied ? "Copied" : "Copy script"}
+        tooltipOpenOnClick
       >
-        <Button
-          onClick={() => {
-            if (copied && timer.current) {
-              clearTimeout(timer.current);
-              timer.current = setTimeout(() => {
-                setCopied(false);
-              }, 3000);
-            } else setCopied(true);
-          }}
-          className="text-white"
-          size="icon"
-          variant="secondary"
-        >
-          <MdOutlineContentCopy size={"1.25rem"} />
-        </Button>
-      </Tooltip>
+        <MdOutlineContentCopy size={"1.25rem"} />
+      </Button>
     </CopyToClipboard>
   );
 };

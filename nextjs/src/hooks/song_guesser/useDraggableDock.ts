@@ -20,6 +20,19 @@ export function useDraggableDock() {
     };
   }, []);
 
+  const clampToViewport = useCallback(() => {
+    setPosition((prev) => {
+      if (prev) {
+        return clampPosition(prev.x, prev.y);
+      }
+
+      const dockRect = dockRef.current?.getBoundingClientRect();
+      if (!dockRect) return prev;
+
+      return clampPosition(dockRect.left, dockRect.top);
+    });
+  }, [clampPosition]);
+
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement)?.closest("button")) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
@@ -32,7 +45,7 @@ export function useDraggableDock() {
       x: e.clientX - dockRect.left,
       y: e.clientY - dockRect.top,
     };
-    setPosition({ x: dockRect.left, y: dockRect.top });
+    setPosition(clampPosition(dockRect.left, dockRect.top));
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -53,22 +66,35 @@ export function useDraggableDock() {
   };
 
   useEffect(() => {
-    if (!position) return;
+    if (typeof window === "undefined") return;
 
     const handleResize = () => {
-      setPosition((prev) => {
-        if (!prev) return prev;
-        return clampPosition(prev.x, prev.y);
-      });
+      clampToViewport();
     };
 
+    handleResize();
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [clampPosition, position]);
+
+    const dockElement = dockRef.current;
+    const resizeObserver =
+      dockElement && typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(handleResize)
+        : null;
+
+    if (dockElement && resizeObserver) {
+      resizeObserver.observe(dockElement);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      resizeObserver?.disconnect();
+    };
+  }, [clampToViewport]);
 
   return {
     dockRef,
     position,
+    clampToViewport,
     onPointerDown,
     onPointerMove,
     onPointerUp,
