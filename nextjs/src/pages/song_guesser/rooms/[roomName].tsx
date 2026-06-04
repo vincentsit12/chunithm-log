@@ -581,9 +581,7 @@ const GuessSongGame = () => {
     e.target.setVolume(20);
     e.target.pauseVideo();
     e.target.mute();
-    if (!youtubeRef.current) {
-      youtubeRef.current = e;
-    }
+    youtubeRef.current = e;
     console.log("customYoutubeLink", youtubeRef.current);
     if (selectedPlaylistMode === "custom" && customYoutubeLink) {
       cueYouTubeVideo(customYoutubeLink);
