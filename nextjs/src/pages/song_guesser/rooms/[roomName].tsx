@@ -577,13 +577,14 @@ const GuessSongGame = () => {
   };
 
   const youtubeVideoOnReady: YouTubeProps["onReady"] = (e) => {
-    console.log("youtube video ready");
+    showMessage("youtube video ready");
     e.target.setVolume(20);
     e.target.pauseVideo();
     e.target.mute();
     if (!youtubeRef.current) {
       youtubeRef.current = e;
     }
+    console.log("customYoutubeLink", youtubeRef.current);
     if (selectedPlaylistMode === "custom" && customYoutubeLink) {
       cueYouTubeVideo(customYoutubeLink);
     }
