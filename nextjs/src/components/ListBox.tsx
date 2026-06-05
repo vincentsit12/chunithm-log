@@ -8,7 +8,13 @@ import {
   BiUpsideDown,
   BiCheck,
 } from "react-icons/bi";
-import { Listbox, Transition } from "@headlessui/react";
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+  Transition,
+} from "@headlessui/react";
 import classNames from "classnames";
 
 type Props = {
@@ -33,7 +39,7 @@ export default function ListBox({
     <div className={className ?? "w-24"}>
       <Listbox value={selected} onChange={setSelected}>
         <div className="relative">
-          <Listbox.Button className="relative w-full cursor-default rounded-xl border border-white/10 bg-white/5 py-2 pl-3 pr-8 text-left text-sm font-medium text-slate-100 shadow-sm ring-1 ring-white/5 backdrop-blur-sm transition focus:outline-none focus-visible:border-fuchsia-400/60 focus-visible:ring-2 focus-visible:ring-fuchsia-400/30">
+          <ListboxButton className="relative w-full cursor-default rounded-xl border border-white/10 bg-white/5 py-2 pl-3 pr-8 text-left text-sm font-medium text-slate-100 shadow-sm ring-1 ring-white/5 backdrop-blur-sm transition focus:outline-none focus-visible:border-fuchsia-400/60 focus-visible:ring-2 focus-visible:ring-fuchsia-400/30">
             <span className="block truncate">{selected.name}</span>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <BiSolidDownArrow
@@ -42,16 +48,16 @@ export default function ListBox({
                 aria-hidden="true"
               />
             </span>
-          </Listbox.Button>
+          </ListboxButton>
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="z-20 absolute mt-2 max-h-60 w-full overflow-auto rounded-xl border border-white/10 bg-brand-panel/95 text-base text-slate-100 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-xl focus:outline-none sm:text-sm">
+            <ListboxOptions className="z-20 absolute mt-2 max-h-60 w-full overflow-auto rounded-xl border border-white/10 bg-brand-panel/95 text-base text-slate-100 shadow-2xl shadow-black/30 ring-1 ring-white/10 backdrop-blur-xl focus:outline-none sm:text-sm">
               {source.map((k, i) => (
-                <Listbox.Option
+                <ListboxOption
                   key={i}
                   className={({ active, selected }) =>
                     classNames(
@@ -82,9 +88,9 @@ export default function ListBox({
                       ) : null}
                     </>
                   )}
-                </Listbox.Option>
+                </ListboxOption>
               ))}
-            </Listbox.Options>
+            </ListboxOptions>
           </Transition>
         </div>
       </Listbox>

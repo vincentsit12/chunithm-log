@@ -34,15 +34,7 @@ import {
 import { toFixedTrunc } from "utils/calculateRating";
 import { useWindowResize } from "@/hooks/useWindowResize";
 import { GiMusicalScore } from "react-icons/gi";
-import {
-  BiSolidUpArrow,
-  BiLogoYoutube,
-  BiSolidDownArrow,
-  BiListCheck,
-  BiUpsideDown,
-  BiCheck,
-} from "react-icons/bi";
-import { Listbox, Transition } from "@headlessui/react";
+import { BiSolidUpArrow, BiLogoYoutube } from "react-icons/bi";
 import ListBox from "./ListBox";
 import DraggableList, { DropList } from "./DraggableList";
 import Modal from "./Modal";

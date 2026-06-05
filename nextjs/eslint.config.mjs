@@ -5,4 +5,9 @@ export default [
   {
     ignores: ['.next/**', 'node_modules/**'],
   },
+  {
+    rules: {
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
 ];

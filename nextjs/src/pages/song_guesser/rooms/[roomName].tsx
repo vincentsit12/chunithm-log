@@ -12,7 +12,6 @@ import {
 import _, { uniqBy, values } from "lodash";
 import YouTube, { YouTubeEvent, YouTubeProps } from "react-youtube";
 import Songs, { MaimaiSongs } from "db/model/songs";
-import { ReactSearchAutocomplete } from "react-search-autocomplete";
 import { useRouter } from "next/router";
 import { Bounce, Id, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -57,6 +56,7 @@ import ChatMessageComponent, {
 } from "@/components/song_guesser/rooms/ChatMessageComponent";
 import HostYouTubeDock from "@/components/song_guesser/rooms/HostYouTubeDock";
 import InputAnswerSetModal from "@/components/song_guesser/rooms/InputAnswerSetModal";
+import SongAnswerInput from "@/components/song_guesser/rooms/SongAnswerInput";
 import { useSocketClient } from "@/hooks/song_guesser/useSocketClient";
 import { useDraggableDock } from "@/hooks/song_guesser/useDraggableDock";
 import { useGuessSongGame } from "@/hooks/song_guesser/useGuessSongGame";
@@ -577,12 +577,10 @@ const GuessSongGame = () => {
   };
 
   const youtubeVideoOnReady: YouTubeProps["onReady"] = (e) => {
-    showMessage("youtube video ready");
     e.target.setVolume(20);
     e.target.pauseVideo();
     e.target.mute();
     youtubeRef.current = e;
-    console.log("customYoutubeLink", youtubeRef.current);
     if (selectedPlaylistMode === "custom" && customYoutubeLink) {
       cueYouTubeVideo(customYoutubeLink);
     }
@@ -698,14 +696,12 @@ const GuessSongGame = () => {
     setIsJoined(true);
   };
 
-  const handleOnSelect = (result: GuessGameSong) => {
+  const handleAnswerSelect = (result: GuessGameSong) => {
     setAnswer(result.display_name);
   };
 
-  const handleOnSearch = (string: string, results: GuessGameSong[]) => {
-    // onSearch will have as the first callback parameter
-    // the string searched and for the second the results.
-    setAnswer(string);
+  const handleAnswerInputChange = (text: string) => {
+    setAnswer(text);
   };
 
   const sendAnswer = () => {
@@ -1084,35 +1080,15 @@ const GuessSongGame = () => {
               <div className="mb-2">
                 {gameOption.answerRaceChoices.length <= 0 ? (
                   <div className="flex gap-2">
-                    <ReactSearchAutocomplete<GuessGameSong>
-                      inputSearchString={answer}
+                    <SongAnswerInput
                       items={filteredSongList}
-                      onSearch={handleOnSearch}
-                      onClear={() => {
-                        setAnswer(undefined);
-                      }}
-                      onSelect={handleOnSelect}
-                      fuseOptions={{ keys: ["display_name"] }}
-                      resultStringKeyName="display_name"
-                      placeholder="Type your answer..."
-                      key={"display_name"}
-                      showIcon={false}
-                      styling={{
-                        borderRadius: "12px",
-                        height: "auto",
-                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-                        backgroundColor: "#1E1E2E",
-                        border: "1px solid rgba(75, 85, 99, 0.3)",
-                        color: "#ffffff",
-                        hoverBackgroundColor: "gray",
-                        fontFamily: "inherit",
-                        fontSize: "inherit",
-                        zIndex: 99,
-                      }}
+                      value={answer}
+                      onChange={handleAnswerInputChange}
+                      onSelect={handleAnswerSelect}
                       className="flex-1 auto-search"
                     />
                     <Button
-                      disabled={playerInfo?.isSurrendered}
+                      disabled={playerInfo?.isSurrendered || !answer}
                       className="min-w-0 px-5"
                       size="sm"
                       onClick={sendAnswer}
